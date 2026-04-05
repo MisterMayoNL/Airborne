@@ -1,5 +1,0 @@
-function SP_Cheatscript_Oninit()
-	Scar_DebugConsoleExecute("bind([[ALT+0]], [[Scar_DoString('ee_bigheadmode(on)')]])")
-end
-
-Scar_AddInit(SP_Cheatscript_Oninit)

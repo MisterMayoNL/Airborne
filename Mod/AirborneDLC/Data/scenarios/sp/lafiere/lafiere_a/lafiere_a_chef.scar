@@ -1,0 +1,1443 @@
+-------------------------------------------------------------------------
+-- Objective Name 
+-------------------------------------------------------------------------
+-- Short descriptive name of what the player is cht_eventsed to do
+-- give a brief description of win conditions and loose conditions if any 
+-- also describe the kind of challenges the player will face
+-------------------------------------------------------------------------
+function Initialize_OBJ_Chef()
+
+	OBJ_Chef = {
+		
+		SetupUI = function() 
+			-- mark a point or position
+			OBJ_Chef.mapElementID = Objective_AddUIElements(OBJ_Chef, mkr_causeway_East, true, 9419090, true)
+		end,
+		
+		OnStart = function()
+			Sound_PlayMusic("Music/DLC/Causeway/LaFiere_A/LFA_Phase_2.bsc",2,0)
+			
+			-- announce the goal
+			Util_AutoIntel(t_chef.events.Intro)
+			
+			-- win/lose check
+			Rule_AddInterval(Chef_Rule_WinCheck, 5)
+			
+			-- start related action
+			Chef_Kickoff()
+			-- EncounterName_Kickoff()
+			
+		end,
+		
+		OnComplete = function()
+			
+			-- tell the player they did good
+			
+		end,
+		
+		IsComplete = function()
+			return false
+		end,
+		
+		OnFail = function()
+			
+			-- tell the player they lost
+			
+		end,
+		
+		Title = 9419090, -- Capture Chef du Pont
+		Description = 9419110, -- Clear the cluster of buildings known as Chef du Pont at the east end of the Causeway.
+		TitleEnd = 9419100, -- Chef du Pont Cleared
+
+		Type = OT_Primary,
+		
+--~ 		SitRep = {}, -- only needed once the SitRep is created and there are lines of dialogue.
+	}
+	
+	-- Register Objective
+	Objective_Register(OBJ_Chef)
+	
+	-- Initialize Data
+	Chef_Init()
+	
+end
+
+Scar_AddInit(Initialize_OBJ_Chef)
+
+-------------------------------------------------------------------------
+-- Objective Name - Functions 
+-------------------------------------------------------------------------
+
+-- 'Init()' is used to initialize the Obj data
+-- anything that needs to be there for the Obj to work
+-- does not need to be called at 'OnInit()'
+function Chef_Init()
+
+	-- define sgroups, egroups, etc associated with this obj
+	sg_chef_def = SGroup_CreateTable("sg_chef_def%d", 20)
+	sg_chef_MC = SGroup_CreateTable("sg_chef_MC%d", 20) -- 'MC' = Manor Counter
+	sg_chef_TR = SGroup_CreateTable("sg_chef_TR%d", 20) -- 'TR' = Trak Rush
+	sg_chef_MCall = SGroup_CreateIfNotFound("sg_chef_MCall")
+	sg_chefAttacker = SGroup_CreateIfNotFound("sg_chefAttacker")
+	sg_chefAll = SGroup_CreateIfNotFound("sg_chefAll")
+	sg_chef_trak = SGroup_CreateTable("sg_chef_trak%d", 6)
+	sg_chef_trakAll = SGroup_CreateIfNotFound("sg_chef_trakAll")
+	sg_chef_opel = SGroup_CreateTable("sg_chef_opel%d", 5)
+	sg_chef_opelAll = SGroup_CreateIfNotFound("sg_chef_opelAll")
+	sg_chef_trench = SGroup_CreateIfNotFound("sg_chef_trench")
+	sg_p2_dog = SGroup_CreateIfNotFound("sg_p2_dog")
+	sg_lastAttacker = SGroup_CreateIfNotFound("sg_lastAttacker")
+	sg_chef_cauqCounter = SGroup_CreateTable("sg_chef_cauqCounter%d", 4)
+	
+	sg_trench1 = SGroup_CreateIfNotFound("sg_trench1")
+	sg_trench2 = SGroup_CreateIfNotFound("sg_trench2")
+	sg_trench3 = SGroup_CreateIfNotFound("sg_trench3")
+	sg_germansInChef = SGroup_CreateIfNotFound("sg_germansInChef")
+	sg_alliesInChef = SGroup_CreateIfNotFound("sg_alliesInChef")
+	sg_playerDudesInChef = SGroup_CreateIfNotFound("sg_playerDudesInChef")
+	sg_lost_amerAll = SGroup_CreateIfNotFound("sg_lost_amerAll")
+	
+	if Misc_IsCommandLineOptionSet("test_objectives") then
+--~ 		Scar_DebugConsoleExecute("bind([[ALT+1]], [[Scar_DoString('Util_StartNIS(EVENTS.NIS01)')]])")		
+	end
+	
+    t_chef = {
+		trakTimer = 35123, 
+		trakTime = 25, -- time in seconds (originally 30?)
+		fg_ax_all_dead 			= false,			-- flag to indicate that all the axis units are dead
+		fg_ax_all_retreated 	= false,			-- flag to check whether all the axis units have retreated
+	}
+
+	t_chef.trakSpawn = {}
+	for i = 1, 4 do t_chef.trakSpawn[i] = false end
+
+	-- MC = Manour Counter
+	t_chef.MC = {
+		{sgroup = sg_chef_MC[1], spawn = mkr_chefRoad4, goto = mkr_manor_back, limit = 3},
+		{sgroup = sg_chef_MC[2], spawn = mkr_chefRoad1, goto = mkr_manor_nest3, limit = 3},
+		{sgroup = sg_chef_MC[3], spawn = mkr_chefRoad2, goto = mkr_manor_nest3, limit = 3},
+		{sgroup = sg_chef_MC[4], spawn = mkr_chefRoad4, goto = mkr_manor_back, limit = 3},
+		--{sgroup = sg_chef_MC[5], spawn = mkr_chefRoad4, goto = mkr_manor_back, limit = 5},
+		--{sgroup = sg_chef_MC[6], spawn = mkr_chefRoad4, goto = mkr_manor_back, limit = 7},
+		--{sgroup = sg_chef_MC[7], spawn = mkr_chefRoad2, goto = mkr_manor_nest3, limit = 9},
+	}
+	t_chef.TR = {
+		{sgroup = sg_chef_TR[1], spawn = mkr_mapEntry3, goto = mkr_chefRoad4, limit = 3},
+		{sgroup = sg_chef_TR[2], spawn = mkr_mapEntry6, goto = mkr_chefRoad4, limit = 8},
+		{sgroup = sg_chef_TR[3], spawn = mkr_mapEntry11, goto = mkr_chefRoad4, limit = 10},
+		{sgroup = sg_chef_TR[4], spawn = mkr_chefRoad11, goto = mkr_chefRoad4, limit = 10},
+		{sgroup = sg_chef_TR[5], spawn = mkr_mapEntry11, goto = mkr_chefRoad4, limit = 10},
+		{sgroup = sg_chef_TR[6], spawn = mkr_mapEntry11, goto = mkr_chefRoad4, limit = 10},
+	}
+
+	-- Hang around the Causeway
+	t_chef.Defenders = {
+		--{plan = COMBAT_PLAN.GENERIC.INFANTRY.FindCoverAndAttack, modAcc = .8, sgroup = sg_chef_def[1], sbp = SBP.AXIS.GRENADIER, spawn = eg_chefAll, trench = eg_chef_trench4, dest = mkr_flood_nest1, num = 5, upg = nil, face = mkr_chefRoad7,},
+		--{plan = COMBAT_PLAN.GENERIC.INFANTRY.FaceAttacker, modAcc = .5, sgroup = sg_chef_def[2], sbp = SBP.AXIS.GRENADIER, spawn = eg_chefAll, trench = eg_chef_trench2, dest = mkr_chef_nest2, num = 5, upg = UPG.AXIS.GREN_MG42, face = mkr_chefRoad7,},
+		--{plan = COMBAT_PLAN.GENERIC.INFANTRY.FaceAttacker, modAcc = .6, sgroup = sg_chef_def[3], sbp = SBP.AXIS.GRENADIER, spawn = eg_chefAll, trench = eg_chef_trench3, dest = mkr_chef_nest1, num = 6, upg = UPG.AXIS.GREN_MG42, face = mkr_chefRoad2,},
+		{plan = COMBAT_PLAN.GENERIC.INFANTRY.FindCoverAndAttack, modAcc = .1, sgroup = sg_chef_def[4], sbp = SBP.AXIS.HEAVYMG, spawn = eg_chefAll, dest = mkr_chef_nest4, num = 4, upg = nil, face = mkr_chefRoad6,},
+		{plan = COMBAT_PLAN.GENERIC.INFANTRY.FindCoverAndAttack, modAcc = .8, sgroup = sg_chef_def[5], sbp = SBP.AXIS.GRENADIER, spawn = eg_chefAll, dest = mkr_chef_nest5, num = 5, upg = nil, face = mkr_chefRoad4,},
+		{plan = COMBAT_PLAN.GENERIC.INFANTRY.FaceAttacker, modAcc = .2, sgroup = sg_chef_def[6], sbp = SBP.AXIS.MORTAR, spawn = eg_chefAll, dest = mkr_chef_cover1, num = 4, upg = nil, face = mkr_chefRoad4,},
+		{plan = COMBAT_PLAN.GENERIC.INFANTRY.FaceAttacker, modAcc = .8, sgroup = sg_chef_def[7], sbp = SBP.AXIS.SNIPER, spawn = eg_chefAll, dest = mkr_chef_nest3, num = 4, upg = nil, face = mkr_chefRoad4,},
+		{plan = COMBAT_PLAN.GENERIC.INFANTRY.FaceAttacker, modAcc = .2, sgroup = sg_chef_def[8], sbp = SBP.AXIS.HEAVYMG, spawn = eg_chefAll, dest = mkr_causeCover1, num = 4, upg = nil, face = mkr_chefRoad4,},
+		{plan = COMBAT_PLAN.GENERIC.INFANTRY.FindCoverAndAttack, modAcc = .8, sgroup = sg_chef_def[9], sbp = SBP.AXIS.GRENADIER, spawn = eg_chefAll, dest = mkr_causeCover2, num = 4, upg = UPG.AXIS.GREN_MG42, face = mkr_chefRoad4,},
+	}
+	
+	t_chef.trenchdata = {
+	
+		{sgroup = sg_trench1, modAcc = .8, plan = COMBAT_PLAN.GENERIC.INFANTRY.FindCoverAndAttack, sbp = SBP.AXIS.GRENADIER, spawn = eg_chefAll, trench = eg_chef_trench4, dest = mkr_flood_nest1, seconddest = mkr_chef_nest6, num = 5, upg = nil, face = mkr_chefRoad7},
+		{sgroup = sg_trench2, modAcc = .5, plan = COMBAT_PLAN.GENERIC.INFANTRY.FindCoverAndAttack, sbp = SBP.AXIS.GRENADIER, spawn = eg_chefAll, trench = nil, dest = mkr_chef_nest2, seconddest = mkr_chef_cover1, num = 5, upg = UPG.AXIS.GREN_MG42, face = mkr_chefRoad7},
+		{sgroup = sg_trench3, modAcc = .6, plan = COMBAT_PLAN.GENERIC.INFANTRY.FindCoverAndAttack, sbp = SBP.AXIS.GRENADIER, spawn = eg_chefAll, trench = eg_chef_trench3, dest = mkr_chef_nest4, seconddest = mkr_chef_nest4, num = 6, upg = UPG.AXIS.GREN_MG42, face = mkr_chefRoad2},
+	
+	
+	}
+	
+	t_chef.vehicledata = {
+		{name = sg_chef_trak[1], vehicletype = SBP.ELITE.ARMOURCAR_222, plan = false, spawned = false, destination = mkr_chef_nest6},
+		{name = sg_chef_trak[2], vehicletype = SBP.ELITE.ARMOURCAR_222, plan = false, spawned = false, destination = mkr_chef_nest3},
+		{name = sg_chef_trak[3], vehicletype = SBP.ELITE.HOTCHKISS, plan = false, spawned = false, destination = mkr_causewayEast},
+	}
+		
+	t_chef.opeldata = {
+		{name = sg_chef_opel[1], fled = false, path = "OpelPath1"},
+		{name = sg_chef_opel[2], fled = false, path = "OpelPath2"},
+		{name = sg_chef_opel[3], fled = false, path = "OpelPath3"},
+		{name = sg_chef_opel[4], fled = false, path = "OpelPath4"},
+		{name = sg_chef_opel[5], fled = false, path = "OpelPath5"},
+	}
+
+	t_chef.counterdata = {
+		{plan = COMBAT_PLAN.GENERIC.INFANTRY.FindCoverAndAttack, modAcc = .8, sgroup = sg_chef_cauqCounter[1], blueprint = SBP.AXIS.VOLKSGRENADIER, spawn = mkr_defensemarker1, dest = mkr_LostDest1, 
+			entry = mkr_mapEntry11,  num = 4, upg = nil, face = mkr_cauq2,},
+		{plan = COMBAT_PLAN.GENERIC.INFANTRY.FindCoverAndAttack, modAcc = .8, sgroup = sg_chef_cauqCounter[2], blueprint = SBP.AXIS.GRENADIER, spawn = mkr_defensemarker2, dest = mkr_LostDest2,
+			entry = mkr_mapEntry11, num = 4, upg = nil, face = mkr_cauq2,},
+		{plan = COMBAT_PLAN.GENERIC.INFANTRY.FindCoverAndAttack, modAcc = .8, sgroup = sg_chef_cauqCounter[3], blueprint = SBP.AXIS.GRENADIER, spawn = mkr_approach5, dest = mkr_LostDest3,
+			entry = mkr_mapEntry11, num = 4, upg = nil, face = mkr_cauq2,},
+	}
+	
+	tmkr_randCauqArty = {mkr_artilleryspot11, mkr_B_baker_dest, mkr_artilleryspot9, mkr_B1_dest, mkr_artilleryspot10}
+	
+	-- set up intel event tables
+	t_chef.events = {
+		Intro = {
+			{ACTOR.LA_FIERE.Wilson, 9410800}, -- These Kraut are untrained, push-overs. Let's move on to Chef du Pont. 
+			-- {ACTOR.LA_FIERE.Wilson, LOC("Fuck yeah! Let's get'em.")}, 
+		},
+		Counter_Mortar = {
+			{ACTOR.LA_FIERE.Craft, 9410870}, -- Mortars! They got us zeroed in!  Spread out!
+		},
+		Counter_Start = {
+			--{ACTOR.LA_FIERE.Wilson, 9410890}, -- Oh shit... FIND SOME COVER!
+			--{ACTOR.LA_FIERE.Wilson, LOC("Able. Break out the CANISTER ROUNDS!")}, 
+		},
+		Counter_Suggest1 = {
+			{ACTOR.LA_FIERE.Craft, 9410994}, -- Don't go charging out there!
+			--{ACTOR.LA_FIERE.Craft, 9410995}, -- Let them come to us!
+			--{ACTOR.LA_FIERE.Wilson, 9411003}, -- Then we'll rip em apart at close range!
+		},
+		Counter_Suggest2 = {
+--			{ACTOR.LA_FIERE.Wilson, 9411002}, -- They'll expect us to attack from the manor.
+			--{ACTOR.LA_FIERE.Craft, 9410997}, -- We should flank their position.
+		},
+		Counter_End = {
+			--{ACTOR.LA_FIERE.Wilson, 9411001}, -- Now it's our turn.
+		},
+		TR_barrage = {
+			{ACTOR.LA_FIERE.Craft, 9410996}, -- Incoming!
+		},
+		TR_start = {
+			{ACTOR.LA_FIERE.Craft, 9410700}, -- I'm not runnin from a few lousy Kraut!
+		},
+		TR_middle = {
+			{ACTOR.LA_FIERE.Wilson, 9410710}, -- Fight through it men! Show them what we're made of!
+		},
+		TR_end = {
+		--	{ACTOR.LA_FIERE.Wilson, 9410720}, -- Show them no fear boys, we're the Airborne!
+		},
+		HMG_Spot = {
+			{ACTOR.LA_FIERE.Craft, 9410993}, -- MG42! Baker! Pin those bastards!
+		},
+		Sniper_Spot = {
+			{ACTOR.LA_FIERE.Wilson, 9410992}, -- Focus on that Sniper, or we're not going anywhere!
+ 		},
+		Mortar_Spot = {
+			{ACTOR.LA_FIERE.Wilson, 9410961}, -- Mortar incoming! Look out!
+ 		},
+		Counter_Spot = {
+			--{ACTOR.LA_FIERE.Wilson, 9410960}, -- Able! Baker! Get ready for the incoming Kraut.
+			
+--~ 			{ACTOR.LA_FIERE.Wilson, 9410990}, -- Launch your satchel charges, take em out!
+--~ 			{ACTOR.LA_FIERE.Wilson, 9410991}, -- BAR's I want disciplined firing! Button down that crew!
+--~ 			{ACTOR.LA_FIERE.Wilson, 9411000}, -- Get those tanks disabled, any way possible!
+			
+			{ACTOR.LA_FIERE.Wilson, 9410942}, -- We've got incoming armor. Find cover!
+			
+		},
+		
+		Use_Recoilless = {
+			{ACTOR.LA_FIERE.Craft, 9410944}, -- Target those vehicles with the recoilless!
+			{ACTOR.LA_FIERE.Wilson, 9411000}, -- Get those tanks disabled, any way possible!
+		},
+		
+		Panic1 = {
+			{ACTOR.LA_FIERE.GenericAlly, 9410940}, -- The Krauts have taken Cauquigny, they're comin' up the road!
+			--{ACTOR.LA_FIERE.Wilson, 9410950}, -- The Krauts have taken Cauquigny, they're comin' up the road!
+		},
+		Panic2 = {
+			{ACTOR.LA_FIERE.GenericAlly, 9411010}, -- Boss, the five-oh-nine have abandoned Cauquigny!
+			
+		},
+	}
+	
+	-- mortar variables
+	g_StartMortar = false
+	g_ManorMortarDropped = false
+	g_MortarNumber = 0
+	MortarTimerID = "MortarTimer"
+	g_stayFlag = false
+	
+	-- set up 
+	Chef_Preset()
+end
+
+-- preset any units or events needed before the kickoff, but you do not
+-- want them to occur at the outset of the map.
+-- Example: Often units are needed to exist before the objective start (because they start the objective)
+-- then spawn those units here when they need to be spawned
+function Chef_Preset()
+
+	-- create the temporary starting opels in Chef
+	local marker = {mkr_chef_opel1, mkr_chef_opel2, mkr_chef_opel3, mkr_chef_opel4, mkr_chef_opel5}
+	for i = 1, 5 do
+		Util_CreateSquadsAtMarker(player3, sg_chef_opel[i], SBP.AXIS.OPELBLITZ, marker[i], 1)
+		Modify_Vulnerability(sg_chef_opel[i], 1.5)
+		SGroup_AddGroup(sg_chef_opelAll, sg_chef_opel[i])
+	end
+	
+	-- start enemy behavior
+	
+	-- do other cool things
+	Rule_AddInterval(Chef_Defenders_Spawn, 5)
+
+end
+
+------------------------------------
+--[[ THE MANOR DEFENDERS ]]
+------------------------------------
+-- spawn manor defenders 
+function Chef_Defenders_Spawn()
+	if Objective_IsFailed(OBJ_Chef) or Objective_IsComplete(OBJ_Chef) then
+		Rule_RemoveMe()
+	else
+		local done = true
+		for k, this in pairs(t_chef.Defenders) do 
+			if SGroup_IsEmpty(this.sgroup) then
+				Util_CreateSquads(player3, this.sgroup, this.sbp, this.spawn, this.dest, 1, this.num, false, this.face, this.upg, NIL_FACE)
+				if this.trench ~= nil then
+					Cmd_Garrison(this.sgroup, this.trench, true, true)
+				end
+				SGroup_SetTeamWeaponCapturable(this.sgroup, false)
+				LaFiere_LogSyncW(this.sgroup)
+				SGroup_AddGroup(sg_chefAll, this.sgroup)
+				Modify_WeaponRange(this.sgroup, "hardpoint_01", .8)
+				Modify_WeaponAccuracy(this.sgroup, "hardpoint_01", this.modAcc)
+				CombatPlan_Add(this.sgroup, this.plan, sg_chefAttacker)
+				done = false
+				break
+			end
+		end
+		for k, this in pairs(t_chef.trenchdata) do 
+			if SGroup_IsEmpty(this.sgroup) then
+				Util_CreateSquads(player3, this.sgroup, this.sbp, this.spawn, this.dest, 1, this.num, false, this.face, this.upg, NIL_FACE)
+				SGroup_SetTeamWeaponCapturable(this.sgroup, false)
+				if this.trench ~= nil then
+					Cmd_Garrison(this.sgroup, this.trench, true, true)
+				end
+				LaFiere_LogSyncW(this.sgroup)
+				SGroup_AddGroup(sg_chef_trench, this.sgroup)
+				Modify_WeaponRange(this.sgroup, "hardpoint_01", .8)
+				Modify_WeaponAccuracy(this.sgroup, "hardpoint_01", this.modAcc)
+				--CombatPlan_Add(this.sgroup, this.plan, sg_chefAttacker)
+				done = false
+				break
+			end
+		end
+		
+		
+		if done == true then
+			t_chef.DefSpawn = true
+			
+			-- chef events
+			Rule_AddInterval(Chef_Action1_Retreat, 5)
+			Rule_AddInterval(Chef_Action2_Support, 5)
+			Rule_AddInterval(Chef_Action3_Support, 5)
+			Rule_AddInterval(Chef_Action4_Support, 5)
+			Rule_AddInterval(Chef_Action5_Warning, 5)
+			Rule_AddInterval(Chef_Action6_Warning, 5)
+			Rule_AddInterval(Chef_Action7_Warning, 5)
+			Rule_AddInterval(Chef_Action8_Causeway, 7)
+			
+			Rule_AddInterval(Chef_InTrench_TrenchRetreat, 1)
+			
+ 			Rule_AddDelayedInterval(Chef_OpelRetreat, 10, 5)
+			
+			Rule_RemoveMe()
+		end
+	end
+end
+
+-- example of how to finish an Obj
+function Chef_Rule_WinCheck()
+	
+	-- one of them must be set to true before the player can win or lose the objective
+	--if t_chef.DefSpawn == true and SGroup_IsEmpty(sg_chefAll) then
+	if t_chef.trakSpawn == true and SGroup_IsEmpty(sg_chef_trakAll) then
+		
+		-- the player has just won
+		Objective_Complete(OBJ_Chef)
+		
+		Rule_RemoveMe()
+	else
+		if g_stayFlag == true then
+			Player_GetAllSquadsNearMarker(player3, sg_germansInChef, mkr_chefBoundary)
+			Player_GetAllSquadsNearMarker(player2, sg_alliesInChef, mkr_chefBoundary)
+			Player_GetAllSquadsNearMarker(player1, sg_playerDudesInChef, mkr_chefBoundary)
+			-- checks to see if there are enemy soldiers in the general area of Chef and compares it with the number of allied and player soldiers.
+			if SGroup_TotalMembersCount(sg_germansInChef) >= 1 and SGroup_TotalMembersCount(sg_playerDudesInChef) <= 0 and SGroup_TotalMembersCount(sg_alliesInChef) <=0 then
+				-- the player has just failed
+				Objective_Fail(OBJ_Chef)
+				
+				Rule_RemoveMe()
+			end
+		end
+		
+	end
+	
+end
+
+function Chef_Debug()
+
+	-- add in the necessary information that can automatically start this objective 
+	-- with the press of a hotkey
+	Objective_Start(OBJ_Chef)
+
+end
+
+-- retreats squad when they are reduced to 2 guys
+function Chef_InTrench_TrenchRetreat()
+
+	if SGroup_IsEmpty(sg_chef_trench) == true then
+		Rule_RemoveMe()
+	else
+		for k, v in pairs(t_chef.trenchdata) do
+			
+			if SGroup_IsEmpty(v.sgroup) == false then
+				
+				if SGroup_TotalMembersCount(v.sgroup) <= 2 then
+					
+					if SGroup_IsInHoldEntity(v.sgroup, ANY) == true then
+					
+						print("ungarrison!")
+						Cmd_UngarrisonSquad(v.sgroup, mkr_mapEntry3)
+						
+						
+					elseif SGroup_IsRetreating(v.sgroup, ANY) == false then
+					
+						Cmd_Retreat(v.sgroup, Marker_GetPosition(mkr_mapEntry3), mkr_mapEntry3) 
+					
+					end
+					
+				end
+			end
+		end
+	end
+end
+
+
+
+-- start the related action
+function Chef_Kickoff()
+	
+	--Rule_AddDelayedInterval(Chef_ManorCounter_Mortar1, 5, 1)
+	Rule_AddDelayedInterval(Chef_ManorMortarControl, 1, 1)
+	
+	-- action that starts with the Obj being granted
+	t_chef.suppressGroup = sg_chef_def
+	t_chef.suppressed = {}
+	
+	Rule_AddInterval(Chef_SuppressWatch, 5)
+	Rule_AddInterval(Chef_TrakRush, 1)
+	
+end
+
+
+------------------------------------------
+--[[ COUNTER ATTACK ON THE MANOR - MORTAR ]]
+------------------------------------------
+
+
+function Chef_ManorMortarControl()
+
+	if g_MortarNumber >= 9 then
+	
+		Rule_RemoveMe()
+		
+		Rule_AddDelayedInterval(Chef_MC_Combat, 10, 1)
+		
+	else
+		
+		if Event_IsAnyRunning() == false and g_StartMortar == false then
+		
+			g_StartMortar = true
+			
+		end
+		
+		if g_StartMortar == true and SGroup_IsEmpty(sg_p1_able) == false and SGroup_IsEmpty(sg_p1_baker) == false then
+			
+			if g_ManorMortarDropped == false then
+			
+				local l_randplayersquad = Table_GetRandomItem({sg_p1_able, sg_p1_baker}, 1)
+			
+				if g_MortarNumber < 1 then
+				
+					Util_AutoIntel(t_chef.events.Counter_Mortar)
+			
+				
+					local l_random_position = Util_GetRandomPosition(SGroup_GetPosition(l_randplayersquad), 15) -- mkr_chefRoad6
+					Cmd_Ability(player3, ABILITY.SP.SINGLE_MORTAR, l_random_position, nil, true)
+				
+				elseif g_MortarNumber == 3 then
+				
+					local l_random_position = Util_GetRandomPosition(SGroup_GetPosition(l_randplayersquad), 15)
+					Cmd_Ability(player3, ABILITY.SP.SINGLE_MORTAR, l_random_position, nil, true)
+					
+					--Cmd_Ability(player3, ABILITY.SP.SINGLE_HOWITZER, mkr_manor_fence1, nil, true)
+					
+					Rule_AddOneShot(Chef_ManorBreakFence1, 2)
+		
+					Rule_AddDelayedInterval(Chef_MC_Germans, 1, 5)
+				
+				elseif g_MortarNumber == 4 then
+				
+					local l_random_position = Util_GetRandomPosition(SGroup_GetPosition(l_randplayersquad), 15)
+					Cmd_Ability(player3, ABILITY.SP.SINGLE_MORTAR, l_random_position, nil, true)
+					
+					--Cmd_Ability(player3, ABILITY.SP.SINGLE_HOWITZER, mkr_manor_fence2, nil, true)
+					Rule_AddOneShot(Chef_ManorBreakFence2, 1)
+		
+				
+				elseif g_MortarNumber == 6 then
+				
+					local l_random_position = Util_GetRandomPosition(SGroup_GetPosition(l_randplayersquad), 15)
+					Cmd_Ability(player3, ABILITY.SP.SINGLE_MORTAR, l_random_position, nil, true)
+		
+				
+				end				
+				
+				local l_randommortarinterval = World_GetRand(1, 4)
+				g_ManorMortarDropped = true	
+				Rule_AddOneShot(Chef_ManorDropMortar, l_randommortarinterval)
+				
+				Timer_Start(MortarTimerID, l_randommortarinterval + 1)
+				
+			elseif g_ManorMortarDropped == true then
+			
+				local l_timerleft = math.floor(Timer_GetRemaining(MortarTimerID))
+			
+				if l_timerleft ~= nil and l_timerleft <= 0 then
+				
+					g_ManorMortarDropped = false
+				
+				end
+				
+			end
+		end
+	end	
+
+end
+
+function Chef_ManorDropMortar()
+
+		print("mortar!")
+	
+		-- grab random mortar position
+		local l_random_position = Util_GetRandomPosition(mkr_chefRoad6, 30)
+		
+		Cmd_Ability(player3, ABILITY.SP.SINGLE_MORTAR, l_random_position, nil, true)
+		
+		
+		g_MortarNumber = g_MortarNumber + 1
+		
+end
+
+function Chef_ManorBreakFence1()
+	print("break fence1")
+	Cmd_Ability(player3, ABILITY.SP.SINGLE_HOWITZER, mkr_manor_fence1, nil, true)
+
+end
+
+function Chef_ManorBreakFence2()
+	print("break fence2")
+	Cmd_Ability(player3, ABILITY.SP.SINGLE_HOWITZER, mkr_manor_fence2, nil, true)
+
+end
+-----------------------------------------
+--[[ COUNTER ATTACK ON THE MANOR - VOLKS ]]
+------------------------------------------
+
+-- create an attacker
+function Chef_MC_Germans()
+-- if the global attacker number is below VAR
+	if Objective_IsFailed(OBJ_Chef) or Objective_IsComplete(OBJ_Chef) then
+		Rule_RemoveMe()
+	else
+		local done = true
+		for k, this in pairs(t_chef.MC) do 
+			if this.spawn ~= nil then
+				if SGroup_IsEmpty(sg_chef_MCall) or SGroup_TotalMembersCount(sg_chef_MCall) <= this.limit then
+					if Player_CanSeePosition(player1, Marker_GetPosition(this.spawn)) == false then
+						LaFiere_CreateVolks(player3, this.sgroup, this.spawn)
+					else
+						LaFiere_CreateVolks(player3, this.sgroup, mkr_mapEntry3)
+					end
+					--LaFiere_MoveCover(this.sgroup, this.goto, 10)
+					
+					local l_randomoffset = Table_GetRandomItem({OFFSET_LEFT, OFFSET_RIGHT})
+					
+					Cmd_AttackMove(this.sgroup, SGroup_GetOffsetPosition(sg_p1_able, l_randomoffset, 15), nil, nil, 5)
+					
+					
+					SGroup_AddGroup(sg_chef_MCall, this.sgroup)
+					Modify_WeaponRange(this.sgroup, "hardpoint_01", .5)
+					Modify_WeaponAccuracy(this.sgroup, "hardpoint_01", .5)
+					-- CombatPlan_Add(this.sgroup, this.plan, sg_chefAttacker)
+					this.spawn = nil
+				end
+				done = false
+			end
+		end
+		if done == true then
+			t_chef.MCspawnDone = true
+			Rule_RemoveMe()
+		end
+	end
+end
+
+-- share suggestion
+function Chef_MC_Combat()
+	if SGroup_IsUnderAttack(sg_chef_MCall, false, 5) or SGroup_IsDoingAttack(sg_chef_MCall, false, 5) then
+		--Util_AutoIntel(t_chef.events.Counter_Start)
+--~ 		Player_SetAbilityAvailability(player1, ABILITY.SP.LA_FIERE.ABLE_CANISTER_ROUND, ITEM_DEFAULT)
+--~ 		UI_FlashAbilityButton(ABILITY.SP.LA_FIERE.ABLE_CANISTER_ROUND, true, BT_UI_Strong_AbilityBtn)
+--~ 		
+		Rule_AddDelayedInterval(Chef_MC_Tactics, 10, 1)
+		Rule_RemoveMe()
+	end
+end
+
+-- share suggestion
+function Chef_MC_Tactics()
+	if Event_IsAnyRunning() == false then
+		if Prox_ArePlayersNearMarker(player1, mkr_chefRoad6, false, 30) then
+			--Util_AutoIntel(t_chef.events.Counter_Suggest1)
+		else
+			--Util_AutoIntel(t_chef.events.Counter_Suggest2)
+		end
+		Rule_AddDelayedInterval(Chef_MC_Complete, 10, 1)
+		Rule_RemoveMe()
+	end
+end
+
+-- attack over
+function Chef_MC_Complete()
+	if t_chef.MCspawnDone == true and SGroup_IsEmpty(sg_chef_MCall) then
+		--Util_AutoIntel(t_chef.events.Counter_End)
+		t_chef.MCdone = true
+		Rule_RemoveMe()
+	elseif SGroup_IsEmpty(sg_chef_MCall) == false then
+		-- if they're still around
+		for k, this in pairs(t_chef.MC) do 
+			if SGroup_IsEmpty(this.sgroup) == false then
+				-- 1 left? run!
+				if SGroup_TotalMembersCount(this.sgroup) < 2 then
+					Cmd_Retreat(this.sgroup, Marker_GetPosition(mkr_mapEntry3), mkr_mapEntry3)
+				-- not attacking? go attack Able!
+				elseif SGroup_IsDoingAttack(this.sgroup, false, 5) == false then
+					--Cmd_Attack(this.sgroup, sg_p1_able)
+					
+					local l_randomoffset = Table_GetRandomItem({OFFSET_LEFT, OFFSET_RIGHT})
+					
+					if SGroup_IsEmpty(sg_p1_able) == false then
+						Cmd_AttackMove(this.sgroup, SGroup_GetOffsetPosition(sg_p1_able, l_randomoffset, 20), nil, nil, 5)
+					end
+				
+				elseif SGroup_IsUnderAttack(this.sgroup, ANY, 5) == true then
+					
+					local l_LastAttacker = SGroup_CreateIfNotFound("l_LastAttacker")
+				
+					SGroup_GetLastAttacker(this.sgroup, l_LastAttacker)
+					
+					-- ensures that last attacker is not nil, and if it exists, then attack it with current specific defender defined by table
+					if l_LastAttacker ~= nil and SGroup_IsEmpty(l_LastAttacker) == false then
+						
+						local l_GrenadeTossChance = World_GetRand(1, 4)
+						
+						if l_GrenadeTossChance == 4 then
+							
+							if SGroup_IsDoingAbility(this.sgroup, ABILITY.AXIS.GRENADE, ANY) == true then
+								
+							elseif SGroup_IsDoingAbility(this.sgroup, ABILITY.AXIS.GRENADE, ALL) == false then
+								
+								local l_LastAttacker = SGroup_CreateIfNotFound("l_LastAttacker")
+								
+								SGroup_GetLastAttacker(this.sgroup, l_LastAttacker)
+								
+								if l_LastAttacker ~= nil and SGroup_IsEmpty(l_LastAttacker) == false then
+									
+									Cmd_Ability(this.sgroup, ABILITY.AXIS.GRENADE, l_LastAttacker, nil,true)
+									
+								end	
+								
+							end
+							
+						else
+				
+							if SGroup_IsDoingAbility(this.sgroup, ABILITY.AXIS.GRENADE, ANY) == false then
+								
+								
+								if SGroup_IsMoving(this.sgroup, ANY) == false then
+									
+									local l_randomoffset = Table_GetRandomItem({OFFSET_LEFT, OFFSET_RIGHT})
+									--Cmd_AttackMove(this.sgroup, SGroup_GetOffsetPosition(sg_p1_able, l_randomoffset, 10), nil, nil, 5)
+									Cmd_Attack(this.sgroup, sg_p1_able, nil, false)
+								end
+								
+							end
+							
+						end
+					end
+				
+				end
+			end
+		end
+	end
+end
+
+
+------------------------------------------
+--[[ TAKING OUT THE CAUSEWAY ]]
+------------------------------------------
+
+function Chef_TrakRush()
+	if t_chef.MCdone == true or Prox_ArePlayersNearMarker(player1, mkr_causeway_East, false, 40) then
+		-- barrage attack
+		Rule_AddInterval(Chef_TR_ProxCheck, 3)
+		
+		Rule_RemoveMe()
+	end
+end
+
+function Chef_TR_ProxCheck()
+	if Prox_ArePlayersNearMarker(player1, mkr_causeway_East, false, 30) then
+		t_chef.prox30 = true
+		--Cmd_AttackMove(sg_chefAll, mkr_causeway_East, false, nil, 20)
+		-- remove UI 
+		Objective_RemoveUIElements(OBJ_Chef, OBJ_Chef.mapElementID)
+		OBJ_Chef.mapElementID = Objective_AddUIElements(OBJ_Chef, mkr_causeway_East, true)
+		
+		if SGroup_IsEmpty(sg_chefAll) == false then
+			-- ungarrison enemies first
+			Cmd_UngarrisonSquad(sg_chefAll, mkr_causeway_East)
+			Cmd_AttackMove(sg_chefAll, mkr_causeway_East, true, nil, 20)
+		end
+		
+		if SGroup_IsEmpty(sg_chef_trench) == false then
+			
+			-- ungarrison enemies first
+			
+			for k, v in pairs(t_chef.trenchdata) do
+				Cmd_UngarrisonSquad(v.sgroup, v.seconddest)
+			end
+			-- calls trench behaviour
+			Rule_AddInterval(Chef_TR_TrenchRetreat, 4)
+			
+		end
+
+		-- checks to see if sg_chef_MCall is still around (they could have gone to the manor and not found anyone there because the player had swung left)
+		if SGroup_IsEmpty(sg_chef_MCall) == false then
+			Cmd_AttackMove(sg_chef_MCall, mkr_causeway_East, true, nil, 20)
+		end
+		
+		Rule_AddInterval(Chef_TR_Kickoff, 1)
+		Rule_RemoveMe()
+	end
+end
+
+-- defines behaviour of trench dudes when they get called to rush the player
+function Chef_TR_TrenchRetreat()
+
+	if SGroup_IsEmpty(sg_chef_trench) == true then
+		Rule_RemoveMe()
+	else
+		for k, v in pairs(t_chef.trenchdata) do
+			if SGroup_IsEmpty(v.sgroup) == false and SGroup_IsRetreating(v.sgroup, ANY) == false then
+				if SGroup_TotalMembersCount(v.sgroup) <= 2 then
+					Cmd_Retreat(v.sgroup, Marker_GetPosition(mkr_mapEntry3), mkr_mapEntry3) 
+				end
+			end
+		end
+	end
+end
+
+
+function Chef_TR_Kickoff()
+	if SGroup_TotalMembersCount(sg_chefAll) <= 8 then
+		
+		Rule_AddInterval(Chef_TR_Start, 5)
+		Timer_Start(t_chef.trakTimer, t_chef.trakTime)
+		
+		--Rule_AddInterval(Chef_TR_MortarSupport, 10)
+		Rule_RemoveMe()
+	end
+end
+
+function Chef_TR_VolksSupport()
+	if t_chef.trakSpawn == true and SGroup_IsEmpty(sg_chef_trakAll) then
+		Rule_RemoveMe()
+	else
+		local done = true
+		for k, this in pairs(t_chef.TR) do 
+			if this.spawn ~= nil then
+				if SGroup_TotalMembersCount(sg_chefAll) <= this.limit then
+					LaFiere_CreateVolks(player3, this.sgroup, this.spawn)
+					LaFiere_MoveCover(this.sgroup, this.goto, 10)
+					SGroup_AddGroup(sg_chefAll, this.sgroup)
+					Modify_WeaponRange(this.sgroup, "hardpoint_01", .5)
+					Modify_WeaponAccuracy(this.sgroup, "hardpoint_01", .5)
+					-- CombatPlan_Add(this.sgroup, this.plan, sg_chefAttacker)
+					this.spawn = nil
+				end
+				done = false
+			end
+		end
+		if done == true then
+			t_chef.TRspawnDone = true
+			Rule_RemoveMe()
+		end
+	end
+end
+
+function Chef_TR_VolksTrack()
+	if (t_chef.TRspawnDone and SGroup_IsEmpty(sg_chefAll)) or Objective_IsFailed(OBJ_Chef) or Objective_IsComplete(OBJ_Chef) then
+		for k, this in pairs(t_chef.TR) do 
+			if SGroup_IsEmpty(this.sgroup) == false then
+				Cmd_Retreat(this.sgroup, Marker_GetPosition(mkr_mapEntry11), mkr_mapEntry11)
+			end
+		end
+		Rule_RemoveMe() 
+	else
+		for k, this in pairs(t_chef.TR) do 
+			if SGroup_IsEmpty(this.sgroup) == false then
+				if SGroup_IsMoving(this.sgroup, false) then
+					if SGroup_IsUnderAttack(this.sgroup, false, 5) or SGroup_IsDoingAttack(this.sgroup, false, 5) then
+						Cmd_Stop(this.sgroup)
+					end
+				else
+					if SGroup_IsDoingAttack(this.sgroup, false, 10) then
+						-- do nothing
+					elseif SGroup_IsUnderAttack(this.sgroup, false, 5) then
+						Cmd_Move(this.sgroup, this.sgroup, false, nil, nil, OFFSET_FRONT, World_GetRand(3, 8), 5)
+					elseif Prox_AreSquadsNearMarker(this.sgroup, mkr_causeway_East, false, 20) == false then
+						Cmd_Move(this.sgroup, mkr_causeway_East, 20)
+					else
+						Cmd_Attack(this.sgroup, sg_p1_able)
+					end
+				end
+			end
+		end
+	end
+end
+
+------------------------------------------
+--[[ TRAK MOTORCADE ]]
+------------------------------------------
+function Chef_TR_Start()
+	if Objective_IsFailed(OBJ_Chef) or Objective_IsComplete(OBJ_Chef) then
+		Rule_RemoveMe() 
+	elseif ( SGroup_IsDoingAttack(sg_p1_able, false, 10) == false and SGroup_IsDoingAttack(sg_p1_baker, false, 10) == false )
+	or math.floor(Timer_GetRemaining(t_chef.trakTimer)) <= 0 then
+		
+		Rule_AddDelayedIntervalEx(Chef_ActionCauqAttack, 7, 1, 3)
+		--Rule_AddInterval(Chef_ScareArty1, 1)
+		Rule_AddDelayedInterval(Chef_ScareArty1, 10, 1)
+		Rule_AddDelayedInterval(Chef_TR_Spot1, 10, 1)
+		
+		Rule_RemoveMe()
+	end
+end
+
+-------------------------------
+--[[ ALLIES GO RUNNING PAST ]]
+-------------------------------
+
+function Chef_TR_Spot1()
+	if Objective_IsFailed(OBJ_Chef) or Objective_IsComplete(OBJ_Chef) then
+		Rule_RemoveMe() 
+		
+	else
+		
+		local pos = World_GetHiddenPositionOnPath(player1, mkr_mapEntry11, mkr_dogSpawn, CHECK_OFFCAMERA)
+		
+		if pos == nil then
+			
+			pos = mkr_mapEntry11
+			
+		end
+		
+		Cmd_Ability(player3, ABILITY.SP.SINGLE_HOWITZER, Marker_GetPosition(mkr_artilleryspot9), nil, true) --this.target
+		
+		Util_CreateSquads(player2, sg_p2_dog, SBP.ALLIES.PARATROOPER, pos, mkr_chef_cover1, 1, 4, false, mkr_causewayEast)
+		SGroup_SnapFacePosition(sg_p2_dog, Marker_GetPosition(mkr_causeway_East) ) 
+		Cmd_Retreat(sg_p2_dog, Marker_GetPosition(mkr_chef_cover1)) 
+		
+		if SGroup_IsEmpty(sg_lost_amerAll) == false then
+			
+			Cmd_Retreat(sg_lost_amerAll, Marker_GetPosition(mkr_chef_stageR2)) 
+			Rule_AddDelayedInterval(Chef_ExtraTroopsDetect, 1, 1)
+			
+		end
+		
+		Game_Letterbox(true, 1)
+		Rule_AddOneShot(Chef_CameraFollowDelay, 1)
+		
+		
+		
+		
+		Cmd_Stop(sg_p1_able)
+		Cmd_Stop(sg_p1_baker)
+		SGroup_SetInvulnerable(sg_p1_able, false)
+		SGroup_SetInvulnerable(sg_p1_baker, false)
+		
+		Rule_AddInterval(Chef_TR_Spot2, 1)
+		Rule_RemoveMe() 
+	end
+end
+
+function Chef_CameraFollowDelay()
+
+	if SGroup_IsEmpty(sg_p2_dog) == false then
+		Camera_FollowSGroup(sg_p2_dog)
+		
+		-- panic message played depends on if medal troops are in Cauq
+		local paniclist = {t_chef.events.Panic1, t_chef.events.Panic2}
+		local panicnumber = 1
+		
+		if SGroup_IsEmpty(sg_lost_amerAll) == false then
+		
+			FOW_RevealMarker(mkr_CauqReveal, 15)
+		
+		end
+		
+		Util_AutoIntel(paniclist[panicnumber])
+		
+	end
+
+end
+
+
+-- checks to see if extra troops are within Chef area
+function Chef_ExtraTroopsDetect()
+
+	if SGroup_IsEmpty(sg_lost_amerAll) == true then
+	
+		Rule_RemoveMe()
+		
+	else
+		if Prox_MarkerSGroup(mkr_chefBoundary, sg_lost_amerAll, PROX_SHORTEST) <= 55 and SGroup_IsRetreating(sg_lost_amerAll, ALL) == false then
+			
+			Chef_ExtraTroopsDisperse()
+			Rule_RemoveMe()
+			
+		end
+		
+	end
+end
+
+
+-- to account for the player finding extra troops for the medal objective.  this function ensures that the individual squads 
+-- will take cover in different parts of Chef rather than in a cluster
+
+function Chef_ExtraTroopsDisperse()
+	
+	if SGroup_IsEmpty(sg_lost_amerAll) == false then
+		
+		local coverloc = {mkr_chef_stageR2, mkr_chef_nest6, mkr_chef_nest4, mkr_chef_stageL2}
+		local squadnum = 1
+		local _FindSpot = function(sgroupid, itemindex, squadID )
+			
+			Cmd_Move(sgroupid, coverloc[squadnum], nil, nil, nil, nil, nil, 5)
+			squadnum = squadnum + 1
+			
+		end	
+		
+		SGroup_ForEach(sg_lost_amerAll, _FindSpot)
+		
+	end
+
+end
+
+
+function Chef_TR_Spot2()
+	if Event_IsAnyRunning() == false then
+		Player_SetAbilityAvailability(player1, ABILITY.SP.LA_FIERE.ABLE_STICKY, ITEM_DEFAULT)
+		FlashStickyID = UI_FlashAbilityButton(ABILITY.SP.LA_FIERE.ABLE_STICKY, true, BT_UI_Strong_AbilityBtn)
+		--HintPoint_AddToAbilityButton(ABILITY.SP.LA_FIERE.ABLE_STICKY, 9419137, true)
+		Player_SetAbilityAvailability(player1, ABILITY.SP.LA_FIERE.BAKER_BUTTON, ITEM_DEFAULT)
+		FlashButtonID = UI_FlashAbilityButton(ABILITY.SP.LA_FIERE.BAKER_BUTTON, true, BT_UI_Strong_AbilityBtn)
+		--HintPoint_AddToAbilityButton(ABILITY.SP.LA_FIERE.BAKER_BUTTON, 9419136, true)
+		
+		Camera_FollowSGroup(sg_p1_able)
+		Util_AutoIntel(t_chef.events.Counter_Spot)
+		
+		Rule_AddInterval(Chef_TR_Spot3, 1)
+		
+		
+		Rule_AddInterval(Chef_TR_AbilityHintPoint, 1) -- added hintpoint text delay
+		Rule_AddInterval(Chef_TR_AbilityHintPoint2, 1) -- added hintpoint text delay
+		
+		
+		Rule_RemoveMe() 
+	end
+end
+
+function Chef_TR_Spot3()
+	if Event_IsAnyRunning() == false then
+		Game_Letterbox(false, 1)
+		
+		Rule_AddInterval(Chef_TR_Spawn, 12)
+		Rule_AddDelayedInterval(Chef_TR_RecoilessStartDelay, 12, 1)
+		Rule_AddInterval(Chef_TR_VolksSupport, 15)
+		Rule_AddInterval(Chef_TR_VolksTrack, 5)
+		
+		Objective_UpdateText(OBJ_Chef, 9419080, 9419181, true)
+		g_stayFlag = true
+		Rule_RemoveMe() 
+	end
+end
+
+
+
+function Chef_TR_AbilityHintPoint()
+	if SGroup_IsEmpty(sg_p1_baker) == false and SGroup_IsEmpty(sg_p1_able) == false and Misc_IsSGroupSelected(sg_p1_baker, ANY) and Misc_IsSGroupSelected(sg_p1_able, ANY) == false then
+		HintButtonID = HintPoint_AddToAbilityButton(ABILITY.SP.LA_FIERE.BAKER_BUTTON, 9419136, true) --9419132
+		
+		Rule_AddOneShot(Chef_TR_RemoveHintPoint, 10)
+		
+		Rule_RemoveMe()
+		
+	end
+	
+end	
+
+function Chef_TR_AbilityHintPoint2()
+	if SGroup_IsEmpty(sg_p1_baker) == false and SGroup_IsEmpty(sg_p1_able) == false and Misc_IsSGroupSelected(sg_p1_able, ANY) and Misc_IsSGroupSelected(sg_p1_baker, ANY) == false then
+		HintStickyID = HintPoint_AddToAbilityButton(ABILITY.SP.LA_FIERE.ABLE_STICKY, 9419137, true) --9419133
+		
+		Rule_AddOneShot(Chef_TR_RemoveHintPoint2, 10)
+		
+		Rule_RemoveMe()
+	end
+end
+
+
+function Chef_TR_RemoveHintPoint()
+
+	HintPoint_Remove(HintButtonID)
+	UI_StopFlashing(FlashButtonID)
+end
+
+function Chef_TR_RemoveHintPoint2()
+
+	HintPoint_Remove(HintStickyID)
+	UI_StopFlashing(FlashStickyID)
+
+end
+
+
+-------------------------------
+
+function Chef_TR_Spawn()
+	local done = true
+	for k, v in pairs(t_chef.vehicledata) do
+		
+		if v.spawned == false then
+		
+			if SGroup_IsEmpty(v.name) then
+			
+				local pos = World_GetHiddenPositionOnPath(player1, mkr_mapEntry11, mkr_chef_TRspawn, CHECK_IN_FOW)	
+				
+				if pos ~= nil then
+				
+					Util_CreateSquads(player3, v.name, v.vehicletype, pos, v.destination)
+					
+				else
+
+					Util_CreateSquads(player3, v.name, v.vehicletype, mkr_mapEntry11, v.destination)
+
+				end			
+				
+				SGroup_AddGroup(sg_chef_trakAll, v.name)
+				Modify_Vulnerability(v.name, 1.2)
+				Modify_UnitSpeed(v.name, .5)
+				
+				if SGroup_ContainsBlueprints(v.name, SBP.ELITE.ARMOURCAR_222, ANY) then
+				
+					Modify_WeaponAccuracy(v.name, "hardpoint_01", .75)
+				
+				end
+				
+				v.spawned = true
+				done = false
+				break		
+			end
+			
+		end
+	end
+
+	if done == true then
+		t_chef.trakSpawn = true
+		
+		Rule_RemoveMe() 
+	end
+	if Rule_Exists(Chef_TR_Track) == false then
+		Rule_AddInterval(Chef_TR_Track, 5)
+	end
+	
+
+	
+end
+
+
+function Chef_TR_RecoilessStartDelay()
+	
+	if SGroup_IsEmpty(sg_chef_trakAll) == false and Player_CanSeeSGroup(player1, sg_chef_trakAll, ANY) then
+		
+		ThreatArrow_CreateGroup(sg_chef_trakAll)
+		Util_AutoIntel(t_chef.events.Use_Recoilless)
+		Rule_AddDelayedInterval(Chef_TR_RecoillessHintPoint, 1, 1)
+		Rule_AddDelayedInterval(Chef_TR_HintOverTank, 1, 1)
+		Player_SetAbilityAvailability(player1, ABILITY.SP.LA_FIERE.DIRECT_FIRE_BAKER, ITEM_DEFAULT)
+		Player_SetAbilityAvailability(player1, ABILITY.SP.LA_FIERE.DIRECT_FIRE_BAKER_UPGRADE, ITEM_DEFAULT)
+		
+		Rule_RemoveMe()
+		
+	end
+end
+
+
+function Chef_TR_RecoillessHintPoint()
+
+	if SGroup_IsEmpty(sg_p1_baker) == false and Misc_IsSGroupSelected(sg_p1_baker, ANY) then
+		if Player_HasUpgrade(player1, UPG.SP.LA_FIERE.DOUBLE_RECOILESS) then
+			
+			RecoillessHintButtonID = HintPoint_AddToAbilityButton(ABILITY.SP.LA_FIERE.DIRECT_FIRE_BAKER_UPGRADE, 9419142, true) --9419132 9419230
+			RecoillessFlashButtonID = UI_FlashAbilityButton(ABILITY.SP.LA_FIERE.DIRECT_FIRE_BAKER_UPGRADE, true, BT_UI_Strong_AbilityBtn)
+			Rule_AddOneShot(Chef_TR_RemoveRecoilless, 10)
+			
+			
+		else
+		
+			RecoillessHintButtonID = HintPoint_AddToAbilityButton(ABILITY.SP.LA_FIERE.DIRECT_FIRE_BAKER, 9419142, true) --9419132 9419230
+			RecoillessFlashButtonID = UI_FlashAbilityButton(ABILITY.SP.LA_FIERE.DIRECT_FIRE_BAKER, true, BT_UI_Strong_AbilityBtn)
+			Rule_AddOneShot(Chef_TR_RemoveRecoilless, 10)
+			
+			
+		end
+		
+		Rule_RemoveMe()
+		
+	end
+
+end	
+
+
+function Chef_TR_RemoveRecoilless()
+	HintPoint_Remove(RecoillessHintButtonID)
+	UI_StopFlashing(RecoillessFlashButtonID)
+end
+
+function Chef_TR_HintOverTank()
+
+	for k, v in pairs(t_chef.vehicledata) do
+		
+		if SGroup_IsEmpty(v.name) == false and Player_CanSeeSGroup(player1, v.name, ANY) then
+			
+			RecoillessHintArrow = HintPoint_Add(v.name, true, 9419230)
+			
+			Rule_AddOneShot(Chef_TR_HintOverTankRemove, 10)
+			Rule_RemoveMe()
+			break
+		end
+		
+	end
+	
+end
+
+function Chef_TR_HintOverTankRemove()
+
+	HintPoint_Remove(RecoillessHintArrow)
+
+end
+
+
+function Chef_TR_Track()
+	if SGroup_IsEmpty(sg_chef_trakAll) or Objective_IsFailed(OBJ_Chef) or Objective_IsComplete(OBJ_Chef) then
+		Rule_RemoveMe() 
+	else
+		
+		for k, v in pairs(t_chef.vehicledata) do
+			if SGroup_IsEmpty(v.name) == false then
+				if SGroup_IsMoving(v.name, false) then
+					if SGroup_IsUnderAttack(v.name, false, 5) or SGroup_IsDoingAttack(v.name, false, 5) 
+					or SGroup_CanSeeSGroup(v.name, sg_p1_able, false) or SGroup_CanSeeSGroup(v.name, sg_p1_baker, false) then
+						Cmd_Stop(v.name)
+					end
+				else
+					--if SGroup_IsDoingAttack(v.name, false, 10) then
+						-- do nothing
+					if SGroup_IsUnderAttack(v.name, false, 5) then
+						
+						local l_LastAttacker = SGroup_CreateIfNotFound("l_LastAttacker")
+						SGroup_GetLastAttacker(v.name, l_LastAttacker)
+						-- checks to see if combat plan is being used. if not, then grab a random one
+						if CombatPlan_IsExecuting(v.plan) == false then
+						
+							if SGroup_ContainsBlueprints(v.name, SBP.ELITE.HOTCHKISS, ANY) == false then
+							
+								local l_randomattacktype = World_GetRand(1, 3)
+						
+								if l_randomattacktype == 1 then
+								
+									v.plan = CombatPlan_Add(v.name, COMBAT_PLAN.GENERIC.VEHICLE.FlankLeftFront, l_LastAttacker)
+							
+								elseif l_randomattacktype ==2 then
+								
+									v.plan = CombatPlan_Add(v.name, COMBAT_PLAN.GENERIC.VEHICLE.FlankRightFront, l_LastAttacker)
+								
+								elseif l_randomattacktype ==3 then
+							
+									v.plan = CombatPlan_Add(v.name, COMBAT_PLAN.GENERIC.VEHICLE.MaximizeRange, l_LastAttacker)
+						
+								end
+							else
+							
+								v.plan = CombatPlan_Add(v.name, COMBAT_PLAN.GENERIC.VEHICLE.MaximizeRange, l_LastAttacker)
+							
+							end
+								
+						end
+						
+					elseif Prox_AreSquadsNearMarker(v.name, mkr_causeway_East, false, 20) == false then
+					
+						Cmd_Move(v.name, mkr_causeway_East, 20)
+						
+					end
+				end
+			end
+		end
+	end
+end
+
+
+------------------------------------------
+--[[ SUPPORTING ACTION AND EVENTS ]]
+------------------------------------------
+
+-- cheat to suppress troops
+function Chef_SuppressWatch()
+	local sgroup = t_chef.suppressGroup
+	if table.getn(sgroup) == 0 then
+		Rule_RemoveMe()
+	else
+		for i = 1, table.getn(sgroup) do 
+			SGroup_GetLastAttacker(sgroup[i], sg_chefAttacker)
+			-- is baker attacking?
+			if t_chef.suppressed[i] ~= true and SGroup_IsEmpty(sg_chefAttacker) == false and SGroup_ContainsSGroup(sg_chefAttacker, sg_p1_baker, false) then
+				-- cheat and increase suppression
+				Modify_ReceivedSuppression(sgroup[i], 10)
+				t_chef.suppressed[i] = true
+				-- table.remove(t_chef.suppressGroup, i)
+				break
+			end
+		end
+	end
+end
+
+
+function Chef_OpelRetreat()
+
+	--local lt_sgrouptemp = t_chef.opeldata
+	if SGroup_IsEmpty(sg_chefAll) == true then
+		
+		Rule_RemoveMe()
+		
+	else
+		
+		if SGroup_IsUnderAttackByPlayer(sg_chefAll, player1, 5) and Player_CanSeePosition(player1, Marker_GetPosition(mkr_AxisPatrolArea)) then
+			
+			for i = 1, table.getn(t_chef.opeldata) do 
+				
+				if SGroup_IsEmpty(t_chef.opeldata[i].name) == false then
+					if t_chef.opeldata[i].fled == true then
+					
+					elseif t_chef.opeldata[i].fled == false then
+						
+						-- flee!
+						-- action here
+						Cmd_SquadPath(t_chef.opeldata[i].name, t_chef.opeldata[i].path, true, 0, false, 0, mkr_opelDisappears, true, nil)
+						
+						t_chef.opeldata[i].fled = true
+						
+						break -- break for next one
+					
+					end
+				end	
+			end
+		end	
+		
+	end
+
+end
+
+-- 1st squad of grens retreat
+function Chef_Action1_Retreat()
+	local sgroup = sg_chef_def[1]
+	if SGroup_IsEmpty(sgroup) then
+		Rule_RemoveMe()
+	elseif SGroup_TotalMembersCount(sgroup) < 3 then
+		Cmd_Ungarrison(sgroup, mkr_chef_nest2)
+		Cmd_Retreat(sgroup, Marker_GetPosition(mkr_chef_nest2))
+		Cmd_Garrison(sgroup, eg_chef_trench1, true, true)
+		Rule_RemoveMe()
+	end
+end
+
+-- call for help for the mortar
+function Chef_Action2_Support()
+	local sgroup1 = sg_chef_def[6]
+	local sgroup2 = sg_chef_def[10]
+	if SGroup_IsEmpty(sgroup1) then
+		Rule_RemoveMe()
+	elseif SGroup_IsUnderAttack(sgroup1, false, 5) then
+		LaFiere_CreateVolks(player3, sgroup2, mkr_mapEntry3)
+		LaFiere_MoveCover(sgroup2, SGroup_GetPosition(sgroup1), 10)
+		
+		Rule_RemoveMe()
+	end
+end
+
+function Chef_Action2_FollowUp()
+end
+
+-- call for help for the hmg near the bridge
+function Chef_Action3_Support()
+	local sgroup1 = sg_chef_def[7]
+	local sgroup2 = sg_chef_def[11]
+	local sgroup3 = sg_chef_def[9]
+	if SGroup_IsEmpty(sgroup1) then
+		Rule_RemoveMe()
+	elseif SGroup_IsUnderAttack(sgroup1, false, 5) then
+		if SGroup_IsEmpty(sgroup3) == false then
+			Cmd_Move(sgroup3, SGroup_GetPosition(sgroup1), NO_QUEUE, NIL_DELETE, NIL_FACE, NIL_OFFSET, NIL_DIST, 10)
+		else
+			Util_CreateSquads(player3, sgroup2, SBP.AXIS.GRENADIER, mkr_mapEntry3)
+			Cmd_Move(sgroup2, SGroup_GetPosition(sgroup1), NO_QUEUE, NIL_DELETE, NIL_FACE, NIL_OFFSET, NIL_DIST, 10)
+		end
+		Rule_RemoveMe()
+	end
+end
+
+-- call for help for the mortar
+function Chef_Action4_Support()
+	local sgroup1 = sg_chef_def[3]
+	local sgroup2 = sg_chef_def[12]
+	if SGroup_IsEmpty(sgroup1) then
+		Rule_RemoveMe()
+	elseif SGroup_IsUnderAttack(sgroup1, false, 5) then
+		Util_CreateSquads(player3, sgroup2, SBP.AXIS.GRENADIER, mkr_mapEntry3)
+		Cmd_Move(sgroup2, SGroup_GetPosition(sgroup1), NO_QUEUE, NIL_DELETE, NIL_FACE, NIL_OFFSET, NIL_DIST, 10)
+		Rule_RemoveMe()
+	end
+end
+
+
+-- call out the mortar
+function Chef_Action5_Warning()
+	local sgroup1 = sg_chef_def[6]
+	if SGroup_IsEmpty(sgroup1) then
+		Rule_RemoveMe()
+	elseif t_chef.MCdone and SGroup_IsDoingAttack(sgroup1, false, 5) then
+		Util_AutoIntel(t_chef.events.Mortar_Spot)
+		Rule_RemoveMe()
+	end
+end
+
+-- call out the sniper
+function Chef_Action6_Warning()
+	local sgroup1 = sg_chef_def[7]
+	if SGroup_IsEmpty(sgroup1) then
+		Rule_RemoveMe()
+	elseif SGroup_IsDoingAttack(sgroup1, false, 5) then
+		--Util_AutoIntel(t_chef.events.Sniper_Spot)
+		Rule_RemoveMe()
+	end
+end
+
+-- call out the HMG
+function Chef_Action7_Warning()
+	local sgroup1 = sg_chef_def[2]
+	if SGroup_IsEmpty(sgroup1) then
+		Rule_RemoveMe()
+	elseif SGroup_IsDoingAttack(sgroup1, false, 5) then
+		Util_AutoIntel(t_chef.events.HMG_Spot)
+		Rule_RemoveMe()
+	end
+end
+
+
+-- Causeway Watch
+-- DOES NOT REMOVE UNTIL THEY DIE
+function Chef_Action8_Causeway()
+	local sgroup1 = sg_chef_def[8]
+	if SGroup_IsEmpty(sgroup1) then
+		Rule_RemoveMe()
+	elseif t_chef.def8sight == nil then
+		t_chef.def8sight = Modify_SightRadius(sgroup1, 2)
+	elseif SGroup_IsUnderAttack(sgroup1, false, 5) or SGroup_IsDoingAttack(sgroup1, false, 5) then
+		SGroup_GetLastAttacker(sgroup1, sg_lastAttacker)
+		World_GetSquadsNearMarker(player1, sg_lastAttacker, mkr_causeway2, OT_Player)
+		World_GetSquadsNearMarker(player2, sg_lastAttacker, mkr_causeway2, OT_Player)
+		
+			if SGroup_IsEmpty(sg_lastAttacker) == false then
+				Cmd_Attack(sgroup1, sg_lastAttacker)
+			end
+		if t_chef.def8range == nil and t_chef.prox30 ~= true
+		and ( Prox_ArePlayersNearMarker(player1, mkr_causeway2, false, 60) or Prox_ArePlayersNearMarker(player2, mkr_causeway2, false, 60) ) then
+			-- attacking from there rear
+			--DLC2_Achievement(9419190) -- Unconventional Tactics: Attacking from the West
+			Modify_WeaponRange(sgroup1, "hardpoint_01", 1.5)
+			t_chef.def8range = true
+		end
+	end
+end
+
+
+----------------------------
+function Chef_ActionCauqAttack()
+
+	for k, this in pairs(t_chef.counterdata) do  
+		if SGroup_IsEmpty(this.sgroup) and this.appear ~= true then
+			if Player_CanSeePosition(player1, Marker_GetPosition(this.spawn)) == false then
+			
+				local pos = World_GetHiddenPositionOnPath(player1, this.spawn, this.dest, CHECK_OFFCAMERA)
+				if pos == nil then
+					pos = Marker_GetPosition(this.entry)
+				end
+				Util_CreateSquads(player3, this.sgroup, this.blueprint, pos, this.dest, 1, World_GetRand(4, 5))
+				Cmd_Ability(player3, ABILITY.SP.SINGLE_MORTAR_SMOKE, pos, nil, true)
+				
+			else
+				
+				Util_CreateSquads(player3, this.sgroup, this.blueprint, this.entry, this.dest, 1, World_GetRand(4, 5))
+				Cmd_Ability(player3, ABILITY.SP.SINGLE_MORTAR_SMOKE, Marker_GetPosition(this.entry), nil, true)
+				
+			end
+			this.appear = true
+			break
+		end
+	end
+end
+
+function Chef_ScareArty1()
+	
+	if Objective_IsFailed(OBJ_Chef) or Objective_IsComplete(OBJ_Chef) then
+		
+		Rule_RemoveMe()
+		
+	else
+		local done = true
+		for k,this in pairs(tmkr_randCauqArty) do
+			if this.shot ~= true then
+				Cmd_Ability(player3, ABILITY.SP.SINGLE_HOWITZER, Util_GetRandomPosition(Table_GetRandomItem(tmkr_randCauqArty), 3), nil, true) --this.target
+				this.shot = true
+				done = false
+				break
+			end
+		end
+		if done == true then 
+			Rule_RemoveMe() 
+			
+		end
+	end
+end
+

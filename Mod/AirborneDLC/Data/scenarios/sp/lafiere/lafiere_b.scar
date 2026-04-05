@@ -1,0 +1,738 @@
+-------------------------------------------------------------------------
+-------------------------------------------------------------------------
+
+-- La Fiere B: Holding the Causeway
+
+-------------------------------------------------------------------------
+-------------------------------------------------------------------------
+
+import("ScarUtil.scar")
+import("DLC2Import.scar")
+import("LaFiere_AIScavenger.scar")   -- *** NOTE this file must be imported before objective, to ensure that preset units are not managed by the AI Scavenger
+
+import("LaFiere_B/LaFiere_B_Defend.scar")
+import("LaFiere_B/LaFiere_B_TankA.scar")
+import("LaFiere_B/LaFiere_B_Rally.scar")
+import("LaFiere_B/LaFiere_B_TankB.scar")
+import("LaFiere_B/LaFiere_B_Medal.scar")
+import("LaFiere_Casualty_Mechanics.scar")
+import("LaFiere_Danger_Sense_Mechanics.scar")
+import("DLC2RPGTracker.scar") 
+import("LaFiere_Bounty.scar")
+
+
+-------------------------------------------------------------------------
+
+-- [[ SETUP ]]
+
+-------------------------------------------------------------------------
+
+function OnGameSetup()
+	-- string numbers should reference dat files
+	-- "allies_commonwealth" "allies" "axis" "axis_panzer_elite"
+	player1 = Setup_Player(1, 9419750, "allies", 1)
+	player2 = Setup_Player(2, 9419755, "allies", 1)
+	player3 = Setup_Player(3, 9419760, "axis", 2)
+	player4 = Setup_Player(4, 9419766, "allies", 1)
+	
+	-- AI slot (ensure that the AI is on the same team as the other Axis player by setting the second parameter
+--~  	player3 = Setup_Player(3, "$000000", "Axis Infantry Company", 2)
+end
+
+function OnGameRestore()
+	player1 = World_GetPlayerAt(1)
+	player2 = World_GetPlayerAt(2)
+	player3 = World_GetPlayerAt(3)
+	player4 = World_GetPlayerAt(4)
+	
+	-- function takes care of restoring all global mission parameters after a save/load
+	Game_DefaultGameRestore()
+end
+
+-------------------------------------------------------------------------
+
+-- [[ ONINIT ]]
+
+-------------------------------------------------------------------------
+
+function OnInit()
+	
+	-- a constant that stores the mission number for use with
+	-- setting the global speech paths, tech tree setup, and 
+	-- the player's starting resources
+	MISSION_NUMBER = 0402
+	
+	--[[ PRESET GAME STATE ]]
+	Setup_MissionPreset(MISSION_NUMBER)
+	
+	--[[ PRESET DEBUG CONDITIONS ]]
+	if Misc_IsCommandLineOptionSet("mayo") then
+		Causeway_Debug()
+	end
+	
+	--[[ MOD INITIAL STATS ]]
+	Causeway_ModifyStats()
+	
+	--[[ SET RESTRICTIONS ]]
+	Causeway_Restrictions()
+	
+	--[[ SET AI ]]
+	Causeway_CpuInit()
+	
+	--[[ SET DIFFICULTY ]]
+	Causeway_Difficulty()
+	
+	--[[ MISSION PRESETS ]]
+	Causeway_MissionPreset()
+	
+	--[[ GAME START CHECK ]]
+	Rule_Add(Causeway_MissionStart)
+
+end
+
+Scar_AddInit(OnInit)
+
+function Causeway_Debug()
+	
+	-- looks for the command line option [-debug]
+	if Misc_IsCommandLineOptionSet("debug") then
+		
+		g_debug = true
+		
+		-- reveal FOW
+		FOW_Enable(false)
+		
+	end
+	
+		-- set up bindings for NISes
+ 		Scar_DebugConsoleExecute("bind([[ALT+2]], [[Scar_DoString('Util_StartNIS(LaFiereB_NIS)')]])")
+		--Scar_DebugConsoleExecute("bind([[ALT+2]], [[Scar_DoString('Util_StartNIS(LaFiereB_MID_NIS_Debug)')]])")
+		Scar_DebugConsoleExecute("bind([[ALT+1]], [[Scar_DoString('Util_StartNIS(LaFiereB_MID_NIS)')]])")
+
+	
+end
+
+function Causeway_ModifyStats()
+	
+	--[[ saved as example - deg
+	Player_SetDefaultSquadMoodMode(player1, MM_Auto)
+	Player_SetDefaultSquadMoodMode(player2, MM_Auto)
+	Player_SetDefaultSquadMoodMode(player3, MM_ForceTense)
+	
+	-- shorten vision ranges
+	Modify_PlayerSightRadius(player1, 0.75)
+
+	-- mod resource rates
+	t_player1_res_mods= {}
+	t_player1_res_mods[1] = Modify_PlayerResourceRate(player1, RT_Manpower, 2)
+	t_player1_res_mods[2] = Modify_PlayerResourceRate(player1, RT_Munition, 2)
+	t_player1_res_mods[3] = Modify_PlayerResourceRate(player1, RT_Fuel, 1)
+	
+	]]	
+	
+end
+
+function Causeway_Restrictions()
+
+	--[[ UN/RESTRICT UPGRADES ]]
+	Cmd_InstantUpgrade(player1, UPG.ALLIES.STICKY_BOMB)
+	
+	
+	--[[ RESOURCES ]]
+	Player_SetResource(player1, RT_Manpower, 0)
+	Player_SetResource(player1, RT_Munition, 200)
+	--Player_SetResource(player1, RT_Fuel, 200)
+	
+	
+	--[[ UN/RESTRICT ABILITIES 	]]
+	Player_SetAbilityAvailability(player1, ABILITY.ALLIES.GRENADE, ITEM_UNLOCKED)
+	Player_SetAbilityAvailability(player1, ABILITY.ALLIES.SATCHEL_CHARGE, ITEM_REMOVED)
+	Player_SetUpgradeAvailability(player1, UPG.ALLIES.CONVERT_AMBIENT_BUILDING, ITEM_REMOVED)
+	Player_SetUpgradeAvailability(player1, UPG.ALLIES.ENGINEER_FLAMETHROWER, ITEM_REMOVED)
+	Player_SetUpgradeAvailability(player1, UPG.ALLIES.ENGINEER_MINESWEEPER, ITEM_REMOVED)
+	Player_SetConstructionMenuAvailability(player1, TYPE.CONSTRUCT.ALLIES.ENGINEER_ADVANCED, ITEM_REMOVED)
+	--Player_SetConstructionMenuAvailability(player1, TYPE.CONSTRUCT.ALLIES.ENGINEER_BASIC, ITEM_REMOVED)
+	Player_SetAbilityAvailability(player3, ABILITY.AXIS.GRENADE, ITEM_UNLOCKED)
+
+	
+	-- UN/RESTRICT POP CAP
+	Player_SetPopCapOverride(player1, 17)
+
+	--[[ UN/RESTRICT UI 
+	UI_BindingSetEnabled("company_commander", false)
+	UI_BindingSetEnabled("squadcap", false)
+	]]
+	
+	--[[ UN/RESTRICT SBPS 
+	local sbps = {SBP.ALLIES_SHERMAN, SBP.ALLIES_CROCODILE, SBP.ALLIES_GREYHOUN, SBP.ALLIES_PERSHING }
+	for i = 1, table.getn(sbps) do
+		Player_SetSquadProductionAvailability(player1, sbps[i], ITEM_LOCKED)
+	end
+	]]
+	--[[ UN/RESTRICT EBPS ]]
+	local ebps = {EBP.ALLIES.ARMORY, EBP.ALLIES.BARRACKS, EBP.ALLIES.MEDIC_STATION, EBP.ALLIES.MG_NEST, EBP.ALLIES.MOTORPOOL, EBP.ALLIES.OBSERVATION_POST,
+	EBP.ALLIES.QUARTER_MASTER, EBP.ALLIES.TANK_DEPOT, EBP.ALLIES.TRIAGE, EBP.ALLIES.TANK_TRAP }
+	for i = 1, #(ebps) do
+		Player_SetEntityProductionAvailability(player1, ebps[i], ITEM_REMOVED)
+	end
+	
+end
+
+
+
+function Causeway_CpuInit()
+
+	--[[ left as an example
+	
+	-- set up Player3 AI  
+	Util_AI_Setup(player3, {Util_DifVar({10, 15, 20, 30}), 5}, player3, Game_GetSPDifficulty(), 7, Util_DifVar({1, 2, 3, 5}), 2, 3)
+	
+	-- Set up AI's resources
+	Player_SetResource(player3, RT_Manpower, 1000)
+	Player_SetResource(player3, RT_Munition, 100)
+	Player_SetResource(player3, RT_Fuel, 100)
+	
+	-- tell AI to go after strongest threat instead of the weakest
+	AI_DoString( player3, "s_personality.attack_prefer_threat = true" )
+	AI_DoString( player3, "s_personality.defend_prefer_threat = true" )
+
+	-- tell AI not to "defend" territories outside of the ring around its base
+	AI_EnableComponent(player3, false, COMPONENT_ForwardDefending)
+	
+	-- disable use of comapny commander menu and abilities
+	AI_DoString( player3, "s_commandtree_enabled = false" )
+	AI_DoString( player3, "s_playerabilities_enabled = false" )
+	
+	AI_EnableComponent(player3, false, COMPONENT_Attacking)
+	
+	]]
+
+end
+
+
+
+function Causeway_Difficulty()
+
+	--[[ left as an example 
+	
+	-- get the difficulty
+	g_difficulty = Game_GetSPDifficulty()  -- set a global difficulty variable
+	print("********* DIFFICULTY: "..g_difficulty)
+	
+	-- set health bonus for player 1
+	Setup_Difficulty(player1, g_difficulty) -- pass the player and difficulty global variable into the Set Health function
+	Setup_Difficulty(player2, g_difficulty) -- do it for each player that you have defined
+	
+	t_difficulty = {
+		base_def_spawn 			= Util_DifVar( {2*60, 1.5*60, 1*60, 0.75*60} ),
+	}
+	
+	]]
+	
+end
+
+
+-------------------------------------------------------------------------
+
+-- MISSION Preset 
+
+-------------------------------------------------------------------------
+
+function Causeway_MissionPreset()
+	
+	EGroup_SetInvulnerable(eg_bridge, 0.5) -- bridge is now invulnerable at 50% health
+	
+	-- hide this for mission C 
+	-- the barricades for Braecourt event 
+	sg_p1cleanup = SGroup_CreateIfNotFound("sg_p1cleanup")
+	sg_p3cleanup = SGroup_CreateIfNotFound("sg_p3cleanup")
+	sg_p1_overgroup = SGroup_CreateIfNotFound("sg_p1_overgroup")
+	
+	eg_chef3 = EGroup_CreateIfNotFound("eg_chef3")
+	
+	g_ableVulModID = false
+	g_bakerVulModID = false
+	g_ableVulModAdded = false
+	g_bakerVulModAdded = false
+	g_retreatAnnounced = false
+	g_failFlag = false
+	if EGroup_IsEmpty(eg_retreat_point) == false then
+		EGroup_DestroyAllEntities(eg_retreat_point)
+	end
+	
+	
+	if EGroup_IsEmpty(eg_chef3) == false then
+	
+		EGroup_Kill(eg_chef3)
+	
+	end
+	
+	Util_CreateEntities(player1, eg_retreat_point, EBP.SP.LA_FIERE.RETREAT_POINT, mkr_cauq1, 1)
+	
+	local egroup = {eg_brae1_barricade}
+	for i = 1, #(egroup) do 
+		if EGroup_IsEmpty(egroup[i]) == false and EGroup_CountSpawned(egroup[i]) > 0 then
+			EGroup_DeSpawn(egroup[i])
+		end
+	end
+	
+	-- if areas of your script need to be kicked off early
+	local control = {eg_control_east, eg_control_west, eg_control_manor}
+	for i = 1, 3 do 
+		if EGroup_IsCapturedByPlayer(control[i], player1, true) == false then
+			EGroup_InstantCaptureStrategicPoint(control[i], player1)
+		end
+	end
+	
+	-- Opels
+	if SGroup_IsEmpty(sg_mudOpelAll) == false then
+		SGroup_DestroyAllSquads(sg_mudOpelAll) 
+	end
+	
+	-- fix camera
+	Camera_SetDefault(30, 43, -123) --108
+	Camera_ResetToDefault()
+	
+	--[[ LOAD NIS FILES ]]
+	NIS02 = "sp/LaFiere/NIS/N02_02"
+	nis_load(NIS02)
+
+	
+	NIS01 = "sp/LaFiere/NIS/N02_01"
+	nis_load(NIS01)
+	
+	if SGroup_IsEmpty(sg_p1_baker) == false then
+		
+		SGroup_AddGroup(sg_p1_overgroup, sg_p1_baker)
+		
+	end
+		
+	if SGroup_IsEmpty(sg_p1_able) == false then
+		
+		SGroup_AddGroup(sg_p1_overgroup, sg_p1_able)
+		
+	end
+	
+	RPGTracker_SetSGroup(sg_p1_overgroup) 
+	
+	RPGTracker_UpdateCommandPointLimit()
+	
+	
+	if IsCounterattackMission() == false then
+		
+		Player_AddResource(player1, RT_Command, 2)
+		
+		if g_commandPointLimit ~= nil then
+			
+			g_commandPointLimit = g_commandPointLimit + 2
+			
+		end
+		
+	end
+	
+end
+
+LaFiereB_NIS = function()
+
+	Game_FadeToBlack(FADE_IN, 1)
+	Game_Letterbox(true, 0)
+	CTRL.Scar_PlayNIS(NIS02)
+	CTRL.WAIT()
+
+end
+
+LaFiereB_MID_NIS = function()
+
+	Game_FadeToBlack(FADE_IN, 1)
+	Game_Letterbox(true, 0)
+	CTRL.Scar_PlayNIS(NIS01)
+	CTRL.WAIT()
+
+
+end
+
+
+LaFiereB_MID_NIS_Debug = function()
+	
+	local debugNISsgroup = SGroup_CreateIfNotFound("debugNISsgroup")
+	Player_GetAll(player1, debugNISsgroup)
+	Util_ClearWrecksFromMarker(mkr_cauq2)
+	SGroup_Hide(debugNISsgroup, true)
+	Cmd_Stop(debugNISsgroup)
+	--Rule_RemoveAll()
+	Game_FadeToBlack(FADE_IN, 1)
+	Game_Letterbox(true, 0)
+	CTRL.Scar_PlayNIS(NIS01)
+	CTRL.WAIT()
+
+end
+
+
+-------------------------------------------------------------------------
+
+-- MISSION START 
+
+-------------------------------------------------------------------------
+
+function Causeway_MissionStart()
+
+	if Event_IsAnyRunning() == false then
+		
+		Game_FadeToBlack(FADE_IN, 1.5)
+		-- delay first objective
+		Rule_AddOneShot(Causeway_DelayObjTitle, 5)
+		Camera_FocusOnPosition(Marker_GetPosition(mkr_chef_stageL2), false) --mkr_causeway_East
+		Rule_AddInterval(Causeway_ObjTrack, 5)
+		Rule_AddOneShot(Casualty_Preset, 10)		
+		if SGroup_IsEmpty(sg_p1_baker) == false then
+			Danger_RPGMechanics_KickOff(sg_p1_baker)
+		end
+		SGroup_SetCrushable(sg_p1_able, false)
+		SGroup_SetCrushable(sg_p1_baker, false)
+		Rule_RemoveMe()
+	end
+end
+
+function Causeway_DelayObjTitle()
+ 	Objective_Start(OBJ_Defend)
+	Sound_PlayMusic("Music/DLC/Causeway/LaFiere_B/LFB_Set_up_Defenses.bsc",2,0)
+ 	--Objective_Start(OBJ_TankA)
+end
+
+function LaFiere_MissionEnd()
+	if Event_IsAnyRunning() == false then
+		
+		if g_debug ~= true then
+			Game_FadeToBlack(FADE_OUT, 1)
+			Rule_AddInterval(Causeway_DelayNIS, 1)
+			Rule_RemoveMe()
+		elseif g_debug == false then
+			Causeway_DelayNIS()
+			Rule_RemoveMe()
+		end
+		return
+	end
+end
+
+-- lets the Fade to Black happen
+function Causeway_DelayNIS()
+	if Event_IsAnyRunning() == false then
+		Util_StartNIS(LaFiereB_NIS)
+		
+		Rule_AddInterval(Causeway_PostEndNIS, 1)
+		Rule_RemoveMe()
+	end
+end
+
+
+function Causeway_PostEndNIS()
+	if Event_IsAnyRunning() == false then
+		--Game_ScreenFade(0,0,0,0,2)
+		RPGTracker_SaveXP()
+		Game_EndSP(true, 9429170) -- As D+1 comes to an end, the men of the 505th Airborne join up with the 507th and dig in for the night
+		Player_GetAll(player3, sg_p3cleanup)
+		Player_GetAll(player1, sg_p1cleanup)
+		
+		Rule_RemoveMe()
+	end
+end
+
+
+
+function Causeway_ObjTrack()
+	
+	-- Transition from 'Defend' to 'TankA'
+	if Objective_IsComplete(OBJ_Defend) and Objective_IsStarted(OBJ_TankA) == false then-- start the 2nd objective
+		Objective_Start(OBJ_TankA)
+		return
+	end
+	
+	-- Transition from 'Tank A' to 'Rally'
+	if Objective_IsComplete(OBJ_TankA) and Objective_IsStarted(OBJ_Rally) == false then-- start the 3rd objective
+		Objective_Start(OBJ_Rally)
+		--Objective_Start(OBJ_TankKills)
+		Sound_PlayMusic("Music/DLC/Causeway/LaFiere_B/lfb_defend.bsc",2,0)
+		return
+	end
+	
+	-- Transition from 'Rally' to 'TankB'
+	if Objective_IsComplete(OBJ_Rally) and Objective_IsStarted(OBJ_TankB) == false then-- start the 3rd objective
+		Objective_Start(OBJ_TankB)
+		return
+	end
+	
+	if Objective_IsComplete(OBJ_TankB) then
+	
+		if Objective_IsStarted(OBJ_AbleAndBakerSurvive) == false then
+		
+		-- need delay or won't work?
+		Objective_Start(OBJ_AbleAndBakerSurvive, false)
+		Rule_AddOneShot(LaFiere_AbleAndBakerSurviveComplete, 1)
+		
+		elseif Objective_IsStarted(OBJ_AbleAndBakerSurvive) == true then
+		
+			Objective_Complete(OBJ_AbleAndBakerSurvive, false)
+		end
+		
+		Rule_AddInterval(LaFiere_MissionEnd,1)
+		
+		Rule_RemoveMe()
+		
+	end
+	
+	--[[	]]
+	if Objective_IsFailed(OBJ_Defend) or Objective_IsFailed(OBJ_TankA) or Objective_IsFailed(OBJ_Rally) or Objective_IsFailed(OBJ_TankB) then
+		
+		local failString = 9429190 --("Mission Failed")
+		g_failFlag = true
+		Game_EndSP(false, failString)
+		return
+		
+	else	
+		
+		if Objective_IsFailed(OBJ_AbleAndBakerSurvive) == true then
+			local failString = 9429190 --("Mission Failed")
+			if SGroup_IsEmpty(sg_p1_able) then
+				failString = 9419650 --("Mission Failed: Able Company Lost")
+			elseif SGroup_IsEmpty(sg_p1_baker) then
+				failString = 9419660 --("Mission Failed: Baker Company Lost")
+			end
+			g_failFlag = true
+			Game_EndSP(false, failString)
+			return
+		end
+	end
+end
+
+
+function LaFiere_AbleAndBakerSurviveComplete()
+	
+	Objective_Complete(OBJ_AbleAndBakerSurvive, false)
+end
+
+-- sets up biases for the two squads to be used any time they are created
+function LaFiere_CompanyBias(sgroup, range, sight, suppression, vulnerability, damage)
+	Modify_WeaponRange(sgroup, "hardpoint_01", range)
+	Modify_SightRadius(sgroup, sight)
+	Modify_ReceivedSuppression(sgroup, suppression)
+	Modify_Vulnerability(sgroup, vulnerability)
+	Modify_ReceivedDamage(sgroup, damage)
+end
+
+
+function LaFiere_CreateVolks(player, sgroup, spawn)
+	Util_CreateSquads( player, sgroup, SBP.AXIS.VOLKSGRENADIER, spawn, destination, numsquads, loadout, attackmove, dest_facing, upgrades, spawn_facing )
+end
+
+function LaFiere_CreateGren(player, sgroup, spawn)
+	Util_CreateSquads( player, sgroup, SBP.AXIS.GRENADIER, spawn, destination, numsquads, loadout, attackmove, dest_facing, upgrades, spawn_facing )
+end
+
+function LaFiere_CreateMortar(player, sgroup, spawn)
+	Util_CreateSquads( player, sgroup, SBP.AXIS.MORTAR, spawn, destination, numsquads, loadout, attackmove, dest_facing, upgrades, spawn_facing )
+	SGroup_SetTeamWeaponCapturable(sgroup, false)
+end
+
+function LaFiere_CreateSniper(player, sgroup, spawn)
+	Util_CreateSquads( player, sgroup, SBP.AXIS.SNIPER, spawn, destination, numsquads, loadout, attackmove, dest_facing, upgrades, spawn_facing )
+end
+
+function LaFiere_MoveCover(sgroup, pos, cover)
+	Cmd_Move(sgroup, pos, NO_QUEUE, NIL_DELETE, NIL_FACE, NIL_OFFSET, NIL_DIST, cover)
+end
+
+
+function LaFiere_LogSyncW(sgroup)
+	if _KillSyncW == nil then
+		_KillSyncW = {}
+	end
+	local syncw = false
+	if SGroup_IsEmpty(sgroup) == false then
+		syncw = SyncWeapon_GetFromSGroup(sgroup)
+	end
+	if syncw ~= nil and syncw ~= false then
+		table.insert(_KillSyncW, syncw)
+		
+		if Rule_Exists(LaFiere_KillSyncW) == false then
+			Rule_AddInterval(LaFiere_KillSyncW, 1)
+		end
+	end
+end
+
+function LaFiere_KillSyncW()
+	local count = table.getn(_KillSyncW)
+	if count > 0 then
+		for i = count, 1, -1 do 
+			local syncw = _KillSyncW[i]
+			if SyncWeapon_IsOwnedByPlayer(syncw, nil) then
+				local entity = SyncWeapon_GetEntity(syncw)
+				local egroup = EGroup_CreateIfNotFound("eg_killentity"..i)
+				EGroup_Add(egroup, entity)
+				EGroup_Kill(egroup)
+				table.remove(_KillSyncW, i)
+			end
+		end
+	end	
+end
+
+
+
+
+-------------------------------------------------------------------------
+-- Able and Baker Must Survive
+-------------------------------------------------------------------------
+-- This objective is for Able and Baker to survive.  If either squad is 
+-- down to 2 people, then this objective will kick in.
+-------------------------------------------------------------------------
+function Initialize_OBJ_AbleAndBakerSurvive()
+
+	OBJ_AbleAndBakerSurvive = {
+		
+		SetupUI = function() 
+			
+		end,
+		
+		OnStart = function()
+			
+			-- win/lose check
+			
+			
+			-- start related action
+			--Practice_Kickoff()
+			-- EncounterName_Kickoff()
+			
+		end,
+		
+		OnComplete = function()
+			
+			-- tell the player they did good
+			
+		end,
+		
+		IsComplete = function()
+			return false
+		end,
+		
+		OnFail = function()
+			
+			-- tell the player they lost
+			
+		end,
+		
+		Title = 9419032, -- "Keep Able Squad And Baker Squad Alive"
+		Description = 9419033, -- "Able and Baker Squad must be kept alive in order to successfully complete the mission."
+		TitleEnd = 9419034, -- "Able and Baker Kept Alive"
+		Type = OT_Primary,
+		
+--~ 		SitRep = {}, -- only needed once the SitRep is created and there are lines of dialogue.
+	}
+	
+	-- Register Objective
+	Objective_Register(OBJ_AbleAndBakerSurvive)
+	
+	-- Initialize Data
+	--AbleAndBakerSurvive_Init()
+	
+end
+
+Scar_AddInit(Initialize_OBJ_AbleAndBakerSurvive)
+
+
+
+
+
+------------------------------------
+-- Able and Baker Survival Objective
+------------------------------------
+
+function AbleBakerSurvivalStartCheck()
+
+	if Objective_IsStarted(OBJ_AbleAndBakerSurvive) then
+		
+		Rule_RemoveMe()
+		
+	else
+		
+		if SGroup_IsEmpty(sg_p1_able) == false and SGroup_TotalMembersCount(sg_p1_able) <= 2 then
+			
+			Objective_Start(OBJ_AbleAndBakerSurvive)
+			
+			Rule_Add(AbleBakerSurvivalCountCheck)
+			
+			Rule_RemoveMe()
+			
+		elseif SGroup_IsEmpty(sg_p1_baker) == false and SGroup_TotalMembersCount(sg_p1_baker) <= 2 then
+			
+			Objective_Start(OBJ_AbleAndBakerSurvive)
+			
+			Rule_Add(AbleBakerSurvivalCountCheck)
+			
+			Rule_RemoveMe()
+			
+		elseif SGroup_IsEmpty(sg_p1_able) == true or SGroup_IsEmpty(sg_p1_baker) == true then
+			
+			Objective_Fail(OBJ_AbleAndBakerSurvive)
+			
+		end
+		
+	end
+	
+end
+
+
+function AbleBakerSurvivalCountCheck()
+
+	if Objective_IsFailed(OBJ_AbleAndBakerSurvive) or Objective_IsComplete(OBJ_AbleAndBakerSurvive) or Objective_IsComplete(OBJ_TankB) then
+		
+		Rule_RemoveMe()
+		
+	else
+		
+		if SGroup_IsEmpty(sg_p1_able) == true or SGroup_IsEmpty(sg_p1_baker) == true then
+		
+			Objective_Fail(OBJ_AbleAndBakerSurvive)
+			
+			Rule_RemoveMe()
+			
+		end
+		
+	end
+
+end
+
+
+-- makes sure that able and baker get tougher once squad gets down to 1, then returns back to normal when it's > or = to 2
+function AbleBakerSurvivalMod()
+	-- if last objective is complete then remove
+	if Objective_IsComplete(OBJ_TankB) then
+		
+		Rule_RemoveMe()
+		
+	else
+		
+		if SGroup_IsEmpty(sg_p1_able) == false and SGroup_TotalMembersCount(sg_p1_able) < 2 and g_ableVulModAdded == false then
+			
+			g_ableVulModID = Modify_Vulnerability(sg_p1_able, 0.3)
+			g_ableVulModAdded = true
+			
+		elseif SGroup_IsEmpty(sg_p1_able) == false and SGroup_TotalMembersCount(sg_p1_able) >= 2 and g_ableVulModAdded == true then
+			
+			Modifier_Remove(g_ableVulModID)
+			g_ableVulModAdded = false
+			
+		end
+		
+		if SGroup_IsEmpty(sg_p1_baker) == false and SGroup_TotalMembersCount(sg_p1_baker) < 2 and g_bakerVulModAdded == false then
+			
+			g_bakerVulModID = Modify_Vulnerability(sg_p1_baker, 0.3)
+			g_bakerVulModAdded = true
+			
+		elseif SGroup_IsEmpty(sg_p1_baker) == false and SGroup_TotalMembersCount(sg_p1_baker) >= 2 and g_bakerVulModAdded == true then
+			
+			Modifier_Remove(g_bakerVulModID)
+			g_bakerVulModAdded = false
+			
+		end
+	end
+	
+end

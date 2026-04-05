@@ -1,0 +1,1306 @@
+-------------------------------------------------------------------------
+-- Protect Panzers
+-------------------------------------------------------------------------
+-- Short descriptive name of what the player is cht_eventsed to do
+-- give a brief description of win conditions and loose conditions if any 
+-- also describe the kind of challenges the player will face
+-------------------------------------------------------------------------
+function Initialize_OBJ_Panzers()
+
+	OBJ_Panzers = {
+		
+		SetupUI = function() 
+			-- mark a point or position
+			-- OBJ_Panzers.mapElementID = Objective_AddUIElements(OBJ_Panzers, mkr_marker, true, 000000, true)
+			Objective_SetAlwaysShowDetails(OBJ_Panzers, true, true, true)
+		end,
+		
+		OnStart = function()
+			-- because of the mid-mission sitrep 
+			if t_panzers.started ~= true then
+				t_panzers.started = true
+				-- announce the goal
+				-- Util_AutoIntel(t_panzers.events.Start)
+				
+				-- win/lose check
+				Rule_AddInterval(Panzers_Rule_WinCheck, 5)
+				
+				-- start related action
+				Panzers_Kickoff()
+				-- EncounterName_Kickoff()
+			end
+		end,
+		
+		OnComplete = function()
+			
+			-- tell the player they did good
+			
+		end,
+		
+		IsComplete = function()
+			return false
+		end,
+		
+		OnFail = function()
+			
+			-- tell the player they lost
+			
+		end,
+		
+		Title = 9394516,
+		Description = 9394517,
+		TitleEnd = 9394518,
+		Type = OT_Primary,
+		
+		SitRep_DoNotGrantYet = {
+			Movie = "SR_Trun_A",
+			Force = true,
+			--[[]]SpeechTiming =
+			{
+				{ 1,	ACTOR.TRUN.Funke, 9390520 },
+				{ 3,	ACTOR.TRUN.Funke, 9390530 },
+				{ 5,	ACTOR.TRUN.Funke, 9390531 },
+				{ 8,	ACTOR.TRUN.Funke, 9390540 },
+			},
+			
+			PrologueEvent = function()
+				
+			end,
+			
+			EpilogueEvent = function()
+				
+			end,
+			
+		},
+	}
+	
+	-- Register Objective
+	Objective_Register(OBJ_Panzers)
+	
+	-- Initialize Data
+	Panzers_Init()
+	
+end
+
+Scar_AddInit(Initialize_OBJ_Panzers)
+
+-------------------------------------------------------------------------
+-- Objective Name - Functions 
+-------------------------------------------------------------------------
+
+-- 'Init()' is used to initialize the Obj data
+-- anything that needs to be there for the Obj to work
+-- does not need to be called at 'OnInit()'
+function Panzers_Init()
+
+	-- define sgroups, egroups, etc associated with this obj
+	sg_panzers_A = SGroup_CreateTable("sg_panzers_A%d", 5)
+	sg_panzers_B = SGroup_CreateTable("sg_panzers_B%d", 5)
+	sg_panzersA_All = SGroup_CreateIfNotFound("sg_panzersA_All")
+	sg_panzersB_All = SGroup_CreateIfNotFound("sg_panzersB_All")
+	sg_panzers_lead = SGroup_CreateIfNotFound("sg_panzers_lead")
+	-- phase I
+	sg_p4_all = SGroup_CreateIfNotFound("sg_p4_all")
+	sg_p1_all = SGroup_CreateIfNotFound("sg_p1_all")
+	sg_p4_para = SGroup_CreateTable("sg_p4_para%d", 10)
+	sg_p4_parasAll = SGroup_CreateIfNotFound("sg_p4_parasAll")
+	sg_temp = SGroup_CreateIfNotFound("sg_temp")
+	-- phase II
+	sg_p4_reconInf = SGroup_CreateTable("sg_p4_reconInf%d", 5)
+	sg_p4_hound = SGroup_CreateTable("sg_p4_hound%d", 3)
+	sg_p4_houndAll = SGroup_CreateIfNotFound("sg_p4_houndAll")
+	
+	if Misc_IsCommandLineOptionSet("test_objectives") then
+--~ 		Scar_DebugConsoleExecute("bind([[ALT+1]], [[Scar_DoString('Util_StartNIS(EVENTS.NIS01)')]])")		
+	end
+
+    t_panzers = {
+		siren_path = "SpecialFX/alarm_02",
+		para = {
+			{sgroup = sg_p4_para[1]},
+			{sgroup = sg_p4_para[2]},
+			{sgroup = sg_p4_para[3]},
+			{sgroup = sg_p4_para[4]},
+			{sgroup = sg_p4_para[5]},
+			{sgroup = sg_p4_para[6]},
+			{sgroup = sg_p4_para[7]},
+			{sgroup = sg_p4_para[8]},
+			{sgroup = sg_p4_para[9]},
+			{sgroup = sg_p4_para[10]},
+		},
+		paraLimit = 2, 
+		fg_ax_all_dead 			= false,			-- flag to indicate that all the axis units are dead
+		fg_ax_all_retreated 	= false,			-- flag to check whether all the axis units have retreated
+		timerID = 7598734, 
+		timer1SEC = 60*6, -- 6 minutes
+		timer2SEC = 60*4, -- 4 minutes
+		timer3SEC = 60*3, -- 3 minutes
+		timer4SEC = 60*4, -- 4 minutes
+		groupA = {
+			{sgroup = sg_panzers_A[1], sbp = SBP.AXIS.PANZER, spawn = mkr_panzer_A1, active = false, move = false, upg = nil},
+			{sgroup = sg_panzers_A[2], sbp = SBP.AXIS.PANZER, spawn = mkr_panzer_A2, active = false, move = false, upg = nil},
+			{sgroup = sg_panzers_A[3], sbp = SBP.AXIS.PANTHER, spawn = mkr_panzer_A3, active = false, move = false, upg = nil},
+			{sgroup = sg_panzers_A[4], sbp = SBP.AXIS.PANZER, spawn = mkr_panzer_A4, active = false, move = false, upg = nil},
+			{sgroup = sg_panzers_A[5], sbp = SBP.AXIS.PANZER, spawn = mkr_panzer_A5, active = false, move = false, upg = nil},
+		},
+		groupB = {
+			{sgroup = sg_panzers_B[1], sbp = SBP.AXIS.PANZER, spawn = mkr_panzer_B1, active = false, move = false, upg = nil},
+			{sgroup = sg_panzers_B[2], sbp = SBP.AXIS.TIGER, spawn = mkr_panzer_B2, active = false, move = false, upg = nil},
+			{sgroup = sg_panzers_B[3], sbp = SBP.AXIS.PANZER, spawn = mkr_panzer_B3, active = false, move = false, upg = nil},
+			{sgroup = sg_panzers_B[4], sbp = SBP.AXIS.TIGER, spawn = mkr_panzer_B4, active = false, move = false, upg = nil},
+			{sgroup = sg_panzers_B[5], sbp = SBP.AXIS.PANZER, spawn = mkr_panzer_B5, active = false, move = false, upg = nil},
+		},
+		-- targets used in Phase 1
+		targets1 = { mkr_terHouse7, mkr_terHouse8, mkr_terHouse9, mkr_terHouse10, mkr_terHouse11, mkr_terHouse12, mkr_terHouse13,
+		    mkr_terHouse14, mkr_terHouse1, mkr_terHouse2, mkr_terHouse3, mkr_terHouse4, mkr_terHouse5, mkr_terHouse6},
+		-- used by the paratroopers in phase 1
+		targets1A = {mkr_terHouse7, mkr_terHouse8, mkr_terHouse9, mkr_terHouse10, mkr_phI_para1, mkr_phI_para2, mkr_phI_para3, mkr_phI_para4, mkr_phI_para5, mkr_phI_para6},
+		targets1B = {mkr_terHouse11, mkr_terHouse12, mkr_terHouse13, mkr_terHouse14},
+		targets1C = {mkr_terHouse1, mkr_terHouse2, mkr_terHouse3, mkr_terHouse4, mkr_terHouse5, mkr_terHouse6,},
+		targets2A = {mkr_panzer_A1, mkr_panzer_A2, mkr_panzer_A3, mkr_panzer_A4, mkr_panzer_A5,},
+		targets2B = {mkr_panzer_B1, mkr_panzer_B2, mkr_panzer_B3, mkr_panzer_B4, mkr_panzer_B5,},
+		-- Phase 2 recon paths
+		reconPath = {
+			{spawn = mkr_mapEntry6, path = {mkr_reconA_3}},
+			{spawn = mkr_mapEntry6, path = {mkr_panzer_A3}},
+			{spawn = mkr_mapEntry6, path = {mkr_panzer_B3},},
+		},
+		-- Phase 3 assault paths
+		assaultPath = {
+			{spawn = mkr_mapEntry6, path = {mkr_reconA_3}},
+			{spawn = mkr_trunB_spawn4, path = {mkr_reconA_3},},
+			{spawn = mkr_trunB_spawn3, path = {mkr_reconA_3},},
+			{spawn = mkr_trunB_spawn2, path = {mkr_reconA_3},},
+		},
+		assaultPath2 = {
+			{spawn = mkr_trunB_spawn5, path = {mkr_panzer_A1}},
+			{spawn = mkr_trunB_spawn4, path = {mkr_panzer_A3}},
+			{spawn = mkr_mapEntry5, path = {mkr_panzer_A5}},
+		},
+		assaultPath3 = {
+			{spawn = mkr_mapEntry7, path = {mkr_panzer_B5}},
+			{spawn = mkr_trunB_spawn1, path = {mkr_panzer_B3}},
+			{spawn = mkr_trunB_spawn2, path = {mkr_panzer_B3},},
+		},
+	}
+
+	Sound_PreCacheSound (t_panzers.siren_path)
+
+	-- set up intel event tables
+	t_panzers.events = {
+		Start = {
+			{ACTOR.TRUN.Borman, 9390260}, 
+			{ACTOR.TRUN.Funke, 9390270}, 
+			{ACTOR.TRUN.Funke, 9390300}, 
+		},
+		InfoRecon1 = {
+			{ACTOR.TRUN.Hess, 9390310}, 
+		},
+		InfoRecon2 = {
+			{ACTOR.TRUN.Hess, 9390320}, 
+		},
+		InfoPara1 = {
+			{ACTOR.TRUN.Hess, 9390411}, 
+			{ACTOR.TRUN.Hess, 9390414}, 
+		},
+		InfoParaInbound = {
+			{ACTOR.TRUN.Funke, 9390412}, 
+			{ACTOR.TRUN.Funke, 9390413}, 
+			{ACTOR.TRUN.Funke, 9390414}, 
+		},
+		InfoParaMines = {
+			{ACTOR.TRUN.Funke, 9390415}, 
+			{ACTOR.TRUN.Funke, 9390416}, 
+		},
+		InfoPara3 = {
+			{ACTOR.TRUN.Heimchlar, 9390420}, 
+			{ACTOR.TRUN.Funke, 9390430}, 
+			{ACTOR.TRUN.Heimchlar, 9390440}, 
+		},
+		InfoPara4 = {
+			{ACTOR.TRUN.Heimchlar, 9390420}, 
+			{ACTOR.TRUN.Funke, 9390430}, 
+			{ACTOR.TRUN.Heimchlar, 9390549}, 
+			{ACTOR.TRUN.Heimchlar, 9390560}, 
+		},
+		InfoStrafe1 = {
+			{ACTOR.TRUN.Luft, LOC("Shit! They are strafing our men!")}, 
+		},
+		InfoStrafe2 = {
+			{ACTOR.TRUN.Luft, LOC("Shit! They are strafing our panzers!")}, 
+		},
+		PhaseIdone = {
+			{ACTOR.TRUN.Funke, 9390441}, 
+			{ACTOR.TRUN.Funke, 9390442}, 
+		},
+		PhaseIIdone = {
+			{ACTOR.TRUN.Funke, 9390541}, 
+			{ACTOR.TRUN.Funke, 9390542}, 
+		},
+		PhaseIIstart = {
+			{ACTOR.TRUN.Funke, 9390543}, 
+		},
+		PhaseIIIstart = {
+			{ACTOR.TRUN.Funke, 9390544}, 
+			{ACTOR.TRUN.Hess, 9390350}, 
+		},
+		InfoRocket = {
+			{ACTOR.TRUN.Borman, 9390548}, 
+			{ACTOR.TRUN.Heimchlar, 9390549}, 
+			{ACTOR.TRUN.Funke, 9390544}, 
+		},
+		PanzersDone = {
+			{ACTOR.TRUN.Borman, 9390561}, 
+			{ACTOR.TRUN.Hess, 9390562}, 
+			{ACTOR.TRUN.Heimchlar, 9390563}, 
+		},
+		FinalGood = {
+			{ACTOR.TRUN.Heimchlar, 9390566}, 
+			{ACTOR.TRUN.Heimchlar, 9390567}, 
+		},
+		FinalOk = {
+			{ACTOR.TRUN.Heimchlar, 9390565}, 
+			{ACTOR.TRUN.Heimchlar, 9390567}, 
+		},
+		FinalBad = {
+			{ACTOR.TRUN.Heimchlar, 9390564}, 
+			{ACTOR.TRUN.Heimchlar, 9390567}, 
+		},
+	}
+	Panzers_Preset()
+end
+
+
+
+
+-- preset any units or events needed before the kickoff, but you do not
+-- want them to occur at the outset of the map.
+-- Example: Often units are needed to exist before the objective start (because they start the objective)
+-- then spawn those units here when they need to be spawned
+function Panzers_Preset()
+
+	-- spawn squads
+	Util_CreateSquads(player2, sg_panzers_lead, SBP.JOEY.KING_TIGER_TRUN, mkr_panzer_lead)
+	SGroup_SetAnimatorState(sg_panzers_lead, "engine_sfx", "off")
+	Panzers_DontLookDontTouch(sg_panzers_lead, true)
+	HintMouseover_Add(9394632, sg_panzers_lead, 5, false)
+	Rule_Add(Panzers_SpawnPreset1)
+	
+	-- start enemy behavior
+	
+	-- do other cool things
+
+end
+
+function Panzers_DontLookDontTouch(sgroup, boolean)
+	if boolean == true then
+		boolean = false
+	else
+		boolean = true
+	end
+	SGroup_EnableMinimapIndicator(sgroup, boolean) 
+	SGroup_SetSelectable(sgroup, boolean)
+end
+
+function Panzers_SpawnPreset1()
+	local done = true
+	for k,this in pairs(t_panzers.groupA) do 
+		if SGroup_IsEmpty(this.sgroup) then
+			Util_CreateSquads(player2, this.sgroup, this.sbp, this.spawn)
+			-- difficulty fix
+			Modify_ReceivedDamage(this.sgroup, Util_DifVar({.4, .5, .6, .8}))
+			SGroup_SetAnimatorState(this.sgroup, "engine_sfx", "off")
+			
+			Panzers_DontLookDontTouch(this.sgroup, true)
+			HintMouseover_Add(9394637, this.sgroup, 5, false)
+			SGroup_SetAutoTargetting(this.sgroup, "hardpoint_01", false)
+			SGroup_AddGroup(sg_panzersA_All, this.sgroup)
+			done = false
+			break
+		end
+	end
+	if done == true then
+		Rule_Add(Panzers_SpawnPreset2)
+		Rule_RemoveMe()
+	end
+end
+
+function Panzers_SpawnPreset2()
+	local done = true
+	for k,this in pairs(t_panzers.groupB) do 
+		if SGroup_IsEmpty(this.sgroup) then
+			Util_CreateSquads(player2, this.sgroup, this.sbp, this.spawn)
+			-- difficulty fix
+			Modify_ReceivedDamage(this.sgroup, Util_DifVar({.4, .5, .6, .8}))
+			SGroup_SetAnimatorState(this.sgroup, "engine_sfx", "off")
+			
+			Panzers_DontLookDontTouch(this.sgroup, true)
+			HintMouseover_Add(9394637, this.sgroup, 5, false)
+			SGroup_SetAutoTargetting(this.sgroup, "hardpoint_01", false)
+			SGroup_AddGroup(sg_panzersB_All, this.sgroup)
+			done = false
+			break
+		end
+	end
+	if done == true then
+		t_panzers.allSpawned = true
+		Rule_RemoveMe()
+	end
+end
+
+
+-- example of how to finish an Obj
+function Panzers_Rule_WinCheck()
+	
+	-- one of them must be set to true before the player can win or lose the objective
+	if t_panzers.done == true then
+		
+		-- the player has just won
+		Objective_Complete(OBJ_Panzers)
+		
+		Rule_RemoveMe()
+		return
+	elseif SGroup_IsEmpty(sg_panzersA_All) or SGroup_IsEmpty(sg_panzersB_All) then
+		
+		-- the player has just failed
+		Objective_Fail(OBJ_Panzers)
+		
+		Rule_RemoveMe()
+		return
+	end
+	
+	local Count = function(sgroup)
+		if SGroup_IsEmpty(sgroup) == false then
+			return SGroup_CountSpawned(sgroup)
+		end
+		return 0
+	end
+	
+	if t_panzers.allSpawned == true and t_panzers.countInit == nil then
+		t_panzers.countInit = Count(sg_panzersA_All)+Count(sg_panzersB_All)
+	else
+		t_panzers.count = Count(sg_panzersA_All)+Count(sg_panzersB_All)
+		Objective_SetCounter(OBJ_Panzers, t_panzers.count, t_panzers.countInit)
+	end
+	
+end
+
+function Panzers_Debug()
+
+	-- add in the necessary information that can automatically start this objective 
+	-- with the press of a hotkey
+	Objective_Start(OBJ_Panzers)
+
+end
+
+
+-- start the related action
+function Panzers_Kickoff()
+	--[[]]
+	Rule_AddDelayedInterval(Panzers_Ph1_Recon, World_GetRand(8, 15), 5)
+	
+	if false then
+		advance = true
+		Rule_AddInterval(Panzers_PhaseIII_GetReady, 5)
+	else
+		-- action that starts with the Obj being granted
+		Timer_Start(t_panzers.timerID, t_panzers.timer1SEC)
+		Rule_AddInterval(Panzers_PhaseII_GetReady, 5)
+	end
+	
+end
+
+-----------------------------------------------------
+--[[ PHASE I: AIR RECON ]]
+-----------------------------------------------------
+function Panzers_Ph1_Recon()
+	if t_panzers.phaseIdone or Objective_IsComplete(OBJ_Panzers) or Objective_IsFailed(OBJ_Panzers) then
+		Rule_RemoveMe()
+	elseif Event_IsAnyRunning() == false then
+		local rand = World_GetRand(1, #(t_panzers.targets1))
+		local target = Marker_GetPosition(t_panzers.targets1[rand])
+		
+		if t_panzers.firstRecon ~= true then
+			-- just for the first one, fly right over the center
+			target = Marker_GetPosition(mkr_build88)
+			
+			t_panzers.firstRecon = true
+			-- intel info
+			Util_AutoIntel(t_panzers.events.InfoRecon1)
+			if EGroup_IsEmpty(eg_church) == false then
+				Sound_Play3D (t_panzers.siren_path, EGroup_GetSpawnedEntityAt (eg_church, 1))
+			end
+			
+			Rule_AddDelayedInterval(Panzers_Ph1_ReconIntel, 10, 1)
+			Rule_AddInterval(Panzers_Ph1_Para, World_GetRand(20, 30))
+		end
+		
+		Cmd_Ability(player4, ABILITY.COMMANDER_TREE.ALLIES.RECON, target, nil, true)
+		
+		Rule_RemoveMe()
+		Rule_AddInterval(Panzers_Ph1_Recon, World_GetRand(15, 25))
+	end
+end
+
+function Panzers_Ph1_ReconIntel()
+	if Event_IsAnyRunning() == false then
+		Util_AutoIntel(t_panzers.events.InfoRecon2)
+		Rule_RemoveMe()
+	end
+end
+
+
+----------------------------------------------------------
+--[[ PARATROOPERS ]]
+----------------------------------------------------------
+
+function Panzers_Ph1_Para()
+	-- don't drop any more as you get close to to the end
+	if ( Timer_GetRemaining(t_panzers.timerID) <= 30 ) or Objective_IsComplete(OBJ_Panzers) or Objective_IsFailed(OBJ_Panzers) then
+		Rule_RemoveMe()
+	else
+		Player_GetAll(player4, sg_p4_all)
+		if SGroup_CountSpawned(sg_p4_all) <= t_panzers.paraLimit then
+			local rand = World_GetRand(1, #(t_panzers.targets1A))
+			local target = Marker_GetPosition(t_panzers.targets1A[rand])
+			Cmd_Ability(player4, ABILITY.COMMANDER_TREE.ALLIES.RECRUIT_PARADROP, target, nil, true)
+			
+		end
+		if t_panzers.firstPara ~= true then
+			t_panzers.firstPara = true
+			-- intel info
+			Rule_AddDelayedInterval(Panzers_Ph1_ParaIntel, 10, 1)
+			Rule_AddInterval(Panzers_Ph1_ParaTrack, 5)
+			Rule_AddInterval(Panzers_Ph1_Strafe, 2)
+		else
+			Util_AutoIntel(t_panzers.events.InfoParaInbound, true)
+		end
+		
+		Rule_RemoveMe()
+		Rule_AddInterval(Panzers_Ph1_Para, World_GetRand(30, 40))
+	end
+end
+
+function Panzers_Ph1_ParaIntel()
+	if Event_IsAnyRunning() == false then
+		Sound_PlayMusic("Music/DLC/Falaise/M01/paratrooper_landing.bsc",2,0)
+		Util_AutoIntel(t_panzers.events.InfoPara1)
+		Rule_RemoveMe()
+	end
+end
+
+function Panzers_Ph1_ParaTrack()
+	if t_panzers.phaseIdone or Objective_IsComplete(OBJ_Panzers) or Objective_IsFailed(OBJ_Panzers) then
+		Rule_RemoveMe()
+	else
+		SGroup_Clear(sg_temp)
+		Player_GetAll(player4, sg_temp)
+		SGroup_Filter(sg_temp, SBP.ALLIES.PARATROOPER, FILTER_KEEP)
+		SGroup_RemoveGroup(sg_temp, sg_p4_parasAll)
+		if SGroup_IsEmpty(sg_temp) == false then
+			for k,this in pairs(t_panzers.para) do 
+				if SGroup_IsEmpty(this.sgroup) then
+					SGroup_AddGroup(this.sgroup, sg_temp)
+					if World_GetRand(1, 3) == 1 then
+						Cmd_InstantUpgrade(this.sgroup, UPG.ALLIES.PARATROOPER_AT)
+					end
+					SGroup_AddGroup(sg_p4_parasAll, this.sgroup)
+					break
+				end
+			end
+		end
+		
+		local rand = World_GetRand(1, #(t_panzers.targets2A)) -- these guys actually aim for the tanks
+		local target = Marker_GetPosition(t_panzers.targets2A[rand])
+		
+		if SGroup_IsEmpty(sg_p4_parasAll) == false then
+			if t_panzers.threatID == nil then
+				t_panzers.threatID = ThreatArrow_CreateGroup(sg_p4_parasAll)
+			else
+				ThreatArrow_Add(t_panzers.threatID, sg_p4_parasAll)
+			end
+			
+			for k,this in pairs(t_panzers.para) do 
+				if SGroup_IsEmpty(this.sgroup) == false then
+					if SGroup_IsMoving(this.sgroup, false) then
+						if SGroup_IsUnderAttack(this.sgroup, false, 5) or SGroup_IsDoingAttack(this.sgroup, false, 10) then
+							-- take cover
+							Cmd_Stop(this.sgroup)
+							--Cmd_Move(this.sgroup, this.sgroup, false, nil, nil, nil, nil, 10)
+						else
+							-- stop at regular intervals
+							Cmd_Stop(this.sgroup)
+							if World_GetRand(1, 2) == 1 then
+								EventCue_Create(CUE.ATTACKED, 9394622, 9394623, SGroup_GetPosition(this.sgroup), 9394622)
+								if Event_IsAnyRunning() == false then
+									if t_panzers.firstMine ~= true then
+										t_panzers.firstMine = true 
+										Util_AutoIntel(t_panzers.events.InfoParaMines)
+									elseif World_GetRand(1, 10) == 1 then
+										Util_AutoIntel(t_panzers.events.InfoParaMines)
+									end
+								end
+								Util_CreateEntities(player4, eg_para_mines, EBP.ALLIES.MINES, SGroup_GetPosition(this.sgroup), 1)
+							end
+						end
+					else
+						if SGroup_IsDoingAttack(this.sgroup, false, 10) == false and SGroup_IsUnderAttack(this.sgroup, false, 10) == false then 
+							Cmd_Move(this.sgroup, target)
+						elseif SGroup_IsDoingAttack(this.sgroup, false, 10) or SGroup_IsUnderAttack(this.sgroup, false, 5) then
+							Cmd_Stop(this.sgroup)
+							Cmd_Move(this.sgroup, this.sgroup, false, nil, nil, OFFSET_BACK, World_GetRand(3, 8), 10)
+						end
+					end
+				end
+			end
+			
+		end
+	end
+end
+
+function Update(k, action)
+	if k == 3 then
+		--UIWarning_Show(LOC(action))
+	end
+end
+
+
+function Panzers_Ph1_Strafe()
+	if t_panzers.phaseIdone or Objective_IsComplete(OBJ_Panzers) or Objective_IsFailed(OBJ_Panzers) then
+		Rule_RemoveMe()
+	else
+		local StrafingRun = function(pos)
+			Cmd_Ability(player4, ABILITY.COMMANDER_TREE.ALLIES.STRAFE_MG, pos, nil, true)
+			EventCue_Create(CUE.ATTACKED, 9394637, 9394637, pos)
+			Util_AutoIntel(t_panzers.events.InfoPara3, true)
+		end
+		
+		local underattack = false
+		
+		for k,this in pairs(t_panzers.groupA) do 
+			if SGroup_IsEmpty(this.sgroup) == false and ( SGroup_IsUnderAttack(this.sgroup, false, 5) or SGroup_IsDoingAttack(this.sgroup, false, 5) ) then
+				UI_CreateColouredSquadKickerMessage(player1, SGroup_GetSpawnedSquadAt(this.sgroup, 1), 9394638, 200, 50, 50, 75)
+				UI_CreateMinimapBlip(SGroup_GetPosition(this.sgroup), 60, BT_AttackHerePing)
+				StrafingRun(SGroup_GetPosition(this.sgroup))
+				underattack = true
+				break
+			end
+		end
+		
+		for k,this in pairs(t_panzers.groupB) do 
+			if SGroup_IsEmpty(this.sgroup) == false and ( SGroup_IsUnderAttack(this.sgroup, false, 5) or SGroup_IsDoingAttack(this.sgroup, false, 5) ) then
+				UI_CreateColouredSquadKickerMessage(player1, SGroup_GetSpawnedSquadAt(this.sgroup, 1), 9394638, 200, 50, 50, 75)
+				UI_CreateMinimapBlip(SGroup_GetPosition(this.sgroup), 60, BT_AttackHerePing)
+				StrafingRun(SGroup_GetPosition(this.sgroup))
+				underattack = true
+				break
+			end
+		end
+		
+		if underattack == true then
+			if Objective_IsStarted(OBJ_AllSafe) == false then Objective_Start(OBJ_AllSafe, false) end
+			Rule_RemoveMe()
+			Rule_AddDelayedInterval(Panzers_Ph1_Strafe, World_GetRand(20, 30), 1)
+		end
+	end
+end
+
+
+-----------------------------------------------------
+--[[ PHASE II: LAND RECON ]]
+-----------------------------------------------------
+
+
+function Panzers_PhaseII_GetReady()
+	if Timer_GetRemaining(t_panzers.timerID) <= 0 or advance == true then
+		
+		t_panzers.phaseIdone = true
+		
+		if SGroup_IsEmpty(sg_p4_parasAll) == false then
+			Cmd_Retreat(sg_p4_parasAll, Marker_GetPosition(mkr_mapEntry6), mkr_mapEntry6)
+		end
+		
+		Game_LoadAtmosphere("data:Art/Scenarios/Presets/Atmosphere/DLC_TRUN_A_DUSK.APS", 60*10)
+		
+		Util_AutoIntel(t_panzers.events.PhaseIdone)
+		
+		Rule_AddDelayedInterval(Panzers_PhaseII_Go1, 2, 1)
+		Rule_RemoveMe()
+	end
+end
+
+function Panzers_PhaseII_Go1()
+	if Event_IsAnyRunning() == false then
+		
+		OBJ_Panzers.SitRep = OBJ_Panzers.SitRep_DoNotGrantYet
+		
+		-- and force the sitrep to play
+		Obj_SetObjectiveFunction(OBJ_Panzers.ID, FN_OnActivate, __ObjectiveOnActivateCallback)
+		Objective_ForceSitRep(OBJ_Panzers) 
+		
+		Rule_AddDelayedInterval(Panzers_PhaseII_Go2, 2, 1)
+		Rule_RemoveMe()
+	end
+end
+
+function Panzers_PhaseII_Go2()
+	if Event_IsAnyRunning() == false then
+		
+		Objective_UpdateText(OBJ_Panzers, 9394513, 9394514, true)
+		OBJ_Panzers.mapElementID = Objective_AddUIElements(OBJ_Panzers, mkr_reconA_2, true, nil, true)
+		Util_AutoIntel(t_panzers.events.PhaseIIstart)
+		
+		-- release the stag hound
+		Rule_AddInterval(Panzers_PhII_Hound, 5)
+		Rule_AddInterval(Panzers_PhII_Infantry, 6)
+		Rule_AddInterval(Panzers_PhII_TankAwake, 8)
+		
+		
+		Timer_Start(t_panzers.timerID, t_panzers.timer2SEC)
+		Rule_AddInterval(Panzers_PhaseIII_GetReady, 5)
+		Rule_RemoveMe()
+	end
+end
+
+function Panzers_PhII_Hound()
+	if t_panzers.phaseIIdone or Objective_IsComplete(OBJ_Panzers) or Objective_IsFailed(OBJ_Panzers) then
+		Cmd_Move(sg_p4_houndAll, mkr_mapEntry6, false, mkr_mapEntry6)
+		Rule_RemoveMe()
+	else
+		local sgroup = sg_p4_houndAll
+		if SGroup_IsEmpty(sgroup) then
+			-- utility function, see below
+			Panzers_PhII_ChooseHoundPath()
+			local recon = t_panzers.houndPath
+			Util_CreateSquads(player4, sgroup, SBP.ALLIES.T17, recon.spawn)
+			t_panzers.houndII_targetReached = false
+			ThreatArrow_CreateGroup(sgroup)
+			t_panzers.houndMod = Modify_UnitSpeed(sgroup, .6)
+		else
+			if SGroup_IsMoving(sgroup, false) then
+				if SGroup_IsUnderAttack(sgroup, false, 5) or SGroup_IsDoingAttack(sgroup, false, 5) then
+					-- take cover
+					Cmd_Move(sgroup, sgroup, false, nil, nil, OFFSET_RIGHT, World_GetRand(2, 5), nil)
+					Modifier_Remove(t_panzers.houndMod)
+				elseif t_panzers.houndII_targetReached ~= true then
+					-- stop at regular intervals
+					Cmd_Stop(sgroup)
+				end
+			else
+				if SGroup_IsDoingAttack(sgroup, false, 5) or SGroup_IsUnderAttack(sgroup, false, 5) then
+					Cmd_Move(sgroup, sgroup, false, nil, nil, OFFSET_LEFT, World_GetRand(5, 10), 5)
+				else
+					if t_panzers.houndTarget == nil then
+						t_panzers.houndTarget = t_panzers.houndPath.path[1]
+					end
+					if Prox_AreSquadsNearMarker(sgroup, t_panzers.houndTarget, false, 10) == false then
+						Cmd_Move(sgroup, t_panzers.houndTarget)
+					else
+						t_panzers.houndII_targetReached = true
+						if World_GetRand(1, 2) == 1 then
+							Cmd_AttackMove(sgroup, SGroup_GetPosition(sg_panzersA_All))
+						else
+							Cmd_AttackMove(sgroup, SGroup_GetPosition(sg_panzersB_All))
+						end
+					end
+				end
+			end
+		end
+	end
+end
+
+function Panzers_PhII_ChooseHoundPath()
+	if t_panzers.reconPath ~= nil then
+		local rand = World_GetRand(1, #(t_panzers.reconPath))
+		t_panzers.houndPath = t_panzers.reconPath[rand]
+	end
+end
+
+
+function Panzers_PhII_Infantry()
+	if t_panzers.phaseIIdone or Objective_IsComplete(OBJ_Panzers) or Objective_IsFailed(OBJ_Panzers) then
+		Rule_RemoveMe()
+	else
+		local offset = {OFFSET_FRONT_LEFT, OFFSET_FRONT_RIGHT, OFFSET_LEFT, OFFSET_RIGHT}
+		for i = 1, 2 do 
+			local sgroup = sg_p4_reconInf[i]
+			if ( SGroup_IsEmpty(sg_p4_houndAll) == false and SGroup_IsUnderAttack(sg_p4_houndAll, false, 15) ) and SGroup_IsEmpty(sgroup) then
+				Util_CreateSquads(player4, sgroup, SBP.ALLIES.RIFLEMEN, mkr_mapEntry6, SGroup_GetPosition(sg_p4_houndAll))
+			elseif SGroup_TotalMembersCount(sgroup) < 2 then
+				Cmd_Retreat(sgroup, Marker_GetPosition(mkr_mapEntry6), mkr_mapEntry6)
+			elseif SGroup_IsEmpty(sgroup) == false then
+				if SGroup_IsMoving(sgroup, false) then
+					if SGroup_IsUnderAttack(sgroup, false, 5) or SGroup_IsDoingAttack(sgroup, false, 5) then
+						-- take cover
+						Cmd_Move(sgroup, sgroup, false, nil, nil, nil, nil, 10)
+					else
+						-- stop at regular intervals
+						-- Cmd_Stop(sgroup)
+					end
+				else
+					if SGroup_IsDoingAttack(sgroup, false, 5) or SGroup_IsUnderAttack(sgroup, false, 5) then
+						Cmd_Move(sgroup, sgroup, false, nil, nil, OFFSET_RIGHT, World_GetRand(3, 8), 10)
+					elseif SGroup_IsEmpty(sg_p4_houndAll) == false then
+						if Prox_SGroupSGroup(sgroup, sg_p4_houndAll, PROX_SHORTEST) > 20 then
+							Cmd_Move(sgroup, sg_p4_houndAll, false, nil, nil, offset[i], World_GetRand(10, 15), 10)
+						else
+							-- do nothing
+						end
+					else
+						-- center of town
+						Cmd_Move(sgroup, mkr_terHouse11, false, nil, nil, nil, nil, 10)
+					end
+				end
+			end
+		end
+	end
+end
+
+
+function Panzers_PhII_TankAwake()
+	if t_panzers.phaseIIdone or Objective_IsComplete(OBJ_Panzers) or Objective_IsFailed(OBJ_Panzers) then
+		Rule_RemoveMe()
+	else
+		local underattack = false
+		
+		for k,this in pairs(t_panzers.groupA) do 
+			if SGroup_IsEmpty(this.sgroup) == false then
+				if this.reveal ~= true then
+					this.reveal = true
+					Panzers_DontLookDontTouch(this.sgroup, false)
+				elseif SGroup_IsUnderAttack(this.sgroup, false, 5) then
+					underattack = true
+					UI_CreateColouredSquadKickerMessage(player1, SGroup_GetSpawnedSquadAt(this.sgroup, 1), 9394662, 200, 50, 50, 75)
+					UI_CreateMinimapBlip(SGroup_GetPosition(this.sgroup), 60, BT_AttackHerePing)
+					if this.active ~= true then
+						SGroup_SetAutoTargetting(this.sgroup, "hardpoint_01", true)
+						SGroup_SetAnimatorState(this.sgroup, "engine_sfx", "on")
+						this.active = true
+					end
+				end
+			end
+		end
+		
+		for k,this in pairs(t_panzers.groupB) do 
+			if SGroup_IsEmpty(this.sgroup) == false then
+				if this.reveal ~= true then
+					this.reveal = true
+					Panzers_DontLookDontTouch(this.sgroup, false)
+				elseif SGroup_IsUnderAttack(this.sgroup, false, 5) then
+					underattack = true
+					UI_CreateColouredSquadKickerMessage(player1, SGroup_GetSpawnedSquadAt(this.sgroup, 1), 9394662, 200, 50, 50, 75)
+					UI_CreateMinimapBlip(SGroup_GetPosition(this.sgroup), 60, BT_AttackHerePing)
+					if this.active ~= true then
+						SGroup_SetAutoTargetting(this.sgroup, "hardpoint_01", true)
+						SGroup_SetAnimatorState(this.sgroup, "engine_sfx", "on")
+						this.active = true
+					end
+				end
+			end
+		end
+		
+		if underattack == true then
+			if Objective_IsStarted(OBJ_AllSafe) == false then Objective_Start(OBJ_AllSafe, false) end
+		end
+	end
+end
+
+-----------------------------------------------------
+--[[ PHASE III: COMBINED THREAT ]]
+-----------------------------------------------------
+function Panzers_PhaseIII_GetReady()
+	if Timer_GetRemaining(t_panzers.timerID) <= 0 or advance == true then
+		
+		t_panzers.phaseIIdone = true
+		
+		if SGroup_IsEmpty(sg_p4_parasAll) == false then
+			Cmd_Retreat(sg_p4_parasAll, Marker_GetPosition(mkr_mapEntry6), mkr_mapEntry6)
+		end
+		
+		Sound_PlayMusic("Music/DLC/Falaise/M01/armor_arrives.bsc",2,0)
+		
+		Util_AutoIntel(t_panzers.events.PhaseIIdone)
+		
+		Rule_AddDelayedInterval(Panzers_PhaseIII_Go, 5, 1)
+		Rule_RemoveMe()
+	end
+end
+
+function Panzers_PhaseIII_Go()
+	if Event_IsAnyRunning() == false then
+		
+		Objective_UpdateText(OBJ_Panzers, 9394516, 9394519, true)
+		Util_AutoIntel(t_panzers.events.PhaseIIIstart)
+		
+		--[[ release the stag hound ]]
+		Rule_AddInterval(Panzers_PhIII_Hound, 5)
+		Rule_AddInterval(Panzers_PhIII_Infantry, 6)
+		Rule_AddInterval(Panzers_PhIII_TankRun, 6)
+		Rule_AddInterval(Panzers_PhIII_Strafe, 8)
+		
+		
+		Timer_Start(t_panzers.timerID, t_panzers.timer3SEC)
+		if World_GetRand(1, 2) == 1 then
+			Rule_AddInterval(Panzers_Pause_North1, 5)	
+		else
+			Rule_AddInterval(Panzers_Pause_South1, 5)	
+		end
+		
+		Rule_RemoveMe()
+	end
+end
+
+
+function Panzers_PhIII_Hound()
+	if t_panzers.phaseIIIpause or t_panzers.phaseIIIdone or Objective_IsComplete(OBJ_Panzers) or Objective_IsFailed(OBJ_Panzers) then
+		print("_________________REMOVING HOUND___________________________")
+		print("t_panzers.phaseIIIpause = ")
+		print(t_panzers.phaseIIIpause)
+		print("t_panzers.phaseIIIdone = ")
+		print(t_panzers.phaseIIIdone)
+		for i = 1, 3 do 
+			local sgroup = sg_p4_hound[i]
+			if SGroup_IsEmpty(sgroup) == false then
+				if World_GetRand(1, 2) == 1 and SGroup_IsEmpty(sg_panzersA_All) == false then
+					Cmd_AttackMove(sgroup, SGroup_GetPosition(sg_panzersA_All))
+				elseif SGroup_IsEmpty(sg_panzersB_All) == false then
+					Cmd_AttackMove(sgroup, SGroup_GetPosition(sg_panzersB_All))
+				end
+			end
+		end
+		Rule_RemoveMe()
+	else
+		if SGroup_IsEmpty(sg_p4_houndAll) or SGroup_IsEmpty(sg_p4_hound[1]) then
+			local rand = World_GetRand(1, #(t_panzers.assaultPath))
+			t_panzers.houndPath = t_panzers.assaultPath[rand]
+		end
+		local recon = t_panzers.houndPath
+		for i = 1, 3 do 
+			local sgroup = sg_p4_hound[i]
+			if SGroup_IsEmpty(sgroup) then
+				SmokeEntrance_Do(recon.spawn) 
+				Panzers_PhIII_PickHound(sgroup, recon.spawn)
+				SGroup_AddGroup(sg_p4_houndAll, sgroup)
+				ThreatArrow_CreateGroup(sgroup)
+				Cmd_Move(sgroup, recon.path[1])
+			else
+				if SGroup_IsMoving(sgroup, false) then
+					if SGroup_IsUnderAttack(sgroup, false, 5) or SGroup_IsDoingAttack(sgroup, false, 5) then
+						-- take cover
+						Cmd_Stop(sgroup)
+						if World_GetRand(1, 3) == 1 then
+							Cmd_Move(sgroup, sgroup, false, nil, nil, OFFSET_LEFT, World_GetRand(2, 5), nil)
+						end
+					else
+						-- stop at regular intervals
+						-- Cmd_Stop(sgroup)
+					end
+				else 
+					if SGroup_IsDoingAttack(sgroup, false, 5) or SGroup_IsUnderAttack(sgroup, false, 5) then
+						if World_GetRand(1, 3) == 1 then
+							Cmd_Move(sgroup, sgroup, false, nil, nil, OFFSET_RIGHT, World_GetRand(5, 10), 5)
+						end
+					else
+						if t_panzers.houndTarget == nil then
+							t_panzers.houndTarget = recon.path[1]
+						end
+						if Prox_AreSquadsNearMarker(sgroup, recon.path[1], false, 20) then
+							if t_panzers.houndIII_targetReached ~= true then
+								t_panzers.houndIII_targetReached = true
+								Cmd_Stop(sgroup)
+							else
+								if World_GetRand(1, 2) == 1 then
+									Cmd_AttackMove(sgroup, SGroup_GetPosition(sg_panzersA_All))
+								else
+									Cmd_AttackMove(sgroup, SGroup_GetPosition(sg_panzersB_All))
+								end
+							end
+						elseif t_panzers.houndIII_targetReached ~= true then
+							Cmd_Move(sgroup, recon.path[1])
+						end
+					end
+				end
+			end
+		end
+	end
+end
+
+function Panzers_PhIII_PickHound(sgroup, spawn)
+	local rand = World_GetRand(1, 4)
+	if rand == 1 then
+		Util_CreateSquads(player4, sgroup, SBP.ALLIES.GREYHOUND, spawn)
+		Modify_Vulnerability(sgroup, .6)--[[
+	elseif rand == 2 then
+		Util_CreateSquads(player4, sgroup, SBP.ALLIES.HALFTRACK, spawn)
+		Util_CreateSquads(player4, sg_p4_reconInf[rand], SBP.ALLIES.RIFLEMEN, sgroup)]]
+	elseif rand == 3 then
+		Util_CreateSquads(player4, sgroup, SBP.ALLIES.M10, spawn)
+		Modify_Vulnerability(sgroup, .6)
+	elseif rand == 2 then
+		Util_CreateSquads(player4, sgroup, SBP.ALLIES.HALFTRACK, spawn)
+		Cmd_InstantUpgrade(sgroup, UPG.ALLIES.HALFTRACK_QUAD, 1)
+		Modify_Vulnerability(sgroup, .8)
+	else
+		Util_CreateSquads(player4, sgroup, SBP.ALLIES.T17, spawn)
+	end
+	Trun_A_AntiSpawnCamping(spawn)
+end
+
+
+function Panzers_PhIII_Infantry()
+	if t_panzers.phaseIIIpause or t_panzers.phaseIIIdone or Objective_IsComplete(OBJ_Panzers) or Objective_IsFailed(OBJ_Panzers) then
+		Rule_RemoveMe()
+	else
+		Player_GetAll(player1, sg_p1_all)
+		local offset = {OFFSET_FRONT_LEFT, OFFSET_FRONT_RIGHT, OFFSET_LEFT, OFFSET_RIGHT}
+		for i = 1, 2 do 
+			local sgroup = sg_p4_reconInf[i]
+			if ( SGroup_IsEmpty(sg_p4_houndAll) == false and SGroup_IsUnderAttack(sg_p4_houndAll, false, 15) ) and SGroup_IsEmpty(sgroup) then
+				Util_CreateSquads(player4, sgroup, SBP.ALLIES.RANGER, t_panzers.houndPath.spawn, SGroup_GetPosition(sg_p4_houndAll))
+				if World_GetRand(1, 3) == 1 then
+					Cmd_InstantUpgrade(sgroup, UPG.ALLIES.RIFLEMEN_AT, 1)
+				elseif World_GetRand(1, 2) == 1 then
+					Cmd_InstantUpgrade(sgroup, UPG.ALLIES.RIFLEMEN_SMG, 1)
+				end
+			elseif SGroup_TotalMembersCount(sgroup) < 3 then
+				Cmd_Retreat(sgroup, Marker_GetPosition(mkr_mapEntry6), mkr_mapEntry6)
+			elseif SGroup_IsEmpty(sgroup) == false then
+				if SGroup_IsMoving(sgroup, false) then
+					if SGroup_IsUnderAttack(sgroup, false, 5) or SGroup_IsDoingAttack(sgroup, false, 5) then
+						-- take cover
+						Cmd_Move(sgroup, sgroup, false, nil, nil, nil, nil, 10)
+					else
+						-- stop at regular intervals
+						-- Cmd_Stop(sgroup)
+					end
+				else
+					if SGroup_IsDoingAttack(sgroup, false, 5) or SGroup_IsUnderAttack(sgroup, false, 5) then
+						Cmd_Move(sgroup, sgroup, false, nil, nil, OFFSET_RIGHT, World_GetRand(3, 8), 10)
+					elseif SGroup_IsEmpty(sg_p4_houndAll) == false then
+						if Prox_SGroupSGroup(sgroup, sg_p4_houndAll, PROX_SHORTEST) > 20 then
+							Cmd_Move(sgroup, sg_p4_houndAll, false, nil, nil, offset[i], World_GetRand(10, 15), 10)
+						else
+							-- do nothing
+						end
+					elseif SGroup_CanSeeSGroup(sgroup, sg_p1_all, false) then
+						Cmd_Attack(sgroup, sg_p1_all)
+					else
+						Cmd_Move(sgroup, mkr_terHouse11, false, nil, nil, nil, nil, 10)
+					end
+				end
+			end
+		end
+	end
+end
+
+function Panzers_PhIII_FirstRocket1()
+	Game_Letterbox(true, 1)
+	Camera_FocusOnPosition(t_panzers.ph3firstRockPos, true)
+	Util_AutoIntel(t_panzers.events.InfoRocket)
+	Rule_AddDelayedInterval(Panzers_PhIII_FirstRocket2, 10, 1)
+	Rule_RemoveMe()
+end
+
+function Panzers_PhIII_FirstRocket2()
+	if Event_IsAnyRunning() == false then
+		Game_Letterbox(false, 1)
+		Rule_RemoveMe()
+	end
+end
+
+function Panzers_PhIII_Strafe()
+	if t_panzers.phaseIIIpause or t_panzers.phaseIIIdone or Objective_IsComplete(OBJ_Panzers) or Objective_IsFailed(OBJ_Panzers) then
+		Rule_RemoveMe()
+	else
+		local StrafingRun = function(pos)
+			local rand = World_GetRand(1, 3)
+			if rand == 1 then
+				Cmd_Ability(player4, ABILITY.COMMANDER_TREE.ALLIES.STRAFE_MG, pos, nil, true)
+				Util_AutoIntel(t_panzers.events.InfoPara4, true)
+			else
+				Cmd_Ability(player4, ABILITY.COMMANDER_TREE.ALLIES.STRAFE_ROCKET, pos, nil, true)
+				if t_panzers.ph3firstRock ~= true then
+					t_panzers.ph3firstRock = true
+					t_panzers.ph3firstRockPos = pos
+					Rule_AddInterval(Panzers_PhIII_FirstRocket1, 1)
+				end
+			end
+			EventCue_Create(CUE.ATTACKED, 9394637, 9394637, pos)
+		end
+		
+		local underattack = false
+		
+		for k,this in pairs(t_panzers.groupA) do 
+			if SGroup_IsEmpty(this.sgroup) == false and ( SGroup_IsUnderAttack(this.sgroup, false, 5) or SGroup_IsDoingAttack(this.sgroup, false, 5) ) then
+				UI_CreateColouredSquadKickerMessage(player1, SGroup_GetSpawnedSquadAt(this.sgroup, 1), 9394662, 200, 50, 50, 75)
+				UI_CreateMinimapBlip(SGroup_GetPosition(this.sgroup), 60, BT_AttackHerePing)
+				StrafingRun(SGroup_GetPosition(this.sgroup))
+				underattack = true
+				break
+			end
+		end
+		
+		for k,this in pairs(t_panzers.groupB) do 
+			if SGroup_IsEmpty(this.sgroup) == false and ( SGroup_IsUnderAttack(this.sgroup, false, 5) or SGroup_IsDoingAttack(this.sgroup, false, 5) ) then
+				UI_CreateColouredSquadKickerMessage(player1, SGroup_GetSpawnedSquadAt(this.sgroup, 1), 9394662, 200, 50, 50, 75)
+				UI_CreateMinimapBlip(SGroup_GetPosition(this.sgroup), 60, BT_AttackHerePing)
+				StrafingRun(SGroup_GetPosition(this.sgroup))
+				underattack = true
+				break
+			end
+		end
+		
+		if underattack == true then
+			if Objective_IsStarted(OBJ_AllSafe) == false then Objective_Start(OBJ_AllSafe, false) end
+			Rule_RemoveMe()
+			Rule_AddDelayedInterval(Panzers_PhIII_Strafe, World_GetRand(20, 30), 1)
+		end
+	end
+end
+
+function Panzers_PhIII_TankRun()
+	if t_panzers.phaseIIIpause or t_panzers.phaseIIIdone or Objective_IsComplete(OBJ_Panzers) or Objective_IsFailed(OBJ_Panzers) then
+		Rule_RemoveMe()
+	else
+		local underattack = false
+		
+		for k,this in pairs(t_panzers.groupA) do 
+			if SGroup_IsEmpty(this.sgroup) == false then
+				if this.reveal ~= true then
+					this.reveal = true
+					Panzers_DontLookDontTouch(this.sgroup, false)
+				elseif SGroup_GetAvgHealth(this.sgroup) < .3 then
+					Cmd_Move(this.sgroup, mkr_mapEntry3)
+					UI_CreateColouredSquadKickerMessage(player1, SGroup_GetSpawnedSquadAt(this.sgroup, 1), 9394635, 200, 50, 50, 75)
+					this.retreat = true
+				elseif SGroup_IsUnderAttack(this.sgroup, false, 5) then
+				UI_CreateMinimapBlip(SGroup_GetPosition(this.sgroup), 60, BT_AttackHerePing)
+					if this.active ~= true then
+						SGroup_SetAutoTargetting(this.sgroup, "hardpoint_01", true)
+						SGroup_SetAnimatorState(this.sgroup, "engine_sfx", "on")
+						this.active = true
+					end
+				end
+				-- prox remove
+				if this.retreat == true and SGroup_IsEmpty(this.sgroup) == false and Prox_AreSquadsNearMarker(this.sgroup, mkr_mapEntry3, false, 10) then
+					if Objective_IsFailed(OBJ_AllSafe) == false then Objective_Fail(OBJ_AllSafe, true) end
+					SGroup_DestroyAllSquads(this.sgroup)
+				end
+			end
+		end
+		
+		for k,this in pairs(t_panzers.groupB) do 
+			if SGroup_IsEmpty(this.sgroup) == false then
+				if this.reveal ~= true then
+					this.reveal = true
+					Panzers_DontLookDontTouch(this.sgroup, false)
+				elseif SGroup_GetAvgHealth(this.sgroup) < .3 then
+					UI_CreateColouredSquadKickerMessage(player1, SGroup_GetSpawnedSquadAt(this.sgroup, 1), 9394635, 200, 50, 50, 75)
+					Cmd_Move(this.sgroup, mkr_mapEntry3)
+					this.retreat = true
+				elseif SGroup_IsUnderAttack(this.sgroup, false, 5) then
+				UI_CreateMinimapBlip(SGroup_GetPosition(this.sgroup), 60, BT_AttackHerePing)
+					if this.active ~= true then
+						SGroup_SetAutoTargetting(this.sgroup, "hardpoint_01", true)
+						SGroup_SetAnimatorState(this.sgroup, "engine_sfx", "on")
+						this.active = true
+					end
+				end
+				-- prox remove
+				if this.retreat == true and SGroup_IsEmpty(this.sgroup) == false and Prox_AreSquadsNearMarker(this.sgroup, mkr_mapEntry3, false, 10) then
+					if Objective_IsFailed(OBJ_AllSafe) == false then Objective_Fail(OBJ_AllSafe, true) end
+					SGroup_DestroyAllSquads(this.sgroup)
+				end
+			end
+		end
+	end
+end
+
+
+-----------------------------------------------------
+--[[ PHASE III: COMBINED THREAT Northern Attack]]
+-----------------------------------------------------
+
+function Panzers_Pause_North1()
+	if Timer_GetRemaining(t_panzers.timerID) <= 0 then
+		
+		t_panzers.phaseIIIpause = true
+		t_panzers.northDone = true
+		
+		Rule_AddInterval(Panzers_Pause_North2, World_GetRand(50, 75))
+		Rule_RemoveMe()
+	end
+end
+
+function Panzers_Pause_North2()
+	if Event_IsAnyRunning() == false then
+		
+		t_panzers.phaseIIIpause = false
+		Objective_RemoveUIElements(OBJ_Panzers, OBJ_Panzers.mapElementID)
+		OBJ_Panzers.mapElementID = Objective_AddUIElements(OBJ_Panzers, mkr_terDrop2, true, nil, true)
+		t_panzers.assaultPath = t_panzers.assaultPath2
+		--[[ re-release the stag hound ]]
+		Rule_AddInterval(Panzers_PhIII_Hound, 5)
+		Rule_AddInterval(Panzers_PhIII_Infantry, 6)
+		Rule_AddInterval(Panzers_PhIII_TankRun, 6)
+		Rule_AddInterval(Panzers_PhIII_Strafe, 8)
+		
+		Panzers_Pause_Next()
+		Rule_RemoveMe()
+	end
+end
+
+-----------------------------------------------------
+--[[ PHASE III: COMBINED THREAT Southern Attack ]]
+-----------------------------------------------------
+
+function Panzers_Pause_South1()
+	if Timer_GetRemaining(t_panzers.timerID) <= 0 then
+		
+		t_panzers.phaseIIIpause = true
+		t_panzers.southDone = true
+		
+		Rule_AddInterval(Panzers_Pause_South2, World_GetRand(50, 75))
+		Rule_RemoveMe()
+	end
+end
+
+function Panzers_Pause_South2()
+	if Event_IsAnyRunning() == false then
+		
+		t_panzers.phaseIIIpause = false
+		Objective_RemoveUIElements(OBJ_Panzers, OBJ_Panzers.mapElementID)
+		OBJ_Panzers.mapElementID = Objective_AddUIElements(OBJ_Panzers, mkr_88hint2, true, nil, true)
+		t_panzers.assaultPath = t_panzers.assaultPath3
+		--[[ re-release the stag hound ]]
+		Rule_AddInterval(Panzers_PhIII_Hound, 5)
+		Rule_AddInterval(Panzers_PhIII_Infantry, 6)
+		Rule_AddInterval(Panzers_PhIII_TankRun, 6)
+		Rule_AddInterval(Panzers_PhIII_Strafe, 8)
+		
+		Panzers_Pause_Next()
+		Rule_RemoveMe()
+	end
+end
+
+function Panzers_Pause_Next()
+	Timer_Start(t_panzers.timerID, t_panzers.timer4SEC)
+	
+	if t_panzers.southDone ~= true then
+		Rule_AddInterval(Panzers_Pause_South1, 5)
+	elseif t_panzers.northDone ~= true then
+		Rule_AddInterval(Panzers_Pause_North1, 5)
+	else
+		Rule_AddInterval(Panzers_Wrapup1, 5)
+	end
+end
+
+-----------------------------------------------------
+--[[ WRAP IT UP ]]
+-----------------------------------------------------
+
+function Panzers_Wrapup1()
+	if Timer_GetRemaining(t_panzers.timerID) <= 0 then
+		
+		t_panzers.phaseIIIdone = true
+		
+		Rule_AddDelayedInterval(Panzers_Wrapup1_1, 20, 1)
+		Rule_RemoveMe()
+	end
+end
+
+
+function Panzers_Wrapup1_1()
+	if Timer_GetRemaining(t_panzers.timerID) <= 0 then
+		
+		for i = 1, 3 do 
+			local sgroup = sg_p4_hound[i]
+			if SGroup_IsEmpty(sgroup) == false then
+				Cmd_Move(sgroup, mkr_mapEntry6, false, mkr_mapEntry6)
+			end
+		end
+		for i = 1, 2 do 
+			local sgroup = sg_p4_reconInf[i]
+			if SGroup_IsEmpty(sgroup) == false then
+				Cmd_Move(sgroup, mkr_mapEntry6, false, mkr_mapEntry6)
+			end
+		end
+		
+		Rule_AddDelayedInterval(Panzers_Wrapup2, 10, 1)
+		Rule_RemoveMe()
+	end
+end
+
+function Panzers_Wrapup2()
+	if Event_IsAnyRunning() == false then
+		
+		Util_AutoIntel(t_panzers.events.PanzersDone)
+		
+		Rule_AddDelayedInterval(Panzers_Wrapup3, 5, 1)
+		Rule_AddDelayedInterval(Panzers_Wrapup4, 8, 1)
+		Rule_RemoveMe()
+	end
+end
+
+function Panzers_Wrapup3()
+	if Event_IsAnyRunning() == false then
+		
+		--[[ Game_Letterbox(true, 2)
+		FOW_Enable(false)
+		fix camera
+		Camera_SetDefault(60, 5, -95)
+		Camera_ResetToDefault()
+		Camera_FocusOnPosition(Marker_GetPosition(mkr_cw_line12), true)
+		]]
+		local count = 0
+		for k,this in pairs(t_panzers.groupA) do 
+			if SGroup_IsEmpty(this.sgroup) == false then
+				--Cmd_Move(this.sgroup, mkr_mapEntry4)
+				count = count+1
+			end
+		end
+		for k,this in pairs(t_panzers.groupB) do 
+			if SGroup_IsEmpty(this.sgroup) == false then
+				count = count+1
+			end
+		end
+		
+		if count < 6 then
+			Util_AutoIntel(t_panzers.events.FinalBad)
+		elseif count < 8 then
+			Util_AutoIntel(t_panzers.events.FinalOk)
+		else
+			Util_AutoIntel(t_panzers.events.FinalGood)
+		end
+		-- final line
+		if count == 10 then 
+			if Objective_IsStarted(OBJ_AllSafe) == false then Objective_Start(OBJ_AllSafe, false) end
+			Objective_Complete(OBJ_AllSafe)
+			t_panzers.zeroLost = true
+		end
+		
+		--Rule_AddInterval(Panzers_CleanUp, 1)
+		Rule_RemoveMe()
+	end
+end
+
+function Panzers_CleanUp()
+	if SGroup_IsEmpty(sg_panzersA_All) then
+		Rule_RemoveMe()
+	else
+		for k,this in pairs(t_panzers.groupA) do 
+			if SGroup_IsEmpty(this.sgroup) == false and Prox_AreSquadsNearMarker(this.sgroup, mkr_mapEntry4, false, 10) then
+				SGroup_DestroyAllSquads(this.sgroup)
+			end
+		end
+	end
+end
+
+function Panzers_Wrapup4()
+	if Event_IsAnyRunning() == false then
+		
+		t_panzers.done = true
+		
+		Rule_RemoveMe()
+	end
+end

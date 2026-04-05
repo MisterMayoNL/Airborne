@@ -1,0 +1,57 @@
+
+Name = "$9419700"
+Description = "$9419770"
+ModName = "DLC2"
+Group = "DLC"
+
+UI =
+{
+	-- brw 12/09/2008 - putting in missing art for the campaign main menu file because
+	-- it is not being hooked up correctly.
+--~ 	EnabledImage = [[Data:art\ui\textures\textures_fe\dlc2_icon]],
+	EnabledImage = [[Data:art\ui\textures\textures_fe\not_used]],
+	HoverImage = [[Data:art\ui\textures\textures_fe\not_used]],-- this doesn't appear to be working nor is it used
+	CampaignNameKey = "$9419700",
+	MainTooltipKey = "$9419780",
+	ContinueTooltipKey = "$9419790",
+	DisabledTooltipKey = "$9419791",
+}
+
+Missions =
+{
+	{
+ 		mission = "LaFiere_A",
+		sandmap = "ANIM_INTRO",
+		SubtitleFile = "ANIM_INTRO.lua",
+		medals =
+		{
+			"medals/la_fiere_a.lua",
+		},
+	},
+	{
+ 		mission = "LaFiere_B",
+		counterattack = "LaFiere_A",
+		medals =
+		{
+			"medals/la_fiere_b.lua",
+		},
+	},
+	{
+ 		mission = "LaFiere_C",
+		counterattack = "LaFiere_B",
+		--sandmap = "DLC1_A03_01",
+		--SubtitleFile = "DLC1_A03_01",
+		medals =
+		{
+			"medals/la_fiere_c.lua",
+		},
+	},
+}
+
+CompletionMedals =
+{
+	"medals/la_fiere_completion.lua",
+	"medals/reward_para.lua",
+}
+
+CreditsMovie = "DLC2_Credits"

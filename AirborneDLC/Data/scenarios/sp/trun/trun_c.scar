@@ -1,0 +1,595 @@
+-------------------------------------------------------------------------
+-------------------------------------------------------------------------
+
+-- Mission Name
+
+-------------------------------------------------------------------------
+-------------------------------------------------------------------------
+
+import("ScarUtil.scar")
+import("DLC3Import.scar")
+--import("LaFiere_AIScavenger.scar")   -- *** NOTE this file must be imported before objective, to ensure that preset units are not managed by the AI Scavenger
+import("Trun_C/Trun_C_Territory.scar")
+import("Trun_C/Trun_C_AlliedAdvance.scar")
+import("Trun_C/Trun_C_GermanRetreat.scar")
+import("Trun_C/Trun_C_Medal.scar")
+import("DLC3_Bounty.scar")
+import("DLC3RPGTracker.scar")
+
+
+-------------------------------------------------------------------------
+
+-- [[ SETUP ]]
+
+-------------------------------------------------------------------------
+
+function OnGameSetup()
+	-- string numbers should reference dat files
+	-- "allies_commonwealth" "allies" "axis" "axis_panzer_elite"
+	player1 = Setup_Player(1, 9391726, "axis", 1)
+	player2 = Setup_Player(2, 9391731, "axis_panzer_elite", 1)
+  	player3 = Setup_Player(3, 9391728, "allies", 2)
+  	player4 = Setup_Player(4, 9391728, "allies", 2)
+  	player5 = Setup_Player(5, 9391730, "allies_commonwealth", 2)
+	
+end
+
+function OnGameRestore()
+	player1 = World_GetPlayerAt(1)
+	player2 = World_GetPlayerAt(2)
+	player3 = World_GetPlayerAt(3)
+	player4 = World_GetPlayerAt(4)
+	player5 = World_GetPlayerAt(5)
+	
+	-- function takes care of restoring all global mission parameters after a save/load
+	Game_DefaultGameRestore()
+end
+
+
+
+
+-------------------------------------------------------------------------
+
+-- [[ ONINIT ]]
+
+-------------------------------------------------------------------------
+
+function OnInit()
+	
+	-- a constant that stores the mission number for use with
+	-- setting the global speech paths, tech tree setup, and 
+	-- the player's starting resources
+	MISSION_NUMBER = 503
+	
+	--[[ PRESET GAME STATE ]]
+	Setup_MissionPreset(MISSION_NUMBER)
+	
+	--[[ PRESET DEBUG CONDITIONS ]]
+	if Misc_IsCommandLineOptionSet("mayo") then
+		Trun_C_Debug()
+	end
+	
+	--[[ MOD INITIAL STATS ]]
+	Trun_C_ModifyStats()
+	
+	--[[ SET RESTRICTIONS ]]
+	Trun_C_Restrictions()
+	
+	--[[ SET AI ]]
+	Trun_C_CpuInit()
+	
+	--[[ SET DIFFICULTY ]]
+	Trun_C_Difficulty()
+	
+	--[[ MISSION PRESETS ]]
+	Trun_C_MissionPreset()
+	
+	--[[ GAME START CHECK ]]
+	Rule_Add(Trun_C_MissionStart)
+
+end
+
+Scar_AddInit(OnInit)
+
+function Trun_C_Debug()
+	
+	-- looks for the command line option [-debug]
+	if Misc_IsCommandLineOptionSet("debug") then
+		
+		g_debug = true
+		
+		-- reveal FOW
+		FOW_Enable(false)
+		
+	end
+	
+	-- set up bindings for NISes
+	Scar_DebugConsoleExecute("bind([[ALT+1]], [[Scar_DoString('Util_StartNIS(NIS_OPENING_BLACK)')]])")
+ 	Scar_DebugConsoleExecute("bind([[ALT+2]], [[Scar_DoString('Util_StartNIS(NIS_CLOSING)')]])")
+	Scar_DebugConsoleExecute("bind([[ALT+3]], [[Scar_DoString('Util_StartNIS(NIS_CLOSING, Trun_C_EndMission2)')]])")
+	
+end
+
+function Trun_C_ModifyStats()
+	
+	--[[ saved as example - deg
+	Player_SetDefaultSquadMoodMode(player1, MM_Auto)
+	Player_SetDefaultSquadMoodMode(player2, MM_Auto)
+	Player_SetDefaultSquadMoodMode(player3, MM_ForceTense)
+	
+	-- shorten vision ranges
+	Modify_PlayerSightRadius(player1, 0.75)
+
+	-- mod resource rates
+	t_player1_res_mods= {}
+	t_player1_res_mods[1] = Modify_PlayerResourceRate(player1, RT_Manpower, 2)
+	t_player1_res_mods[2] = Modify_PlayerResourceRate(player1, RT_Munition, 2)
+	t_player1_res_mods[3] = Modify_PlayerResourceRate(player1, RT_Fuel, 1)
+	
+	]]	
+	
+	-- make the 88s a little less potent
+	local ebp = EBP.TRUN.AXIS.FLAK_88
+	local scale = Util_DifVar({2, 3, 4})
+	local modifier = Modifier_Create(MAT_EntityType, "modifiers\\received_damage_modifier.lua", MUT_Multiplication, false, scale, ebp)
+	Modifier_ApplyToPlayer(modifier, player1)
+	local modifier = Modifier_Create(MAT_EntityType, "modifiers\\received_accuracy_modifier.lua", MUT_Multiplication, false, scale, ebp)
+	Modifier_ApplyToPlayer(modifier, player1)
+	
+	Modify_VehicleRepairRate(player1, 4)
+	
+end
+
+function Trun_C_Restrictions()
+
+	--[[ UN/RESTRICT UPGRADES 
+	Cmd_InstantUpgrade(player1, UPG.ALLIES.STICKY_BOMB)
+	]]
+	Cmd_InstantUpgrade(player1, UPG.ELITE.ADVANCED_REPAIR)
+	Cmd_InstantUpgrade(player1, UPG.ELITE.AT_GRENADE)
+	Cmd_InstantUpgrade(player1, UPG.ELITE.MP44)
+	Cmd_InstantUpgrade(player1, UPG.ELITE.PANZERSCHRECK)
+	Cmd_InstantUpgrade(player1, UPG.AXIS.PHASE2)
+	Cmd_InstantUpgrade(player1, UPG.AXIS.PHASE3)
+	Cmd_InstantUpgrade(player1, UPG.AXIS.PHASE4)
+	Cmd_InstantUpgrade(player1, UPG.ELITE.PANZER_ARTILLERIE, 1)
+	
+	--[[ RESOURCES ]]
+	Player_SetResource(player1, RT_Manpower, 1000)
+	Player_SetResource(player1, RT_Munition, 200)
+	Player_SetResource(player1, RT_Fuel, 200)
+	
+	
+	--[[ UN/RESTRICT ABILITIES 
+	Player_SetAbilityAvailability(player1, ABILITY.ALLIES.GRENADE, ITEM_UNLOCKED)
+	Player_SetAbilityAvailability(player1, ABILITY.ALLIES.SATCHEL_CHARGE, ITEM_REMOVED)
+	Player_SetAbilityAvailability(player2, ABILITY.AXIS.GRENADE, ITEM_UNLOCKED)
+	]]
+	Player_SetUpgradeAvailability(player1, UPG.AXIS.CONVERT_AMBIENT_BUILDING, ITEM_REMOVED)
+	Player_SetConstructionMenuAvailability(player1, TYPE.CONSTRUCT.AXIS.PIONEER_ADVANCED, ITEM_REMOVED)
+	
+	-- UN/RESTRICT POP CAP
+	Player_SetPopCapOverride(player1, 60)
+
+	--[[ UN/RESTRICT UI 
+	UI_BindingSetEnabled("company_commander", false)
+	UI_BindingSetEnabled("squadcap", false)
+	]]
+	
+	Modify_PlayerProductionRate(player1, 3)
+	
+	if g_CT_abilities_added ~= true then
+		g_CT_abilities_added = true
+		local abilities = {ABILITY.SP.TRUN.PROPAGANDA, ABILITY.SP.TRUN.INSPIRED_ASSAULT, ABILITY.SP.TRUN.BLITZKRIEG, 
+		ABILITY.SP.TRUN.BUTTERFLY_MINE, ABILITY.SP.TRUN.FIRESTORM, ABILITY.SP.TRUN.HENSCHEL_AIRSTRIKE, ABILITY.SP.TRUN.V1}
+		for i = 1, #(abilities) do 
+			Player_AddAbility(player1, abilities[i])
+		end
+	end
+	
+	--[[ UN/RESTRICT SBPS ]]
+	local sbps = {SBP.AXIS.PIONEER, SBP.AXIS.VOLKSGRENADIER, SBP.AXIS.GRENADIER, SBP.AXIS.KNIGHTSCROSS, SBP.AXIS.HEAVYMG, SBP.AXIS.MORTAR, SBP.AXIS.PAK_38, SBP.JOEY.WURST, SBP.JOEY.PIONEER4 }
+	for i = 1, table.getn(sbps) do
+		Player_SetSquadProductionAvailability(player1, sbps[i], ITEM_REMOVED)
+	end
+	local ebps = {EBP.AXIS.COMMAND, EBP.AXIS.ARMORY, EBP.AXIS.BARRACKS, EBP.AXIS.KAMPFKRAFT, EBP.AXIS.QUARTERS, EBP.AXIS.OBSERVATION_POST }
+	for i = 1, table.getn(sbps) do
+		Player_SetEntityProductionAvailability(player1, ebps[i], ITEM_REMOVED)
+	end
+	
+	--[[ RESTRICT TRUN SPECIFIC SBPS ]]
+	local sbps = {SBP.TRUN.AXIS.GRENADIER, SBP.TRUN.AXIS.ARMORED_CAR_222, SBP.TRUN.AXIS.HMG, SBP.TRUN.AXIS.PUMA, SBP.TRUN.AXIS.STUG, }
+	for i = 1, table.getn(sbps) do
+		Player_SetSquadProductionAvailability(player1, sbps[i], ITEM_REMOVED)
+	end
+
+end
+
+
+
+function Trun_C_CpuInit()
+
+	--[[ left as an example
+	
+	-- set up Player3 AI  
+	Util_AI_Setup(player3, {Util_DifVar({10, 15, 20, 30}), 5}, player3, Game_GetSPDifficulty(), 7, Util_DifVar({1, 2, 3, 5}), 2, 3)
+	
+	-- Set up AI's resources
+	Player_SetResource(player3, RT_Manpower, 1000)
+	Player_SetResource(player3, RT_Munition, 100)
+	Player_SetResource(player3, RT_Fuel, 100)
+	
+	-- tell AI to go after strongest threat instead of the weakest
+	AI_DoString( player3, "s_personality.attack_prefer_threat = true" )
+	AI_DoString( player3, "s_personality.defend_prefer_threat = true" )
+
+	-- tell AI not to "defend" territories outside of the ring around its base
+	AI_EnableComponent(player3, false, COMPONENT_ForwardDefending)
+	
+	-- disable use of comapny commander menu and abilities
+	AI_DoString( player3, "s_commandtree_enabled = false" )
+	AI_DoString( player3, "s_playerabilities_enabled = false" )
+	
+	AI_EnableComponent(player3, false, COMPONENT_Attacking)
+	
+	]]
+
+end
+
+
+
+function Trun_C_Difficulty()
+
+	-- get the difficulty
+	g_difficulty = Game_GetSPDifficulty()  -- set a global difficulty variable
+	print("********* DIFFICULTY: "..g_difficulty)
+	
+	-- set health bonus for players
+	local players = {player1, player3, player4, player5}
+	for i = 1, #(players) do 
+		Setup_Difficulty(players[i], g_difficulty) -- pass the player and difficulty global variable into the Set Health function
+	end
+	
+	--[[
+	t_difficulty = {
+		base_def_spawn 			= Util_DifVar( {2*60, 1.5*60, 1*60, 0.75*60} ),
+	}
+	]]
+	
+end
+
+
+-------------------------------------------------------------------------
+
+-- MISSION Preset 
+
+-------------------------------------------------------------------------
+
+function Trun_C_MissionPreset()
+	
+	-- Updates command point restrictions for this mission
+	RPGTracker_UpdateCommandPointLimit()
+
+	sg_temp = SGroup_CreateIfNotFound("sg_temp")
+	sg_camp = SGroup_CreateIfNotFound("sg_camp")
+	sg_player_All = SGroup_CreateIfNotFound("sg_player_All")
+	eg_trunC_traps = EGroup_CreateIfNotFound("eg_trunC_traps")
+	eg_trun_drops = EGroup_CreateTable("eg_trun_drops%d", 20)
+	
+	eg_retreat_point = EGroup_CreateIfNotFound("eg_retreat_point")
+	
+	if IsCounterattackMission() == false then
+		Player_AddResource(player1, RT_Command, 5)
+		Rule_AddInterval(Trun_C_CPHints, 1)
+		EGroup_SetSelectable(eg_center_tanktraps, false)
+	end
+	
+	t_trunC = {
+		retreat = mkr_trunC_p1_3,
+		focus = mkr_trunC_p1_1,
+		rally = {
+			{egroup = eg_church, pos = mkr_rally_infantry},
+			{egroup = eg_motorpool, pos = mkr_rally_vehicle},
+		},
+		drop = {
+			{territory = eg_terPoint1, 	marker = mkr_terDrop1,	egroup = eg_trun_drops[1]},
+			{territory = eg_terPoint2, 	marker = mkr_terDrop2,	egroup = eg_trun_drops[2]},
+			{territory = eg_terPoint3, 	marker = mkr_terDrop3,	egroup = eg_trun_drops[3]},
+			{territory = eg_terPoint4, 	marker = mkr_terDrop4,	egroup = eg_trun_drops[4]},
+			{territory = eg_terPoint5, 	marker = mkr_terDrop5,	egroup = eg_trun_drops[5]},
+			{territory = eg_terPoint6, 	marker = mkr_terDrop6,	egroup = eg_trun_drops[6]},
+			{territory = eg_terPoint7, 	marker = mkr_terDrop7,	egroup = eg_trun_drops[7]},
+			{territory = eg_terPoint8, 	marker = mkr_terDrop8,	egroup = eg_trun_drops[8]},
+			{territory = eg_terPoint9, 	marker = mkr_terDrop9,	egroup = eg_trun_drops[9]},
+			{territory = eg_terPoint10,	marker = mkr_terDrop10,	egroup = eg_trun_drops[10]},
+			{territory = eg_terPoint11,	marker = mkr_terDrop11,	egroup = eg_trun_drops[11]},
+			{territory = eg_terPoint12,	marker = mkr_terDrop12,	egroup = eg_trun_drops[12]},
+			{territory = eg_terPoint13,	marker = mkr_terDrop13,	egroup = eg_trun_drops[13]},
+			{territory = eg_terPoint14,	marker = mkr_terDrop14,	egroup = eg_trun_drops[14]},
+		},                                                                               
+	}
+	if EGroup_IsEmpty(eg_retreat_point) == false then EGroup_DestroyAllEntities(eg_retreat_point) end
+	Util_CreateEntities(player1, eg_retreat_point, EBP.SP.TRUN.RETREAT_POINT, t_trunC.retreat, 1)
+
+	-- start enemy behavior
+	if EGroup_IsEmpty(eg_church) == false and Player_OwnsEGroup(player1, eg_church) == false then
+		EGroup_SetPlayerOwner(eg_church, player1)
+		Cmd_InstantUpgrade(eg_church, UPG.AXIS.CONVERT_AMBIENT_BUILDING)		
+	end
+
+	
+	local player = {player1, player2, player3}
+	for i = 1, #(player) do 
+		Player_GetAll(player[i], sg_player_All)
+		SGroup_Filter(sg_player_All, SBP.TRUN.AXIS.FLAK_88, FILTER_REMOVE)
+		SGroup_DestroyAllSquads(sg_player_All)
+	end
+	
+	-- if areas of your script need to be kicked off early
+	local control = {eg_terAxis1, eg_terAxis2, eg_terAxis3}
+	for i = 1, #(control) do 
+		if EGroup_IsCapturedByPlayer(control[i], player1, true) == false then
+			EGroup_InstantCaptureStrategicPoint(control[i], player1)
+		end
+	end
+ 	local allies = {eg_terAllies1, eg_terAllies2}
+	for i = 1, #(allies) do 
+		if EGroup_IsCapturedByPlayer(allies[i], player3, true) == false then
+			EGroup_InstantCaptureStrategicPoint(allies[i], player3)
+		end
+	end
+
+	--[[ defenses for 3
+	local marker = {mkr_fleeMine1, mkr_fleeMine2, mkr_fleeMine3}
+	for i = 1, #(marker) do
+		Trun_C_SpawnMines(player1, EBP.AXIS.MINES, Marker_GetPosition(marker[i]), 20, 10)
+	end]]
+	local traps = {mkr_fleeTrapA1, mkr_fleeTrapA2, mkr_fleeTrapA8}
+	for i = 1, #(traps) do 
+		Util_CreateEntities(player1, eg_trunC_traps, EBP.AXIS.TANK_TRAP, traps[i], 1)
+	end
+	
+	Rule_AddInterval(Trun_C_SpawnDrops, 20)
+	Rule_AddInterval(Trun_C_RallyPoints, 1)
+	Rule_AddInterval(Trun_C_LogSyncW, 5)
+end
+
+function Trun_C_SpawnDrops()
+	
+	local ebps = {EBP.PICKUP.AXIS.PANZERSCHRECK, EBP.PICKUP.AXIS.PANZERSCHRECK, EBP.PICKUP.AXIS.MORTAR, EBP.PICKUP.AXIS.HMG}
+	
+	for k,this in pairs(t_trunC.drop) do 
+		if EGroup_IsCapturedByPlayer(this.territory, player1, false) then
+			if EGroup_Count(this.egroup) < 2 then
+				if Misc_IsPosOnScreen(Marker_GetPosition(this.marker)) == false then
+					local blueprint = ebps[World_GetRand(1, #(ebps))]
+					Util_CreateEntities(nil, this.egroup, blueprint, Util_GetRandomPosition(this.marker, 5), 1)
+					break
+				end
+			end
+		end
+	end
+end
+
+function Trun_C_RallyPoints()
+	local done = true
+	for k,this in pairs(t_trunC.rally) do 
+		if EGroup_IsEmpty(this.egroup) == false then
+			if Player_OwnsEGroup(player1, this.egroup, false) == false then
+				done = false
+			elseif this.done ~= true then
+				this.done = true
+				Command_EntityPos(player1, this.egroup, CMD_RallyPoint, Marker_GetPosition(this.pos))
+				EGroup_SetInvulnerable(this.egroup, 0.2) 
+			end
+		end
+	end
+	if done then Rule_RemoveMe() end
+end
+
+
+
+-- this function will pick a random location within a given proximity of a marker and spawn mines near that location
+function Trun_C_SpawnMines(player, ebp, pos, prox, mine_num)
+	
+	local _teg_mines = EGroup_CreateTable("_eg_mines%d", mine_num)
+
+	for i=1, table.getn(_teg_mines) do
+		
+		local target = Util_GetPosition(pos)
+		
+		-- forced fudge factor
+		target.x = target.x + World_GetRand(-1*prox, prox)
+		target.z = target.z + World_GetRand(-1*prox, prox)
+		target = Util_ScarPos(target.x, target.z)
+		--target = World_Pos(target.x, nil, target.z)
+		
+		Util_CreateEntities(player, _teg_mines[i], ebp, target, 1)
+		
+		EGroup_Destroy(_teg_mines[i])
+		
+	end
+
+end
+
+-------------------------------------------------------------------------
+
+-- MISSION START 
+
+-------------------------------------------------------------------------
+
+function Trun_C_MissionStart()
+	if Event_IsAnyRunning() == false then
+		
+		-- delay first objective
+		Util_StartNIS(NIS_OPENING_BLACK, Trun_C_DelayObjTitle)
+		
+		Rule_RemoveMe()
+	end
+end
+
+
+function Trun_C_DelayObjTitle()
+	if Event_IsAnyRunning() == false then
+		-- if areas of your script need to be kicked off early
+		Camera_FocusOnPosition(Marker_GetPosition(t_trunC.focus), false)
+		Camera_ResetToDefault()
+		
+		Objective_Start(OBJ_Retreat)
+		Rule_AddInterval(Trun_C_ObjTrack, 5)
+		
+		Game_LoadAtmosphere("data:Art/Scenarios/Presets/Atmosphere/DLC_TRUN_C_DUSK.APS", 60*10)
+		--[[ Next Atmosphere Loaded in Trun_C_Medal.scar ]]
+		
+		Rule_RemoveMe()
+	end
+end
+
+
+
+function Trun_C_ObjTrack()
+
+	-- Transition 
+	if Objective_IsStarted(OBJ_Retreat) and Objective_IsStarted(OBJ_Territory) == false and Event_IsAnyRunning() == false then-- start the 3rd objective
+		Objective_Start(OBJ_Territory, false)
+		return
+	end
+
+	if Objective_IsComplete(OBJ_Retreat) and Event_IsAnyRunning() == false then
+		Rule_AddDelayedInterval(Trun_C_EndMission1, 5, 1)
+		Rule_RemoveMe()
+		return
+	end
+	
+	if Objective_IsFailed(OBJ_Retreat) then
+		Game_EndSP(false, 9404002)
+		return
+	end
+end
+
+
+function Trun_C_EndMission1()
+
+	if Event_IsAnyRunning() == false then
+		Util_StartNIS(NIS_CLOSING, Trun_C_EndMission2)
+		Rule_RemoveMe()
+	end
+
+end
+
+function Trun_C_EndMission2()
+
+	if Event_IsAnyRunning() == false then
+		HintMouseover_RemoveAll()
+		RPGTracker_SaveXP()
+		Game_EndSP(true, 9404001)
+		Rule_RemoveMe()
+	end
+
+end
+
+
+
+
+function Trun_C_LogSyncW()
+	if _KillSyncW == nil then
+		_KillSyncW = {}
+	end
+
+	Player_GetAll(player1, sg_temp)
+	SGroup_Filter(sg_temp, SBP.TRUN.AXIS.FLAK_88, FILTER_KEEP)
+	
+	local _CheckSquad = function(gid, idx, sid)
+		
+		for n = 1, Squad_Count(sid) do
+			local isNewSyncWeap = true
+			local eid = Squad_EntityAt(sid, n-1)
+			if Entity_IsSyncWeapon(eid) == true then
+				syncid = Entity_GetGameID(eid)
+				for i = 1, #(_KillSyncW) do 
+					if syncid == _KillSyncW[i] then
+						isNewSyncWeap = false
+						break
+					end
+				end
+				if isNewSyncWeap == true then
+					table.insert(_KillSyncW, syncid)
+				end
+			end
+		end
+		
+	end
+	
+	if SGroup_IsEmpty(sg_temp) == false then
+		SGroup_ForEach(sg_temp, _CheckSquad)
+	end
+	
+	if #(_KillSyncW) > 0 then
+		if Rule_Exists(Trun_C_KillSyncW) == false then
+			Rule_AddInterval(Trun_C_KillSyncW, 1)
+		end
+	end
+end
+
+function Trun_C_KillSyncW()
+	local count = table.getn(_KillSyncW)
+	if count > 0 then
+		for i = count, 1, -1 do 
+			local syncw = _KillSyncW[i]
+			if SyncWeapon_IsOwnedByPlayer(syncw, nil) then
+				local entity = SyncWeapon_GetEntity(syncw)
+				local egroup = EGroup_CreateIfNotFound("eg_killentity"..i)
+				EGroup_Add(egroup, entity)
+				EGroup_Kill(egroup)
+				table.remove(_KillSyncW, i)
+			end
+		end
+	end	
+end
+
+
+function Trun_C_CPHints()
+	if Player_GetResource(player1, RT_Command) >= 1 then
+		t_trunC.CCFlashId = UI_FlashBinding("company_commander", true, BT_UI_Weak_CommanderBtn)
+		--t_trunC.CCButtonId = HintPoint_AddToTaskbarBinding("company_commander", 6019507, true)
+		Rule_AddOneShot(Trun_C_Remove_CPHints, 30)
+		Rule_RemoveMe()
+	end
+end
+
+function Trun_C_Remove_CPHints()
+	UI_StopFlashing( t_trunC.CCFlashId )
+	HintPoint_Remove( t_trunC.CCButtonId )
+end
+
+
+
+function Trun_C_AntiSpawnCamping(marker)
+	if Rule_Exists(Trun_C_ASC_Action) == false then
+		t_trunC.campPos = marker
+		Rule_AddInterval(Trun_C_ASC_Action, World_GetRand(5, 18))
+	end
+end
+
+function Trun_C_ASC_Action()
+	Player_GetAllSquadsNearMarker(player1, sg_camp, t_trunC.campPos, 70)
+	if SGroup_IsEmpty(sg_camp) == false then
+		local pos = SGroup_GetPosition(sg_camp)
+		if World_GetRand(1, 3) == 1 then
+			EventCue_Create(CUE.ATTACKED, 9404622, 9404622, pos)
+			Cmd_Ability(player3, ABILITY.COMMANDER_TREE.ALLIES.HOWITZER_SHOOT, pos, nil, true)
+		else
+			EventCue_Create(CUE.ATTACKED, 9394624, 9394624, pos)
+			Cmd_Ability(player4, ABILITY.COMMANDER_TREE.ALLIES.STRAFE_ROCKET, pos, nil, true)
+		end
+	end
+	Rule_RemoveMe()
+end
+
+
+
+
+
+
+
+

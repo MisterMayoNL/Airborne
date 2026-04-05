@@ -1,0 +1,818 @@
+-------------------------------------------------------------------------
+-------------------------------------------------------------------------
+--
+-- NIS File for Mission 2 - ST MERE EGLISE
+--
+-------------------------------------------------------------------------
+-------------------------------------------------------------------------
+
+function NIS_Init()
+
+	-- load NIS's
+	NIS01 = "sp/M02_Paradrop/NIS/N02_01"
+	nis_load(NIS01)
+	NIS02 = "sp/M02_Paradrop/NIS/N02_02"
+	nis_load(NIS02)
+	NIS03 = "sp/M02_Paradrop/NIS/N02_03"
+	nis_load(NIS03)
+	-- NIS04 and NIS05 axed
+	NIS06 = "sp/M02_Paradrop/NIS/N02_06"
+	nis_load(NIS06)
+	NIS07 = "sp/M02_Paradrop/NIS/N02_07"
+	nis_load(NIS07)
+	
+	nis_setintransitiontime(0)
+	nis_setouttransitiontime(0)
+
+end
+
+Scar_AddInit(NIS_Init)
+
+
+
+
+
+EVENTS = {}
+
+
+--------------------------------------------------------------------------------
+-- Opening Cinematic
+--------------------------------------------------------------------------------
+
+EVENTS.NIS_NEWOPEN = function()
+
+	Game_Letterbox(true, 0)
+	Game_FadeToBlack(FADE_IN, 2)
+	
+	-- old NIS1
+	SGroup_Hide(sg_hideNIS01, true)
+	EGroup_Hide(eg_hideNIS01, true)
+	SGroup_SetAutoTargetting(sg_hideNIS01, "hardpoint_01", false)
+	ShootTheSky_RemoveSyncWeapon(sw_aagun1)
+	-- old NIS2
+	SGroup_Hide(sg_hideNIS02, true)
+	EGroup_Hide(eg_hideNIS02, true)
+	SGroup_SetAutoTargetting(sg_hideNIS02, "hardpoint_01", false)
+	FOW_Enable(false)
+	
+	nis_setintransitiontime(0)
+	nis_setouttransitiontime(0)
+	
+	CTRL.Scar_PlayNIS2(NIS01, NIS02)
+	CTRL.WAIT()
+	
+	nis_stop()
+
+	FOW_Enable(true)
+	-- old NIS1
+	ShootTheSky_AddSyncWeapon(sw_aagun1, player2)
+	SGroup_SetAutoTargetting(sg_hideNIS01, "hardpoint_01", true)
+	EGroup_Hide(eg_hideNIS01, false)
+	SGroup_Hide(sg_hideNIS01, false)
+	SGroup_DestroyAllSquads(sg_nis)
+	SGroup_DestroyAllSquads(sg_hideNIS02, false)
+	--EGroup_Hide(eg_hideNIS02, false)
+	SGroup_SetAutoTargetting(sg_hideNIS02, "hardpoint_01", true)
+	
+	Game_Letterbox(false, 0.75)
+	Game_FadeToBlack(false, 0.75)
+	--Camera_ResetToDefault()
+
+end
+
+
+EVENTS.PostNIS02Chatter = function()
+
+	CTRL.Actor_PlaySpeech(ACTOR.Carota, 220290) -- Carl, Kenny? 
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.Lewis, 220298) -- Flakburst 
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.GenericAlly, 220299) -- We managed to jump
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.Carota, 220300) -- You're with us now - let's go.
+	CTRL.WAIT()
+	CTRL.Event_Delay(0.5)
+	CTRL.WAIT()
+end
+
+EVENTS.PostNIS02Chatter_2 = function()
+	CTRL.Event_Delay(0.5)
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.Carota, 220200) -- That gun is well defended
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.Carota, 220210) -- Williams, flank it from the right, we'll take the middle.
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.Carota, 220220) -- Use grenades when you can.
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.Carota, 220230) -- Let's move out.
+	CTRL.WAIT()
+end
+
+--------------------------------------------------------------------------------
+-- AA Site
+--------------------------------------------------------------------------------
+
+EVENTS.AAGunSecured = function()
+	CTRL.Actor_PlaySpeech(ACTOR.Carota, 220240) -- That’s one less to worry about.
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.Carota, 220260) 
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.GenericAlly, 220251) 
+	CTRL.WAIT()
+end
+
+EVENTS.AAGunNextTarget = function()
+	CTRL.Actor_PlaySpeech(ACTOR.GenericAlly, 220251) 
+	CTRL.WAIT()
+end
+
+EVENTS.AASites = function()
+	
+--~ 	CTRL.Game_Letterbox(true, 1)
+--~ 	CTRL.WAIT()
+--~ 	
+--~ 	Game_FadeToBlack(FADE_OUT, 3.5)
+
+--~ 	CTRL.Event_Delay(4)
+--~ 	CTRL.WAIT()
+	
+	-- force the objective
+	OBJECTIVE_AASITES.SitRep = AASITES_SitRep
+	Objective_ForceSitRep(OBJECTIVE_AASITES)
+
+--~ 	Game_FadeToBlack(FADE_IN, 0)
+--~ 	Game_Letterbox(false, 0)
+
+end
+
+
+--------------------------------------------------------------------------------
+-- First Point
+-------------------------------------------------------------------------------- 
+
+EVENTS.FirstPoint_Start = function()
+	CTRL.Actor_PlaySpeech(ACTOR.Carota, 220259)  
+	CTRL.WAIT()
+--	CTRL.Actor_PlaySpeech(ACTOR.Carota, 220261) 
+--	CTRL.WAIT()
+end
+
+-- no suitable text was recorded - deg
+EVENTS.FindGuys1_BuildOP = function()
+	--CTRL.Actor_PlaySpeech(ACTOR.Carota, 229085) 
+	--CTRL.WAIT()
+end
+
+
+
+EVENTS.FindGuys1_Part1 = function()
+	CTRL.Actor_PlaySpeech(ACTOR.Carota, 220173) -- Thunder...
+	CTRL.WAIT()
+	-- the source file says Thompson says this but for our purposes it should be a generic soldier
+	CTRL.Actor_PlaySpeech(ACTOR.GenericAlly, 220174) -- Flash... 
+	CTRL.WAIT()
+end
+
+EVENTS.FindGuys1_Part2 = function()
+	CTRL.Actor_PlaySpeech(ACTOR.Carota, 220300) -- You're with us now - let's go.
+	CTRL.WAIT()
+end
+
+
+EVENTS.FindGuys_Sniper = function()
+	CTRL.Actor_PlaySpeech(ACTOR.Carota, 220173) -- Thunder...
+	CTRL.WAIT()
+	-- the source file says Thompson says this but for our purposes it should be a generic soldier
+	CTRL.Actor_PlaySpeech(ACTOR.GenericAlly, 220172) -- Flash... 
+	CTRL.WAIT()
+	CTRL.Event_Delay(1)
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.GenericAlly, 220197)  
+	CTRL.WAIT()
+end
+
+joey_dead = {212037, 212040, 212053, 212065}
+EVENTS.JoeyDead = function()
+	UI_EnableEventSkip(false)
+	CTRL.Event_Delay(1)
+	CTRL.WAIT()
+	Game_Letterbox(true, 0)
+	UI_EnableEventSkip(true)
+	Camera_MoveToPosition(cameraJoey, true, SLOW_CAMERA_PANNING)
+	CTRL.Event_Delay(0.65)
+	CTRL.WAIT()
+	local text = joey_dead[World_GetRand(1, table.getn(joey_dead))]
+	CTRL.Actor_PlaySpeech(ACTOR.Lewis, text)
+	CTRL.WAIT()
+	CTRL.Event_Delay(0.25)
+	CTRL.WAIT()
+end
+
+--------------------------------------------------------------------------------
+-- Barn
+-------------------------------------------------------------------------------- 
+EVENTS.Barn_IntroNIS = function()
+
+	-- change up music
+	Util_PlayMusic("Music/sp/m02_combat", 2, 0)
+	
+	CTRL.Game_Letterbox(true, 1)
+	CTRL.WAIT()
+	
+ 	-- stop the guys and make invulnerable
+ 	Player_GetAll(player1)
+ 	Cmd_StopSquadsExcept(sg_allsquads, false, false)
+	
+	Util_HidePlayerForNIS(ALL, true)
+	FOW_Enable(false)
+	
+	nis_setintransitiontime(0)
+	nis_setouttransitiontime(0)
+
+	CTRL.Scar_PlayNIS(NIS03)
+	CTRL.WAIT()
+	
+	nis_stop()
+
+	Camera_MoveToPosition(obmarker_barn, false)
+	Camera_ResetToDefault()
+	
+	Util_HidePlayerForNIS(ALL, false)
+	
+	CTRL.Event_Delay(1)
+	CTRL.WAIT()
+	
+	CTRL.Actor_PlaySpeech(ACTOR.GenericAlly, 220391) 
+	CTRL.WAIT()
+	
+	CTRL.Event_Delay(1.5)
+	CTRL.WAIT()
+	
+	CTRL.Actor_PlaySpeech(ACTOR.GenericAlly, 220392)
+		Cmd_Move(sg_barnenemies1, Util_GetRandomPosition(mkr_barn_axisgoto1, 3))
+		Cmd_Move(sg_barnenemies2, Util_GetRandomPosition(mkr_barn_axisgoto2, 3))
+		Cmd_Move(sg_barnenemies3, Util_GetRandomPosition(mkr_barn_axisgoto3, 3))
+		Cmd_Move(sg_barnenemies4, Util_GetRandomPosition(mkr_barn_axisgoto4, 3))
+		Camera_MoveToPosition(mkr_barn_axisgoto4, true, SLOW_CAMERA_PANNING)
+		--Camera_FocusOnPosition(Marker_GetPosition(mkr_barn_axisgoto4), true)
+	CTRL.WAIT()
+	
+	CTRL.Event_Delay(2)
+	CTRL.WAIT()
+	
+	CTRL.Actor_PlaySpeech(ACTOR.GenericAlly, 220393) 
+		Camera_MoveToPosition(mkr_barn_paradrop_look, true, SLOW_CAMERA_PANNING)
+		--Camera_FocusOnPosition(Marker_GetPosition(mkr_barn_paradrop), true)
+		-- hint point
+		hint_paradropID = HintPoint_Add( mkr_barn_paradrop, 30, 229106 )
+	CTRL.WAIT()
+	
+	Game_Letterbox(false, 1)
+	FOW_Enable(true)
+	
+--~ 	SGroup_SetInvulnerable(sg_barnenemiesall, false)
+--~ 	SGroup_SetInvulnerable(sg_allsquads, false)
+	-- for some reason if this is called earlier
+	-- the squad retains their invulnerability
+	Cmd_CaptureTeamWeapon(sg_barnenemies1, eg_barn_hmg)
+
+end
+
+EVENTS.Barn_PreNISChatter = function()
+	CTRL.Actor_PlaySpeech(ACTOR.Carota, 220341) -- Squad, listen up! Firefight ahead.
+	CTRL.WAIT()
+end
+
+
+
+-- Barn Attack
+-- USE GRENADES!
+EVENTS.BarnAttack_Grenades = function()
+	CTRL.Actor_PlaySpeech(ACTOR.Carota, 220390) 
+	CTRL.WAIT()
+end
+
+-- Use the WALLS FOR COVER!
+EVENTS.BarnAttack_UseWall = function()
+	CTRL.Actor_PlaySpeech(ACTOR.Carota, 220360) 
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.Joey, 220365) 
+	CTRL.WAIT()
+end
+
+-- Keep FIRING! Pour it ON!
+EVENTS.BarnAttack_KeepFiring = function()
+	CTRL.Actor_PlaySpeech(ACTOR.Carota, 220370) 
+	CTRL.WAIT()
+end
+
+-- PIN 'em down!
+EVENTS.BarnAttack_PinEm = function()
+	CTRL.Actor_PlaySpeech(ACTOR.Carota, 220350) 
+	CTRL.WAIT()
+end
+
+-- MOVE UP!
+EVENTS.BarnAttack_MoveUp = function()
+	CTRL.Actor_PlaySpeech(ACTOR.Carota, 220380) 
+	CTRL.WAIT()
+end
+
+
+EVENTS.BarnAttack_TruckApproaching = function()
+	CTRL.Actor_PlaySpeech(ACTOR.Thompson, 220490) -- Enemy Contact!
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.Thompson, 220500) -- Take out that truck!
+	CTRL.WAIT()
+end
+
+
+-- Barn Rescued
+EVENTS.BarnRescued = function()
+	CTRL.Actor_PlaySpeech(ACTOR.Lewis, 220375) -- Clear!
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.Carota, 220400) -- Clear!
+	CTRL.WAIT()
+	CTRL.Event_Delay(1)
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.Thompson, 220440) -- Take out that truck!
+	CTRL.WAIT()	
+end
+
+
+
+
+--------------------------------------------------------------------------------
+-- Secure the Road
+-------------------------------------------------------------------------------- 
+
+-- First patrol comes down the road
+EVENTS.GetBackSomethingsComing_NIS = function()
+
+	CTRL.Game_Letterbox(true, 1)
+		FOW_Enable(false)
+	CTRL.WAIT()
+	
+	-- stop the guys and make invulnerable
+	Player_GetAll(player1)
+	Cmd_StopSquadsExcept(sg_allsquads, false, false)
+	SGroup_SetInvulnerable(sg_allsquads, true)
+
+	CTRL.Actor_PlaySpeech(ACTOR.Carota, 220510) -- Find cover! Kraut patrol!
+		
+		CTRL.SUB()
+			
+			CTRL.Event_Delay(1.5)
+			CTRL.WAIT()
+			
+			pos_prebarnCamera = Camera_GetTargetPos()
+			Camera_ResetToDefault()
+			Camera_ResetToDefault()
+			Camera_MoveToPosition(patrol_reveal_a, true, SLOW_CAMERA_PANNING)
+			--Camera_FocusOnPosition(Marker_GetPosition(patrol_reveal_a), true)
+			
+			CTRL.Event_Delay(1.5)
+			CTRL.WAIT()
+			
+		CTRL.END()
+		
+	CTRL.WAIT()
+	
+	CTRL.Event_Delay(1.5)
+	CTRL.WAIT()
+	
+	Objective_Start(OBJECTIVE_SECUREROAD)
+--	Objective_ForceSitRep(OBJECTIVE_SECUREROAD)
+	
+--~ 	CTRL.Actor_PlaySpeech(ACTOR.Thompson, 220520) -- Wait until they've passed...
+--~ 	CTRL.WAIT()
+--~ 	
+--~ 	CTRL.Event_Delay(3.5)
+--~ 	CTRL.WAIT()
+--~ 	
+--~ 	CTRL.Actor_PlaySpeech(ACTOR.Thompson, 220530) -- ...wait...
+--~ 	CTRL.WAIT()
+--~ 	
+--~ 	CTRL.Event_Delay(3)
+--~ 	CTRL.WAIT()
+--~ 	
+--~ 	CTRL.Actor_PlaySpeech(ACTOR.Thompson, 220540) -- ...hold it...
+--~ 	CTRL.WAIT()
+--~ 	
+--~ 	CTRL.Event_Delay(2)
+--~ 	CTRL.WAIT()
+--~ 	
+--~ 	Objective_Start(OBJECTIVE_SECUREROAD)
+--~ 	
+--~ 	CTRL.Event_Delay(3)
+--~ 	CTRL.WAIT()
+
+--~ 	Objective_ForceSitRep(OBJECTIVE_SECUREROAD)
+	
+end
+
+
+EVENTS.WhatAreYouDoing = function()
+
+	CTRL.Actor_PlaySpeech(ACTOR.Carota, 222100) -- Hey! The LT said to wait!
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.Carota, 222110) -- What are you DOING?!? Take cover!
+	CTRL.WAIT()
+
+end
+
+-- shortened up - deg
+EVENTS.KeepOffTheRoad = function()
+	CTRL.Actor_PlaySpeech(ACTOR.Carota, 220571) -- Okay, it's clear.
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.Carota, 220572) -- Those patrol vehicles have been going past every couple of minutes.
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.Carota, 220573) -- The Germans must be using this road for reinforcements.
+	CTRL.WAIT()
+end	
+
+-- instead of avoiding the patrol
+-- now we encourage the player by suggesting landmines and tank traps - deg
+EVENTS.MiniAmbushPlot = function()
+	CTRL.Event_Delay(0.5)
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.Thompson, 220820) 
+	CTRL.WAIT()
+	CTRL.Event_Delay(1)
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.Carota, 220575) 
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.Carota, 220576) 
+	CTRL.WAIT()
+end
+
+
+EVENTS.VehicleApproaching = function()
+
+	CTRL.Actor_PlaySpeech(ACTOR.Carota, 222100) -- Vehicles approaching!
+	CTRL.WAIT()
+	
+end
+
+EVENTS.VehicleDestroyed = function()
+	
+	CTRL.Actor_PlaySpeech(ACTOR.Thompson, 222130) -- Well done! We've stopped the enemy patrolling the road, which should help us secure land on both sides of the road.
+	CTRL.WAIT()
+	
+end
+
+
+
+EVENTS.EncounterMGNest = function()
+	CTRL.Actor_PlaySpeech(ACTOR.Carota, 220580) -- MG’s! Let's flank ‘em?
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.Carota, 220590) -- Stay out of the MG's cone of fire.
+	CTRL.WAIT()
+end
+
+
+
+
+
+--------------------------------------------------------------------------------
+-- Secure The Road
+--------------------------------------------------------------------------------
+ 
+EVENTS.SecureRoad_SouthSecure = function()
+	CTRL.Actor_PlaySpeech(ACTOR.Thompson, 222000)				-- Southern section of the road secure
+	CTRL.WAIT()
+end
+
+EVENTS.SecureRoad_MiddleSecure = function()
+	CTRL.Actor_PlaySpeech(ACTOR.Thompson, 222010)				-- Middle section of the road secure
+	CTRL.WAIT()
+end
+
+EVENTS.SecureRoad_NorthSecure = function()
+	CTRL.Actor_PlaySpeech(ACTOR.Thompson, 222020)				-- Northern section of the road secure
+	CTRL.WAIT()
+end
+
+EVENTS.SecureRoad_JustSouthLeft = function()
+	CTRL.Actor_PlaySpeech(ACTOR.Thompson, 222030)				-- Road section secured - just the southern section left
+	CTRL.WAIT()
+end
+
+EVENTS.SecureRoad_JustMiddleLeft = function()
+	CTRL.Actor_PlaySpeech(ACTOR.Thompson, 222030)				-- Road section secured - just the middle section left
+	CTRL.WAIT()
+end
+
+EVENTS.SecureRoad_JustNorthLeft = function()
+	CTRL.Actor_PlaySpeech(ACTOR.Thompson, 222030)				-- Road section secured - just the northern section left
+	CTRL.WAIT()
+end
+
+EVENTS.SecureRoad_SouthLost = function()
+	CTRL.Actor_PlaySpeech(ACTOR.Thompson, 222060)				-- We've lost the southern road section!
+	CTRL.WAIT()
+end
+
+EVENTS.SecureRoad_MiddleLost = function()
+	CTRL.Actor_PlaySpeech(ACTOR.Thompson, 222070)				-- The bastards have taken the middle road section back!
+	CTRL.WAIT()
+end
+
+EVENTS.SecureRoad_NorthLost = function()
+	CTRL.Actor_PlaySpeech(ACTOR.Thompson, 222080)				-- Goddamit! We've lost the northern road section somehow.
+	CTRL.WAIT()
+end
+
+EVENTS.SecureRoad_AllSecure = function()
+	CTRL.Actor_PlaySpeech(ACTOR.Thompson, 222090)				-- The road is secure!
+	CTRL.WAIT()
+end
+
+
+
+--------------------------------------------------------------------------------
+-- Out Of Supply
+--------------------------------------------------------------------------------
+
+EVENTS.OutOfSupply = function()
+	CTRL.Actor_PlaySpeech(ACTOR.Carota, 222330)				-- Some bad news. This territory isn't connected to our supply lines
+	CTRL.WAIT()
+end
+
+EVENTS.OutOfSupply_Reconnected = function()
+	CTRL.Actor_PlaySpeech(ACTOR.Carota, 222350)				-- We've got that sector connected up and in supply. Good work.
+	CTRL.WAIT()
+end
+ 
+--------------------------------------------------------------------------------
+-- Emplacements
+--------------------------------------------------------------------------------
+ 
+
+EVENTS.Emplacement1_Approach = function()
+	
+	CTRL.Actor_PlaySpeech(ACTOR.Carota, 222200)				-- Some of our guys are attacking already!
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.Carota, 222210)				-- Quick! Get in there, find some cover and help them take out that AA Gun!
+	CTRL.WAIT()
+	
+end
+
+EVENTS.Emplacement2_Approach = function()
+	
+	CTRL.Actor_PlaySpeech(ACTOR.Carota, 222220)				-- Some of our guys pinned over by the bushes!
+	CTRL.WAIT()
+	
+end
+ 
+EVENTS.Emplacement_Killed1 = function()
+
+	Util_MissionTitle(229950)
+	CTRL.Actor_PlaySpeech(ACTOR.Carota, 222250)				-- Anti-aircraft gun – out of action. That’s the good news. The bad news is there are three more in this area to deal with. Let’s go.
+	CTRL.WAIT()
+	
+end 
+
+EVENTS.Emplacement_Killed2 = function()
+
+	Util_MissionTitle(229951)
+	CTRL.Actor_PlaySpeech(ACTOR.Carota, 222270)				-- AA Site destroyed. Three down, two to go.
+	CTRL.WAIT()
+	
+end 
+
+EVENTS.Emplacement_Killed3 = function()
+
+	Util_MissionTitle(229952)
+	CTRL.Actor_PlaySpeech(ACTOR.Carota, 222280)				-- Yeah! Another site down! Just one more to go, guys!
+	CTRL.WAIT()
+	
+end 
+
+EVENTS.Emplacement_Killed4 = function()
+
+	CTRL.Actor_PlaySpeech(ACTOR.Thompson, 222290)				-- All Anti-Aircraft Guns destroyed! Good work, guys - I’m sure the rest of the paras will appreciate that.
+	CTRL.WAIT()
+	
+end 
+
+
+
+
+ 
+ 
+ 
+ 
+
+
+--------------------------------------------------------------------------------
+-- Glider
+--------------------------------------------------------------------------------
+ 
+
+
+
+-- Player reaches the cache at the first glider site 
+EVENTS.GliderFoundCache1 = function()
+	
+	CTRL.Actor_PlaySpeech(ACTOR.Carota, 222530) 
+	CTRL.WAIT()	
+	CTRL.Event_Delay(1)
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.Lewis, 220810) 
+	CTRL.WAIT()
+	
+end
+
+
+
+-- Player reaches the cache at the second glider site 
+EVENTS.GliderFoundCache2 = function()
+	
+	CTRL.Actor_PlaySpeech(ACTOR.Carota, 222520)				-- This is what I like to see. Bazookas. M1917s. Take what you can, men. 
+	CTRL.WAIT()	
+	CTRL.Event_Delay(1)
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.GenericAlly, 220830) 
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.Lewis, 220800) 
+	CTRL.WAIT()
+	
+end
+
+
+
+
+
+--------------------------------------------------------------------------------
+-- BUNKER EVENTS
+--------------------------------------------------------------------------------
+
+
+
+-- Attack on the Bunkers
+EVENTS.AttackBunkers_OnTheRun = function()
+
+	CTRL.Actor_PlaySpeech(ACTOR.Joey, 220740)				-- We’ve got ‘em on the run!
+	CTRL.WAIT()
+
+end
+EVENTS.AttackBunkers_UseGrenades = function()
+
+	CTRL.Actor_PlaySpeech(ACTOR.Joey, 220750)				-- Get some pineapples into those bunkers to clear them out!
+	CTRL.WAIT()
+
+end
+EVENTS.AttackBunkers_MoreGermans = function()
+
+	CTRL.Actor_PlaySpeech(ACTOR.Joey, 220760)				-- More krauts in-bound from the west!
+	CTRL.WAIT()
+
+end
+EVENTS.AttackBunkers_TakeOutMGNest = function()
+
+	CTRL.Actor_PlaySpeech(ACTOR.Joey, 220770)				-- Take out that MG nest, it’s chewing us up!
+	CTRL.WAIT()
+
+end
+
+
+
+
+EVENTS.SetUpEmplacements = function()
+
+	CTRL.Actor_PlaySpeech(ACTOR.Carota, 220850)				-- You heard the man, get two squads covering this road!
+	CTRL.WAIT()
+
+end
+EVENTS.SetUpEmplacements_GetAAGun = function()
+
+	CTRL.Actor_PlaySpeech(ACTOR.Carota, 220870)				-- Someone get on that A-A gun.
+	CTRL.WAIT()
+
+end
+
+
+
+
+--------------------------------------------------------------------------------
+-- CONVOY EVENTS
+--------------------------------------------------------------------------------
+
+
+
+-- NIS06: Convoy is on the map
+EVENTS.NIS06 = function()
+	
+	CTRL.Game_Letterbox(true, 0.75)
+	CTRL.WAIT()
+	
+	Util_HidePlayerForNIS(ALL, true)
+	FOW_Enable(false)
+
+--~ 	Player_GetAllSquadsNearMarker(player1, sg_nis, Marker_GetPosition(roadendnorth), 80)
+--~ 	SGroup_Hide(sg_nis, true)
+
+--~ 	Player_GetAllEntitiesNearMarker(player1, eg_nis, Marker_GetPosition(roadendnorth), 80)
+--~ 	EGroup_Hide(eg_nis, true)
+	
+	if (captureNIS == true) then
+		Scar_DebugConsoleExecute("app_fixedframerate(24)")
+		Scar_DebugConsoleExecute("capturemoviestart(0)") -- 1 for small, 0 for large
+		Scar_DebugConsoleExecute("nis_synchelp")
+		CTRL.Event_Delay(0.5)
+		CTRL.WAIT()
+	end
+	
+	nis_setintransitiontime(0)
+	nis_setouttransitiontime(0)
+
+	CTRL.Scar_PlayNIS(NIS06)
+	CTRL.WAIT()
+	
+	if (captureNIS == true) then
+		Scar_DebugConsoleExecute("capturemoviestop()")
+		Scar_DebugConsoleExecute("app_fixedframerate(0)")
+	end
+	
+--~ 	SGroup_Hide(sg_nis, false)
+--~ 	EGroup_Hide(eg_nis, false)
+	
+	nis_stop()
+	
+	FOW_Enable(true)
+	Util_HidePlayerForNIS(ALL, false)
+	
+	Game_Letterbox(false, 0.75)
+	Game_FadeToBlack(false, 0.75)
+	Camera_ResetToDefault()
+
+end
+
+
+-- Post-NIS06 chatter
+EVENTS.PostNIS06ChatterA = function()
+	CTRL.Actor_PlaySpeech(ACTOR.Thompson, 220940) -- Hold your fire and wait for my command.
+	CTRL.WAIT()
+end
+EVENTS.PostNIS06ChatterB = function()
+	CTRL.Actor_PlaySpeech(ACTOR.Thompson, 220960) -- Get off the road - NOW!
+	CTRL.WAIT()
+end
+EVENTS.PostNIS06Chatter_OpenFire = function()
+	CTRL.Actor_PlaySpeech(ACTOR.Thompson, 220970) -- Open Fire!
+	CTRL.WAIT()
+end
+
+
+
+
+-- NIS07: Closing Cinematic 
+EVENTS.NIS07 = function()
+	CTRL.Game_Letterbox(true, 1)
+	CTRL.WAIT()
+	
+	Game_FadeToBlack(FADE_OUT, 1.5)
+	Sound_SetVolume("Speech", 0.0, 1.5)
+	Sound_SetVolume("SFXmaster", 0.0, 1.5)
+	CTRL.Event_Delay(2)
+	CTRL.WAIT()
+	
+	FOW_Enable(false)
+
+	if (captureNIS == true) then
+		Scar_DebugConsoleExecute("app_fixedframerate(24)")
+		Scar_DebugConsoleExecute("capturemoviestart(0)") -- 1 for small, 0 for large
+		Scar_DebugConsoleExecute("nis_synchelp")
+		CTRL.Event_Delay(0.5)
+		CTRL.WAIT()
+	end
+	
+	nis_setintransitiontime(0)
+	nis_setouttransitiontime(0)
+
+	Game_FadeToBlack(FADE_IN, 1.5)
+	CTRL.Scar_PlayNIS(NIS07)
+	CTRL.WAIT()
+	
+	if (captureNIS == true) then
+		Scar_DebugConsoleExecute("capturemoviestop()")
+		Scar_DebugConsoleExecute("app_fixedframerate(0)")
+	end
+	
+	nis_stop()
+	
+	FOW_Enable(true)
+	
+	Game_Letterbox(false, 0.75)
+--	Game_FadeToBlack(false, 0.75)
+	Camera_ResetToDefault()
+	Camera_ResetToDefault()
+	
+end
+
+
+
+
+
+

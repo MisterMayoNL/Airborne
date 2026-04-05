@@ -1,0 +1,492 @@
+
+function NIS_Init()
+	NIS01 = "sp/M04_Carentan_Counterattack/NIS/N04_01"
+	nis_load(NIS01)
+	NIS02 = "sp/M04_Carentan_Counterattack/NIS/N04_02"
+	nis_load(NIS02)	
+	NIS03 = "sp/M04_Carentan_Counterattack/NIS/N04_03"
+	nis_load(NIS03)	
+	NIS04 = "sp/M04_Carentan_Counterattack/NIS/N04_04"
+	nis_load(NIS04)
+
+	nis_setintransitiontime(0)
+	nis_setouttransitiontime(0)
+end
+Scar_AddInit(NIS_Init)
+
+
+
+EVENTS = {}
+
+EVENTS.SpeechSniperA = function()
+	CTRL.Actor_PlaySpeech(ACTOR.Carota, 240800)						-- I have a feeling snipers are out here
+	CTRL.WAIT()
+end
+
+EVENTS.SpeechSniperB = function()
+	CTRL.Actor_PlaySpeech(ACTOR.Carota, 240810)						-- Sniper! Take Cover.
+	CTRL.WAIT()
+end
+
+EVENTS.SpeechBridge = function()
+	CTRL.Actor_PlaySpeech(ACTOR.Carota, 240860) 	 --  Build sandbags and barb wire to create chokepoints
+	CTRL.WAIT()
+
+end
+EVENTS.MoreShermans = function()
+	
+	CTRL.Actor_PlaySpeech(ACTOR.Thompson, 241000)  
+	CTRL.WAIT()
+
+end
+EVENTS.EmptyChurch1 = function()
+	CTRL.Actor_PlaySpeech(ACTOR.Thompson, 249060)						-- Church is unoccupied
+	CTRL.WAIT()
+end
+
+EVENTS.EmptyTownHall1 = function()
+	CTRL.Actor_PlaySpeech(ACTOR.Thompson, 249061)						-- TownHall is unoccupied
+	CTRL.WAIT()
+end
+
+EVENTS.BridgeLeft = function()
+	CTRL.Actor_PlaySpeech(ACTOR.Thompson, 240420)						-- Left bridge is underattack
+	CTRL.WAIT()
+	EventCue_Create(CUE.NORMAL, 42799, 42799, BridgeLeft)
+end
+EVENTS.BridgeMiddle = function()
+	CTRL.Actor_PlaySpeech(ACTOR.Thompson, 240430)						-- Middle bridge is underattack
+	CTRL.WAIT()
+	EventCue_Create(CUE.NORMAL, 42799, 42799, BridgeMiddle)
+end
+EVENTS.BridgeRight = function()
+	CTRL.Actor_PlaySpeech(ACTOR.Thompson, 240440)						-- Right bridge is underattack
+	CTRL.WAIT()
+	EventCue_Create(CUE.NORMAL, 42799, 42799, BridgeRight)
+end
+EVENTS.Bridge = function()
+	CTRL.Actor_PlaySpeech(ACTOR.Thompson, 240400)						--  We got Axis movement along the bridges!
+	CTRL.WAIT()
+
+end	
+EVENTS.BridgeBreached = function()
+	CTRL.Actor_PlaySpeech(ACTOR.Thompson, 240410)						--  The krauts have breached the lines, they’re crossing the river
+	CTRL.WAIT()
+
+end
+
+joey_dead = {212037, 212040, 212053, 212065}
+EVENTS.JoeyDead = function()
+	UI_EnableEventSkip(false)
+	CTRL.Event_Delay(1)
+	CTRL.WAIT()
+	Game_Letterbox(true, 0)
+	UI_EnableEventSkip(true)
+	Camera_MoveToPosition(cameraJoey, true, SLOW_CAMERA_PANNING)
+	CTRL.Event_Delay(0.65)
+	CTRL.WAIT()
+	local text = joey_dead[World_GetRand(1, table.getn(joey_dead))]
+	CTRL.Actor_PlaySpeech(ACTOR.Lewis, text)
+	CTRL.WAIT()
+	CTRL.Event_Delay(0.25)
+	CTRL.WAIT()
+end
+
+EVENTS.AxisMines = function()
+	CTRL.Actor_PlaySpeech(ACTOR.GenericAxis, 243015)						--   They've mined the roads!
+	CTRL.WAIT()
+end
+EVENTS.SpeechPointLost = function()
+	CTRL.Actor_PlaySpeech(ACTOR.Thompson, 240450)						--   We’re losing our supply points.
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.Thompson, 240460)						--   Make sure the Krauts DO NOT cross the bridges!
+	CTRL.WAIT()
+end
+EVENTS.AxisSpeechStug = function()	
+	CTRL.Actor_PlaySpeech(ACTOR.GenericAxis, 243020)						--   Stugs!  Target the American positions!
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.GenericAxis, 243021)						--   We will re-take the town!  Drive them back!
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.Carota, 230460)						--   Alright men, this is it!
+end
+
+EVENTS.SpeechStugComing = function()
+	CTRL.Actor_PlaySpeech(ACTOR.Lewis, 230530)						--    Contact! Contact!
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.Joey, 240320)						--    STUGs!
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.Joey, 240330)						--    STUGS, THEY HAVE STUGS!
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.Carota, 240350)						--    Where’s our support?
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.Joey, 230400)						--    Bring up the Bazookas!
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.Carota, 240360)						--    Use bazookas and hit that tank on the sides or rear.
+	CTRL.WAIT()
+	--CTRL.Actor_PlaySpeech(ACTOR.Carota, 240170)						--    Show these bastards what Airborne troops are made of!
+	--CTRL.WAIT()
+end
+EVENTS.SpeechTownHallOverun = function()
+	CTRL.Actor_PlaySpeech(ACTOR.Joey , 240270)						--    GOD DAMN!
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.Joey, 240280)						--    FALL BACK!
+	CTRL.WAIT()
+	local rand = World_GetRand(1, 2)
+	if rand == 1 then
+		CTRL.Actor_PlaySpeech(ACTOR.Joey, 240290)						--     The town square’s OVERRUN.
+		CTRL.WAIT()
+	elseif rand == 2 then
+		CTRL.Actor_PlaySpeech(ACTOR.Joey, 240260)						--     The town square’s OVERRUN.
+		CTRL.WAIT()
+	end
+	CTRL.Actor_PlaySpeech(ACTOR.Lewis, 243008)						--    Let's hustle!
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.Thompson, 240300)						--     WITHDRAW to the church and defend it at all costs.
+	CTRL.WAIT()
+	
+end
+
+
+EVENTS.SpeechTownHallOwned = function()
+	CTRL.Actor_PlaySpeech(ACTOR.Carota, 240470)						--     HOLD THE LINE!
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.Lewis, 230540)						--     Covering fire - defend the church! [FIXED]
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.Carota, 240480)						--      KEEP THOSE TANKS AWAY FROM THE CHURCH!
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.Carota, 240490)						--      PUSH ‘EM BACK!
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.Carota, 240500)						--       THEY’RE CLOSING ON THE CHURCH!
+	CTRL.WAIT()
+end
+
+EVENTS.SpeechTownHallOwned_Part2 = function()
+	CTRL.Actor_PlaySpeech(ACTOR.Lewis, 212047)						--       WE'RE ALL THAT'S LEFT!
+	CTRL.WAIT()
+	CTRL.Event_Delay(0.2)
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.Lewis, 212059)						--       WE GOTTA GET THE HELL OUTTA HERE!
+	CTRL.WAIT()
+	CTRL.Event_Delay(0.5)
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.Lewis, 212049)						--       WHERE THE HELL IS THAT SUPPORT?!
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.Thompson, 230180)						--       Everyone fights! NO ONE falls back!
+	CTRL.WAIT()
+end
+
+EVENTS.SpeechTownHallOwned2 = function()
+	CTRL.Actor_PlaySpeech(ACTOR.Carota, 240520)						--      THE CHURCH IS SURROUNDED!
+	CTRL.WAIT()
+	CTRL.Event_Delay(1)
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.Joey, 231190)						--     Goddammit!
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.Joey, 231180)						--     Die you fucking kraut!
+	CTRL.WAIT()
+	CTRL.Event_Delay(0.15)
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.Joey, 231170)						--     Fuck you!
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.Lewis, 212051)						--       WE'RE NEVER GONNA MAKE IT!
+	CTRL.WAIT()
+	CTRL.Event_Delay(0.6)
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.Lewis, 212052)						--       WE'RE FUCKING DEAD!
+	CTRL.WAIT()
+end
+
+EVENTS.NIS01 = function()
+	Sound_SetVolume("Speech", 0.0, 0)
+	Sound_SetVolume("SFXmaster", 0.0, 0)
+	eg_NISplayer1 = EGroup_CreateIfNotFound("eg_NISplayer1")
+	World_GetEntitiesNearMarker(player1, eg_NISplayer1, mkr_HideNIS1, OT_Ally)
+	EGroup_Hide(eg_NISplayer1, true)
+	eg_NISplayer2 = EGroup_CreateIfNotFound("eg_NISplayer2")
+	World_GetEntitiesNearMarker(player1, eg_NISplayer2, mkr_HideNIS2, OT_Ally)
+	EGroup_Hide(eg_NISplayer2, true)
+	eg_NISplayer3 = EGroup_CreateIfNotFound("eg_NISplayer3")
+	World_GetEntitiesNearMarker(player1, eg_NISplayer1, mkr_HideNIS3, OT_Ally)
+	EGroup_Hide(eg_NISplayer3, true)
+	eg_NISplayer5 = EGroup_CreateIfNotFound("eg_NISplayer5")
+	World_GetEntitiesNearMarker(player1, eg_NISplayer5, mkr_HideNIS5, OT_Ally)
+	EGroup_Hide(eg_NISplayer5, true)
+	
+	eg_NISgroup1 = EGroup_CreateIfNotFound("eg_NISgroup1")
+	World_GetNeutralEntitiesNearMarker(eg_NISgroup1, mkr_HideNIS1)
+	EGroup_Hide(eg_NISgroup1, true)
+	eg_NISgroup2 = EGroup_CreateIfNotFound("eg_NISgroup2")
+	World_GetNeutralEntitiesNearMarker(eg_NISgroup2, mkr_HideNIS2)
+	EGroup_Hide(eg_NISgroup2, true)
+	eg_NISgroup3 = EGroup_CreateIfNotFound("eg_NISgroup3")
+	World_GetNeutralEntitiesNearMarker(eg_NISgroup3, mkr_HideNIS3)
+	EGroup_Hide(eg_NISgroup3, true)
+	eg_NISgroup5 = EGroup_CreateIfNotFound("eg_NISgroup5")
+	World_GetNeutralEntitiesNearMarker(eg_NISgroup5, mkr_HideNIS5)
+	EGroup_Hide(eg_NISgroup5, true)
+	sg_AllyGuys = SGroup_CreateIfNotFound("sg_AllyGuys")
+	Player_GetAll(player1, sg_AllyGuys)
+	SGroup_Hide("sg_AllyGuys", true)
+	
+	FOW_Enable(false)
+	Game_Letterbox(true, 0.75)
+	--EGroup_Kill(Blg_CafeNormandie)
+	Game_FadeToBlack(FADE_IN, 2)	
+	CTRL.Scar_PlayNIS(NIS01)
+	CTRL.WAIT()
+	nis_stop()
+	EGroup_Hide(eg_NISplayer1, false)
+	EGroup_Hide(eg_NISplayer2, false)
+	EGroup_Hide(eg_NISplayer3, false)
+	EGroup_Hide(eg_NISplayer5, false)
+	EGroup_Hide(eg_NISgroup1, false)
+	EGroup_Hide(eg_NISgroup2, false)
+	EGroup_Hide(eg_NISgroup3, false)
+	EGroup_Hide(eg_NISgroup5, false)
+	SGroup_Hide(sg_AllyGuys, false)
+	Cmd_Move(sg_AllyGuys,Marker_D26) 
+	Util_PlayMusic("Sound/music/sp/M04/M04_Ob1_PrepTime1", 2, 0)	
+	Game_FadeToBlack(FADE_OUT, 0)
+--~ 	Actor_PlaySpeechWithoutPortrait(ACTOR.McKay, 249016)
+	Camera_MoveToPosition(Marker_D25, false)
+	Camera_ResetToDefault()
+	Camera_ResetToDefault()
+ 	CTRL.Event_Delay(2)
+	CTRL.WAIT()
+	FOW_Enable(true)
+	Objective_Start(OBJECTIVE1, false)
+	--Scar_Autosave(249050) 
+--~ 	Game_FadeToBlack(FADE_IN, 5)
+--~ 	Game_Letterbox(false, 0.75)
+	
+--~ 	FOW_Enable(true)
+--~ 	Camera_MoveToPosition(Marker_D25, false)
+--~ 	Camera_ResetToDefault()
+--~ 	Camera_ResetToDefault()
+--~ 	CTRL.Util_MissionTitle(249023)					--- Forward HQ established
+	--CTRL.WAIT()
+end
+
+
+EVENTS.test = function()
+	Game_FadeToBlack(FADE_OUT, 2)
+	CTRL.WAIT()
+	Actor_PlaySpeechWithoutPortrait(ACTOR.McKay, 249016)
+	CTRL.Event_Delay(20)
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.Carota, 240900)						--    Axis Mortars incoming
+	CTRL.WAIT()
+	Game_FadeToBlack(FADE_IN, 2)
+	CTRL.WAIT()
+end
+
+EVENTS.Mortars = function()
+	CTRL.Actor_PlaySpeech(ACTOR.Joey, 231070)						--    Mortars!
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.Carota, 240900)						--    Axis Mortars incoming
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.Carota, 240910)						--    Take Cover
+	CTRL.WAIT()
+end
+EVENTS.GermanArtillery = function()
+	CTRL.Actor_PlaySpeech(ACTOR.GenericAxis, 243024)						--    Town Hall within range!  Commence artillery strike!
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.GenericAxis, 243025)						--    Call the Artillery!
+	CTRL.WAIT()
+end
+EVENTS.Artillery = function()	
+	CTRL.Actor_PlaySpeech(ACTOR.Carota, 240930)						--   Incoming!  Artillery Barrage!
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.Joey, 240940)						--   Find some cover!
+	CTRL.WAIT()
+end
+EVENTS.Artillery1 = function()
+	CTRL.Actor_PlaySpeech(ACTOR.Carota, 240950)						--    They're targeting the Town Hall!
+	CTRL.WAIT()
+end
+EVENTS.Artillery2 = function()
+	CTRL.Actor_PlaySpeech(ACTOR.Carota, 240960)						--    Evacuate the area!
+	CTRL.WAIT()
+
+end
+EVENTS.Artillery3 = function()
+
+	CTRL.Actor_PlaySpeech(ACTOR.Carota, 240961)						--    Everybody, Get the fuck out of the TownHall
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.Lewis, 230141)						--    Move it Damn it!
+	CTRL.WAIT()
+
+end
+EVENTS.Artillery4 = function()
+
+	CTRL.Actor_PlaySpeech(ACTOR.Carota, 240962)						--   Fall back to the Church!
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.Carota, 240963)						--    FALL BACK!
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.Lewis, 243009)						--    Go, go, go!
+	CTRL.WAIT()
+
+end
+EVENTS.Artillery5 = function()
+	CTRL.Actor_PlaySpeech(ACTOR.Thompson, 243027)						--   Evacuate the area!  I say again: evacuate the area.
+	CTRL.WAIT()
+
+end
+
+EVENTS.ArtilleryOff = function()
+
+	CTRL.Actor_PlaySpeech(ACTOR.Thompson, 243026)						--    Concentrate all defenses around the Church!
+	CTRL.WAIT()
+
+end
+
+
+EVENTS.ResourcePoint4 = function()
+	
+	CTRL.Actor_PlaySpeech(ACTOR.Thompson, 240060)						-- Listen up R & R is over
+	CTRL.WAIT()
+	FOW_RevealMarker(Marker_AxisStart3, 5)
+--~ 	Camera_MoveToPosition(Marker_AxisStart3, true, 15)
+--~ 	CTRL.Actor_PlaySpeech(ACTOR.Thompson, 240890)						-- The Krauts will be coming from here. Good Luck.
+--~ 	CTRL.WAIT()
+--~ 	Camera_MoveToPosition(cameraposcoming, true, 15)
+end
+
+EVENTS.Engineers = function()
+	CTRL.Actor_PlaySpeech(ACTOR.Thompson, 240970)						-- Build Engineers to build field emplacements
+	CTRL.WAIT()
+end
+
+EVENTS.Engineers2 = function()
+	CTRL.Actor_PlaySpeech(ACTOR.Thompson, 240980)						-- Barricade those bridges and set up MG emplacements
+	CTRL.WAIT()
+end
+EVENTS.NIS02 = function()
+
+	CTRL.Game_Letterbox(true, 1)
+	CTRL.WAIT()	
+	
+	Game_FadeToBlack(FADE_OUT, 1.5)
+	CTRL.Event_Delay(2)
+	CTRL.WAIT()
+
+	Util_HidePlayerForNIS(player1, true)
+	FOW_Enable(false)
+
+	Game_FadeToBlack(FADE_IN, 1)
+	
+	CTRL.Scar_PlayNIS(NIS02)
+	CTRL.WAIT()
+
+	FOW_Enable(true)
+	Util_HidePlayerForNIS(player1, false)
+
+	FOW_RevealSGroupOnly(PanzerAlpha1, -1)
+	FOW_RevealSGroupOnly(WehrmachtAlpha1, -1)
+	FOW_RevealSGroupOnly(WehrmachtAlpha2, -1)
+	Cmd_Move(WehrmachtAlpha1, ResourcePoint5)
+	Cmd_Move(WehrmachtAlpha2, ResourcePoint5)
+	Cmd_Move(PanzerAlpha1, EGroup_GetPosition_EVEN_IF_EMPTY(ResourcePoint5), nil, nil, nil, OFFSET_FRONT, 10)
+
+	CTRL.Game_Letterbox(false, 0.75)
+	CTRL.WAIT()
+
+	Objective_SetAlwaysShowDetails(OBJECTIVE2, false, true)
+	
+end
+
+EVENTS.TimeRunning = function()
+	CTRL.Actor_PlaySpeech(ACTOR.Carota, 230460)						-- Let's go ladies.
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.Carota, 240170)						-- Show these bastards what Airborne troops are made of. 	
+	CTRL.WAIT()
+end
+
+
+
+EVENTS.NIS03 = function()
+	
+	FOW_Enable(false)
+	CTRL.Game_Letterbox(true, 0.75)
+	CTRL.WAIT()
+		
+	CTRL.Scar_PlayNIS(NIS03)
+	CTRL.WAIT()
+	Cmd_InstantUpgrade(AbleSherman1, UPG.ALLIES.SHERMAN_MG)
+	Util_PlayMusic("Sound/music/sp/M04/M04_Ob4_ShermansArrive", 2, 0)
+	FOW_Enable(true)
+	CTRL.Game_Letterbox(false, 0.75)
+	CTRL.WAIT()
+	CTRL.Event_Delay(2)
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.Joey, 260210) 					--Backup is here! Wooohooo!
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.Carota, 240540)						-- God Damn! Good to dsee some of our tanks for a change
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.Carota, 240550)						-- Now move up and push the Germans our of Carentan. 
+	CTRL.WAIT()
+	
+	Camera_ResetToDefault()
+	Camera_ResetToDefault()
+end
+
+EVENTS.MissionFail = function()
+--~ 	CTRL.Event_Delay(2)
+--~ 	CTRL.WAIT()
+--~ 	Camera_AutoRotate(Camera_GetTargetPos(), 35, 43, 1)
+--~ 	Game_SetMode(UI_Fullscreen)
+--~ 	Util_MissionTitle(249933)	-- Mission failed
+--~ 	CTRL.Event_Delay(2)
+--~ 	CTRL.WAIT()
+	Game_EndSP(false, 249931, true)
+end
+EVENTS.DemoComplete = function()
+	CTRL.Event_Delay(18)
+	CTRL.WAIT()
+	CTRL.Game_Letterbox(true, 1)
+	CTRL.WAIT()
+	Game_FadeToBlack(true, 3)
+	CTRL.Event_Delay(5)
+	CTRL.WAIT()
+	CTRL.Util_MissionTitle(249942)	-- to be continued.....
+	CTRL.WAIT()
+	CTRL.Event_Delay(2)
+	CTRL.WAIT()
+	Game_FadeToBlack(FADE_IN, 1)
+	CTRL.Event_Delay(1)
+	CTRL.WAIT()
+	Game_EndSP(true)
+end
+
+EVENTS.MissionComplete = function()
+	Game_FadeToBlack(true, 1)	
+	CTRL.WAIT()
+end	
+EVENTS.StugDestroyed = function()
+	CTRL.Game_Letterbox(true, 0.75)
+	CTRL.WAIT()
+	
+	Camera_MoveToPosition(cameraStug, true, SLOW_CAMERA_PANNING)
+	FOW_Enable(true)
+	CTRL.Event_Delay(5)
+	CTRL.WAIT()
+	Game_FadeToBlack(true, 2)
+end	
+EVENTS.NIS04 = function()
+	Game_FadeToBlack(FADE_OUT, 2)
+	Sound_SetVolume("Speech", 0.0, 1.5)
+	Sound_SetVolume("SFXmaster", 0.0, 1.5)
+	CTRL.Event_Delay(5)
+	CTRL.WAIT()
+	Game_Letterbox(true, 0)
+
+--	Util_MissionTitle(339022)
+	Game_FadeToBlack(FADE_IN, 2)
+	CTRL.Scar_PlayNIS(NIS04)
+	CTRL.WAIT()
+	nis_stop()
+	--Game_Letterbox(false, 0.75)
+	
+--	Util_MissionTitle(249930)	-- Mission Complete
+
+end

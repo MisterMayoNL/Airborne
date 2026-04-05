@@ -1,0 +1,422 @@
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--
+-- NIS File for Caen Clear Mission (7)
+--
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+
+function NIS_Init()
+
+	-- load NIS's
+	NIS01 = "sp/CXP2/Oosterbeek/NIS/N08_01"
+	nis_load(NIS01)
+	NIS02 = "sp/CXP2/Oosterbeek/NIS/N08_02"
+	nis_load(NIS02)
+	
+	nis_setintransitiontime(0)
+	nis_setouttransitiontime(0)
+	
+	t_Prepare_Objective = {
+		{ACTOR.CXP2.Wolfgang, 1480500},
+		{ACTOR.CXP2.Wolfgang, 1480510},
+	}	
+
+	t_Prevent_Objective1 = {
+		{ACTOR.CXP2.Wolfgang, 1481000},
+	}	
+	t_Prevent_Reminder1 = { 
+		{ACTOR.CXP2.Wolfgang, 1481001},
+	}	
+		
+	
+	t_Prevent_Objective2 = {
+		{ACTOR.CXP2.Wolfgang, 1481010},
+		{ACTOR.CXP2.Wolfgang, 1481011},
+		{ACTOR.CXP2.Wolfgang, 1481012},
+	}	
+	
+	t_Prevent_Objective3 = {
+		{ACTOR.CXP2.Wolfgang, 1481015},
+		{ACTOR.CXP2.Wolfgang, 1480616},
+	}	
+	
+	t_Prevent_Objective4 = {
+		{ACTOR.CXP2.Wolfgang, 1481020},
+		{ACTOR.CXP2.Wolfgang, 1481021},
+	}	
+	t_Prevent_Objective5 = {
+		{ACTOR.CXP2.Wolfgang, 1481022},
+	}	
+	t_Prevent_Reminder5 = {
+		{ACTOR.CXP2.Wolfgang, 1481026},
+		{ACTOR.CXP2.Wolfgang, 1481027},
+	}
+	
+	t_artillerystart = {  ------------- when artillery first fires
+		{ACTOR.CXP2.Wolfgang, 1481250},
+		{ACTOR.CXP2.Wolfgang, 1481260},
+	}
+	t_artillerycomplete = {  ------------- when artillery is destroyed
+		{ACTOR.CXP2.Wolfgang, 1481270},
+	}
+	
+	t_Destroy_Objective = {
+		{ACTOR.CXP2.Wolfgang, 1482000},
+		{ACTOR.CXP2.Aldrich, 1482010},
+	}	
+
+	t_regrouphill = {
+		{ACTOR.CXP2.Henze, 1482100},
+		{ACTOR.CXP2.Henze, 1482110},
+	}	
+	
+	t_hillsurrender = {
+		{ACTOR.CXP2.Henze, 1482230},
+		{ACTOR.CXP2.Henze, 1482240},
+		{ACTOR.CXP2.Henze, 1482250},
+	}	
+	
+	t_CityRetreat = {
+		{ACTOR.CXP2.Henze, 1482200},
+		{ACTOR.CXP2.Henze, 1482210},
+		{ACTOR.CXP2.Henze, 1482220},
+
+	}	
+	
+	
+	t_alternate1 = {  
+		{ACTOR.CXP2.Wolfgang, 1482300},
+		{ACTOR.CXP2.Wolfgang, 1482310},
+		{ACTOR.CXP2.Wolfgang, 1482320},
+	}	
+	t_alternate2 = {  
+		{ACTOR.CXP2.Wolfgang, 1482330},
+		{ACTOR.CXP2.Wolfgang, 1482340},
+		{ACTOR.CXP2.Wolfgang, 1482350},
+	}	
+	t_alternate3 = {  
+		{ACTOR.CXP2.Wolfgang, 1482360},
+		{ACTOR.CXP2.Wolfgang, 1482370},
+		{ACTOR.CXP2.Wolfgang, 1482382},
+	}
+----------------------------------------------------ALTERNATE DEATH SPEECH----------------------------------------------------
+	t_AldricDeath = {
+		{ACTOR.CXP2.Henze, 1482020},
+		{ACTOR.CXP2.Henze, 1482033},
+		--{ACTOR.CXP2.Henze, 1482034},
+		--{ACTOR.CXP2.Henze, 1482035},
+		{ACTOR.CXP2.Wolfgang, 1482040},
+		{ACTOR.CXP2.Wolfgang, 1482050},
+		{ACTOR.CXP2.Henze, 1482060},
+		{ACTOR.CXP2.Henze, 1482070},
+	}	
+	
+	t_endrecondbike = {
+		{ACTOR.CXP2.Henze, 1482021},
+		{ACTOR.CXP2.Henze, 1482033},
+		--{ACTOR.CXP2.Henze, 1482034},
+		--{ACTOR.CXP2.Henze, 1482035},
+		{ACTOR.CXP2.Wolfgang, 1482040},
+		{ACTOR.CXP2.Wolfgang, 1482050},
+		{ACTOR.CXP2.Henze, 1482060},
+		{ACTOR.CXP2.Henze, 1482070},
+	}	
+	t_endscoutcar = {
+		{ACTOR.CXP2.Henze, 1482022},
+		{ACTOR.CXP2.Henze, 1482033},
+		--{ACTOR.CXP2.Henze, 1482034},
+		--{ACTOR.CXP2.Henze, 1482035},
+		{ACTOR.CXP2.Wolfgang, 1482040},
+		{ACTOR.CXP2.Wolfgang, 1482050},
+		{ACTOR.CXP2.Henze, 1482060},
+		{ACTOR.CXP2.Henze, 1482070},
+	}	
+	t_endarmorcar = {
+		{ACTOR.CXP2.Henze, 1482023},
+		{ACTOR.CXP2.Henze, 1482033},
+		--{ACTOR.CXP2.Henze, 1482034},
+		--{ACTOR.CXP2.Henze, 1482035},
+		{ACTOR.CXP2.Wolfgang, 1482040},
+		{ACTOR.CXP2.Wolfgang, 1482050},
+		{ACTOR.CXP2.Henze, 1482060},
+		{ACTOR.CXP2.Henze, 1482070},
+	}	
+	t_endmarder = {
+		{ACTOR.CXP2.Henze, 1482024},
+		{ACTOR.CXP2.Henze, 1482033},
+		--{ACTOR.CXP2.Henze, 1482034},
+		--{ACTOR.CXP2.Henze, 1482035},
+		{ACTOR.CXP2.Wolfgang, 1482040},
+		{ACTOR.CXP2.Wolfgang, 1482050},
+		{ACTOR.CXP2.Henze, 1482060},
+		{ACTOR.CXP2.Henze, 1482070},
+	}	
+	t_endhalftrack = {
+		{ACTOR.CXP2.Henze, 1482025},
+		{ACTOR.CXP2.Henze, 1482033},
+		--{ACTOR.CXP2.Henze, 1482034},
+		--{ACTOR.CXP2.Henze, 1482035},
+		{ACTOR.CXP2.Wolfgang, 1482040},
+		{ACTOR.CXP2.Wolfgang, 1482050},
+		{ACTOR.CXP2.Henze, 1482060},
+		{ACTOR.CXP2.Henze, 1482070},
+	}
+	t_endpanzer = {
+		{ACTOR.CXP2.Henze, 1482026},
+		{ACTOR.CXP2.Henze, 1482033},
+		--{ACTOR.CXP2.Henze, 1482034},
+		--{ACTOR.CXP2.Henze, 1482035},
+		{ACTOR.CXP2.Wolfgang, 1482040},
+		{ACTOR.CXP2.Wolfgang, 1482050},
+		{ACTOR.CXP2.Henze, 1482060},
+		{ACTOR.CXP2.Henze, 1482070},
+	}	
+	t_endbergtiger = {
+		{ACTOR.CXP2.Henze, 1482027},
+		{ACTOR.CXP2.Henze, 1482033},
+		--{ACTOR.CXP2.Henze, 1482034},
+		--{ACTOR.CXP2.Henze, 1482035},
+		{ACTOR.CXP2.Wolfgang, 1482040},
+		{ACTOR.CXP2.Wolfgang, 1482050},
+		{ACTOR.CXP2.Henze, 1482060},
+		{ACTOR.CXP2.Henze, 1482070},
+	}	
+	t_endwirblewind = {
+		{ACTOR.CXP2.Henze, 1482028},
+		{ACTOR.CXP2.Henze, 1482033},
+		--{ACTOR.CXP2.Henze, 1482034},
+		--{ACTOR.CXP2.Henze, 1482035},
+		{ACTOR.CXP2.Wolfgang, 1482040},
+		{ACTOR.CXP2.Wolfgang, 1482050},
+		{ACTOR.CXP2.Henze, 1482060},
+		{ACTOR.CXP2.Henze, 1482070},
+	}	
+	t_endhummel = {
+		{ACTOR.CXP2.Henze, 1482029},
+		{ACTOR.CXP2.Henze, 1482033},
+		--{ACTOR.CXP2.Henze, 1482034},
+		--{ACTOR.CXP2.Henze, 1482035},
+		{ACTOR.CXP2.Wolfgang, 1482040},
+		{ACTOR.CXP2.Wolfgang, 1482050},
+		{ACTOR.CXP2.Henze, 1482060},
+		{ACTOR.CXP2.Henze, 1482070},
+	}
+	t_endjagdpanther = {
+		{ACTOR.CXP2.Henze, 1482030},
+		{ACTOR.CXP2.Henze, 1482033},
+		--{ACTOR.CXP2.Henze, 1482034},
+		--{ACTOR.CXP2.Henze, 1482035},
+		{ACTOR.CXP2.Wolfgang, 1482040},
+		{ACTOR.CXP2.Wolfgang, 1482050},
+		{ACTOR.CXP2.Henze, 1482060},
+		{ACTOR.CXP2.Henze, 1482070},
+	}		
+	t_endhetzer = {
+		{ACTOR.CXP2.Henze, 1482031},
+		{ACTOR.CXP2.Henze, 1482033},
+		--{ACTOR.CXP2.Henze, 1482034},
+		--{ACTOR.CXP2.Henze, 1482035},
+		{ACTOR.CXP2.Wolfgang, 1482040},
+		{ACTOR.CXP2.Wolfgang, 1482050},
+		{ACTOR.CXP2.Henze, 1482060},
+		{ACTOR.CXP2.Henze, 1482070},
+	}	
+	
+	t_endinfantry = {
+		{ACTOR.CXP2.Henze, 1482032},
+		{ACTOR.CXP2.Henze, 1482033},
+		--{ACTOR.CXP2.Henze, 1482034},
+		--{ACTOR.CXP2.Henze, 1482035},
+		{ACTOR.CXP2.Wolfgang, 1482040},
+		{ACTOR.CXP2.Wolfgang, 1482050},
+		{ACTOR.CXP2.Henze, 1482060},
+		{ACTOR.CXP2.Henze, 1482070},
+	}	
+	t_raftwaveA1 = {
+		{ACTOR.CXP2.GenericCommonwealth, 1483000},
+		{ACTOR.CXP2.GenericCommonwealth, 1483010},
+		{ACTOR.CXP2.GenericCommonwealth, 1483020},
+		{ACTOR.CXP2.GenericCommonwealth, 1483030},
+		{ACTOR.CXP2.GenericCommonwealth, 1483040},
+		{ACTOR.CXP2.GenericCommonwealth, 1483050},
+	}
+	t_raftwaveA2 = {
+		{ACTOR.CXP2.GenericCommonwealth, 1483060},
+		{ACTOR.CXP2.GenericCommonwealth, 1483070},
+		{ACTOR.CXP2.GenericCommonwealth, 1483080},
+		{ACTOR.CXP2.GenericCommonwealth, 1483090},
+		{ACTOR.CXP2.GenericCommonwealth, 1483100},
+		{ACTOR.CXP2.GenericCommonwealth, 1483110},
+	}	
+	
+	t_raftwaveB1 = {
+		{ACTOR.CXP2.GenericCommonwealth, 1483120},
+		{ACTOR.CXP2.GenericCommonwealth, 1483130},
+		{ACTOR.CXP2.GenericCommonwealth, 1483140},
+		{ACTOR.CXP2.GenericCommonwealth, 1483150},
+	}
+	t_raftwaveB2 = {
+		{ACTOR.CXP2.GenericCommonwealth, 1483160},
+		{ACTOR.CXP2.GenericCommonwealth, 1483170},
+		{ACTOR.CXP2.GenericCommonwealth, 1483180},
+		{ACTOR.CXP2.GenericCommonwealth, 1483190},
+	}
+	
+	
+	t_raftwaveC1 = {
+		{ACTOR.CXP2.GenericCommonwealth, 1483200},
+		{ACTOR.CXP2.GenericCommonwealth, 1483210},
+		{ACTOR.CXP2.GenericCommonwealth, 1483220},
+		{ACTOR.CXP2.GenericCommonwealth, 1483230},
+	}
+	t_raftwaveC2 = {
+		{ACTOR.CXP2.GenericCommonwealth, 1483240},
+		{ACTOR.CXP2.GenericCommonwealth, 1483250},
+		{ACTOR.CXP2.GenericCommonwealth, 1483260},
+		{ACTOR.CXP2.GenericCommonwealth, 1483270},
+	}
+	t_raftwaveC3 = {
+		{ACTOR.CXP2.GenericCommonwealth, 1483490},
+		{ACTOR.CXP2.GenericCommonwealth, 1483500},
+		{ACTOR.CXP2.GenericCommonwealth, 1483510},
+		
+	}
+
+	t_groundattack = {
+		{{ACTOR.CXP2.GenericCommonwealth, 1483280}},
+		{{ACTOR.CXP2.GenericCommonwealth, 1483290}},
+		{{ACTOR.CXP2.GenericCommonwealth, 1483300}},
+		{{ACTOR.CXP2.GenericCommonwealth, 1483310}},
+		{{ACTOR.CXP2.GenericCommonwealth, 1483320}},
+		{{ACTOR.CXP2.GenericCommonwealth, 1483330}},
+		{{ACTOR.CXP2.GenericCommonwealth, 1483340}},
+		{{ACTOR.CXP2.GenericCommonwealth, 1483350}},
+		{{ACTOR.CXP2.GenericCommonwealth, 1483360}},
+		{{ACTOR.CXP2.GenericCommonwealth, 1483370}},
+		{{ACTOR.CXP2.GenericCommonwealth, 1483380}},
+		{{ACTOR.CXP2.GenericCommonwealth, 1483390}},
+		{{ACTOR.CXP2.GenericCommonwealth, 1483430}},
+		{{ACTOR.CXP2.GenericCommonwealth, 1483440}},
+		{{ACTOR.CXP2.GenericCommonwealth, 1483450}},
+		
+	}
+	t_howitzer = {
+		{ACTOR.CXP2.GenericCommonwealth, 1483460},
+		{ACTOR.CXP2.GenericCommonwealth, 1483470},
+		{ACTOR.CXP2.GenericCommonwealth, 1483480},
+	}
+	
+	t_Prepare_AfterSitrep = {  ------------- put first oone after sitrep
+		{ACTOR.CXP2.Wolfgang, 1480600},
+		{ACTOR.CXP2.Wolfgang, 1480605},
+		{ACTOR.CXP2.Wolfgang, 1480610},
+	}	
+
+	
+---------------------------------------------------------------------------------------------------------------------------	
+	t_Nislet_OosterbeekEnd1 = {
+		{camPos = eg_pnt_Oosterbeek, waitType = NISLET_VO, waitValue = {ACTOR.CXP2.Wolfgang, 1482300}},
+		{camPos = eg_pnt_Oosterbeek, waitType = NISLET_VO, waitValue = {ACTOR.CXP2.Wolfgang, 1482310}},
+		{camPos = eg_pnt_Oosterbeek, waitType = NISLET_VO, waitValue = {ACTOR.CXP2.Wolfgang, 1482320}},
+	}
+	t_Nislet_OosterbeekEnd2 = {
+		{camPos = eg_pnt_Oosterbeek, waitType = NISLET_VO, waitValue = {ACTOR.CXP2.Wolfgang, 1482330}},
+		{camPos = eg_pnt_Oosterbeek, waitType = NISLET_VO, waitValue = {ACTOR.CXP2.Wolfgang, 1482340}},
+		{camPos = eg_pnt_Oosterbeek, waitType = NISLET_VO, waitValue = {ACTOR.CXP2.Wolfgang, 1482350}},
+	}
+	
+	t_Nislet_OosterbeekEnd3 = {
+		{camPos = eg_pnt_Oosterbeek, waitType = NISLET_VO, waitValue = {ACTOR.CXP2.Wolfgang, 1482360}},
+		{camPos = eg_pnt_Oosterbeek, waitType = NISLET_VO, waitValue = {ACTOR.CXP2.Wolfgang, 1482370}},
+		{camPos = eg_pnt_Oosterbeek, waitType = NISLET_VO, waitValue = {ACTOR.CXP2.Wolfgang, 1482382}},
+	}
+---------------------------------------------------------------------------------------------------------------------------------
+--add to scar 	
+	
+	
+
+	
+	t_warningpoint = {  ------------- played random when points are uncapped
+		
+		{ACTOR.CXP2.Aldrich, 1481100},
+		{ACTOR.CXP2.Aldrich, 1481101},
+		{ACTOR.CXP2.Aldrich, 1481102},
+	--	{ACTOR.CXP2.Aldrich, 1481103}, -- No longer used, July 25, 2007 -cmartin
+	--	{ACTOR.CXP2.Aldrich, 1481104}, -- No longer used, July 25, 2007 -cmartin
+	}
+
+
+	
+
+	
+	
+-----------------------------------------------------------------------------------------------------------------------------------	
+	
+end
+
+Scar_AddInit(NIS_Init)
+
+EVENTS = {}
+
+EVENTS.CapturePoint = function()
+	
+	local choices = {}
+	choices[1] = {actor = ACTOR.CXP2.Wolfgang, line = 1481100}	
+	choices[2] = {actor = ACTOR.CXP2.Wolfgang, line = 1481101}		
+	choices[3] = {actor = ACTOR.CXP2.Wolfgang, line = 1481102}		
+--~ 	choices[4] = {actor = ACTOR.CXP2.Wolfgang, line = 1481103}		
+--~ 	choices[5] = {actor = ACTOR.CXP2.Wolfgang, line = 1481104}		
+	
+	local rand = World_GetRand(1, table.getn(choices))
+	
+	CTRL.Actor_PlaySpeech(choices[rand].actor, choices[rand].line)
+	CTRL.WAIT()
+
+end
+
+EVENTS.NIS02 = function()
+
+	CTRL.Game_FadeToBlack(FADE_OUT, 2)
+	CTRL.Game_Letterbox(true, 2)
+	CTRL.WAIT()
+	
+	CTRL.Game_FadeToBlack(FADE_IN, 0)
+	CTRL.Scar_PlayNIS(NIS02)
+	CTRL.WAIT()
+	
+	nis_stop()
+	
+	Sound_SetVolume("Speech", 0.0, 0)
+	Sound_SetVolume("SFXmaster", 0.0, 0)
+	Sound_SetVolume("Music", 0.0, 0)
+
+	Game_BlockTextClear()
+	Game_BlockTextAdd( 1309280 )
+	CTRL.Game_BlockTextFade( 2, 8, 1 )
+	CTRL.WAIT()
+	
+	Game_BlockTextClear()
+	Game_BlockTextAdd( 1309281 )
+	CTRL.Game_BlockTextFade( 1, 8, 1 )
+	CTRL.WAIT()
+	
+	Game_BlockTextClear()
+	Game_BlockTextAdd( 1309282 )
+	Game_BlockTextAdd( 1309283 )
+	Game_BlockTextAdd( 1309284 )
+	CTRL.Game_BlockTextFade( 1, 10, 1 )
+	CTRL.WAIT()
+	
+	CTRL.Event_Delay(2)
+	CTRL.WAIT()
+	
+	Game_EndSP(true)
+end
+
+
+--------------------------------------------------------------------------------
+-- Idle Attacker Warnings
+--------------------------------------------------------------------------------
+
+

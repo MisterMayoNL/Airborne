@@ -1,0 +1,13 @@
+model =
+{
+	"..\\..\\Common\\CompleteMotionTree.abp",
+	"..\\..\\Common\\CommonMeshes.abp",
+	--"CommonItems.abp",
+	
+	"Weapons\\M1_Rifle",
+	"Weapons\\New_Carbine",
+
+	"Mackay\\Rifleman",
+	"Mackay\\Mackay",
+	"Rifleman_Engineer\\SMGAmmo",
+}

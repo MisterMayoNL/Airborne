@@ -1,0 +1,16 @@
+model =
+{
+	"..\\..\\Common\\CompleteMotionTree.abp",
+	"..\\..\\Common\\CommonMeshes.abp",
+
+	-- Weapons
+	"Weapons\\Stielgranate",
+	"Weapons\\G43 Sniper Rifle",
+	"..\\..\\Commonwealth\\Soldiers\\Weapons\\webley_revolver",	
+	
+	-- Mesh
+        "Pim\\GrenadierSV",
+        "equipment\\equipment2", 
+        "equipment\\Hose",
+        "..\\..\\PanzerElite\\Soldiers\\Pim\\PGrenadier",
+}	

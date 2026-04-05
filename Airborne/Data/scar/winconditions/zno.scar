@@ -1,0 +1,9 @@
+import("ScarUtil.scar")
+import("AirborneUtil.scar")
+
+function OnInit()
+	Rule_AddInterval(Crush_Check, 1)
+	TimeRule_AddInterval(Refresh_AI,600,1)
+end
+
+Scar_AddInit(OnInit)

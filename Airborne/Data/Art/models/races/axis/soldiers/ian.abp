@@ -1,0 +1,18 @@
+model =
+{
+	"..\\..\\Common\\CompleteMotionTree.abp",
+	"..\\..\\Common\\CommonMeshes.abp",
+
+	-- Weapons
+	"Weapons\\Kar98",
+	--"Weapons\\Flamethrower",
+	"Weapons\\Flamethrower_Ian",
+
+	"Weapons\\Stielgranate",
+
+	"..\\..\\PanzerElite\\Soldiers\\Ian\\volksgrenadier",
+    "..\\..\\PanzerElite\\Soldiers\\Ian\\random_skins",
+    "..\\..\\PanzerElite\\Soldiers\\Ian\\LuftwaffeSV",
+
+	--"..\\..\\PanzerElite\\Soldiers\\Ian\\Luftwaffe", 
+}

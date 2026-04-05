@@ -1,0 +1,15 @@
+model =
+{
+	"..\\..\\Common\\CompleteMotionTree.abp",
+	"..\\..\\Common\\CommonMeshes.abp",
+
+	"Weapons\\Kar98",
+	"Weapons\\m1903 springfield",
+	"Weapons\\MP40",
+	
+	"Weapons\\Stielgranate",
+
+        -- Mesh
+        "Volksgrenadier\\GrenadierSV",
+        "Panzergrenadier\\sniper_elite",            	
+}

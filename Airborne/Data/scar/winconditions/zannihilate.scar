@@ -1,0 +1,19 @@
+-----------------------------------------------------------------------
+-- VPTicker Win Condition
+--
+-- (c) Relic Entertainment 2006
+--
+-- Programmers: Shelby Hubick, Kris Botha, Randy Lukashuk
+-----------------------------------------------------------------------
+import("ScarUtil.scar")
+import("AirborneUtil.scar")
+
+-- used to indicate we want annihilate to be checked
+g_CheckAnnihilate = true
+
+function OnInit()
+	Rule_AddInterval(Crush_Check, 1)
+	TimeRule_AddInterval(Refresh_AI,600,1)
+end
+
+Scar_AddInit(OnInit)

@@ -1,0 +1,396 @@
+function NIS_Init()
+	NIS01 = "sp/M03_Carentan/NIS/N03_01"
+	nis_load(NIS01)	
+	NIS02 = "sp/M03_Carentan/NIS/N03_02"
+	nis_load(NIS02)	
+
+	nis_setintransitiontime(0)
+	nis_setouttransitiontime(0)
+end
+
+Scar_AddInit(NIS_Init)
+
+	
+EVENTS = {}
+
+EVENTS.NIS01 = function()
+	FOW_RevealMarker(Marker_AbleCompanySpawn, -1)
+	Game_Letterbox(true, 0)
+	Game_FadeToBlack(FADE_IN, 2)
+	FOW_Enable(false)
+	CTRL.Scar_PlayNIS(NIS01)
+	CTRL.WAIT()
+	nis_stop()	
+	MG42CafeNormandie1 = SGroup_CreateIfNotFound("MG42CafeNormandie1")
+	Util_CreateSquads(player2, MG42CafeNormandie1, SBP.AXIS.HEAVYMG_M03, Blg_CafeNormandie)
+	SGroup_SetInvulnerable(MG42CafeNormandie1, true)
+	MG42CafeNormandie2 = SGroup_CreateIfNotFound("MG42CafeNormandie2")
+	Util_CreateSquads(player2, MG42CafeNormandie2, SBP.AXIS.GRENADIER, Blg_CafeNormandie, nil, 1, 2)
+	SGroup_SetInvulnerable(MG42CafeNormandie2, true)
+	Game_Letterbox(false, 0.75)
+	Game_FadeToBlack(false, 0.75)
+	Camera_ResetToDefault()
+	Camera_ResetToDefault()
+	--Scar_Autosave(239050) 
+end
+
+joey_dead = {212037, 212040, 212053, 212065}
+EVENTS.JoeyDead = function()
+	UI_EnableEventSkip(false)
+	CTRL.Event_Delay(1)
+	CTRL.WAIT()
+	Game_Letterbox(true, 0)
+	UI_EnableEventSkip(true)
+	Camera_MoveToPosition(cameraJoey, true, SLOW_CAMERA_PANNING)
+	CTRL.Event_Delay(0.65)
+	CTRL.WAIT()
+	local text = joey_dead[World_GetRand(1, table.getn(joey_dead))]
+	CTRL.Actor_PlaySpeech(ACTOR.Lewis, text)
+	CTRL.WAIT()
+	CTRL.Event_Delay(0.25)
+	CTRL.WAIT()
+end
+
+EVENTS.CafeNormandieStart = function()
+	UI_FlashAbilityButton(ABILITY.ALLIES.SATCHEL_CHARGE, true, BT_UI_Weak_CommandBtn )
+	--CTRL.Util_MissionTitle(239910)											-- New Primary Objective: Destroy Cafe Normandie
+	--CTRL.WAIT()
+--~ 	CTRL.Actor_PlaySpeech(ACTOR.GenericAlly, 230120)						-- Shelby get that B.A.R going, keep their heads down!
+--~ 	CTRL.WAIT()
+	FOW_RevealMarker(Marker_Start1, -1)
+	CTRL.Actor_PlaySpeech(ACTOR.Lewis, 230151)						-- They've sighted the road, take cover!
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.Carota, 230130)						-- Find some cover...we're taking enfilade fire!
+	CTRL.WAIT()
+--~ 	CTRL.Actor_PlaySpeech(ACTOR.GenericAlly, 230140)						-- NOW MOVE IT DAMN IT!
+--~ 	CTRL.WAIT()
+--~		CTRL.Actor_PlaySpeech(ACTOR.Carota, 230160)						-- Get some suppressing fire going!
+--~		CTRL.WAIT()
+--~ 	CTRL.Actor_PlaySpeech(ACTOR.GenericAlly, 230170)						-- DON'T STOP , DON'T STOP... KEEP MOVING UP.
+--~ 	CTRL.WAIT()
+--~ 	CTRL.Actor_PlaySpeech(ACTOR.Thompson, 230170)						-- DON'T STOP , DON'T STOP... KEEP MOVING UP.
+--~ 	CTRL.WAIT()
+--~ 	CTRL.Actor_PlaySpeech(ACTOR.Thompson, 230250)						-- Get to the intersection.
+--~ 	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.Thompson, 230270)						-- Get Satchel Charges in that building.  
+	CTRL.WAIT()
+	CTRL.Event_Delay(2.5)
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.Lewis, 230171)						-- Don't stop don't stop - keep moving up!  
+	CTRL.WAIT()
+	
+end
+
+EVENTS.CafeComplete = function()
+	--CTRL.Util_MissionTitle(239920)	--  OBJECTIVE COMPLETE: Clear out Cafe Normandie
+	--CTRL.WAIT()
+--~ 	CTRL.Actor_PlaySpeech(ACTOR.GenericAlly, 230280)						-- YEAH! Smoke em out! 
+--~ 	CTRL.WAIT()
+	CTRL.Event_Delay(5)
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.Thompson, 230290)						-- Sarge, tell HQ the raod to Carentan is open and we're proceeding into town. 
+	CTRL.WAIT()
+	
+
+end
+	
+	
+EVENTS.ChurchStart =  function()
+	CTRL.Actor_PlaySpeech(ACTOR.Carota, 231240)								-- Secure the Church perimeter! The Captain wants this entire area clear!
+	CTRL.WAIT()
+
+
+end	
+EVENTS.ChurchStarta =  function()
+	CTRL.Actor_PlaySpeech(ACTOR.Carota, 231260)								-- We still have enemies inside the perimeter!
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.Joey, 230390)						-- We’re taking fire from those buildings!
+	CTRL.WAIT()
+end	
+
+
+EVENTS.ChurchComplete = function()
+	CTRL.Actor_PlaySpeech(ACTOR.Carota, 230550)						-- Church Taken, secure the area.  
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.Carota, 230560)						-- We have the church, lets finish this.  
+	CTRL.WAIT()
+end
+
+EVENTS.SecureStart = function()
+	--CTRL.Util_MissionTitle(239912)	-- New Primary Objective: Secure Church Area
+	--CTRL.WAIT()
+end
+
+EVENTS.SecureComplete = function()
+---	CTRL.Util_MissionTitle(239922)	-- OBJECTIVE COMPLETE: Secure the Church Area
+	--CTRL.WAIT()
+
+	CTRL.Actor_PlaySpeech(ACTOR.Carota, 230570)						-- Cease-Fire! Church is secure!
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.Carota, 230580)						-- Excellent work men.  
+	CTRL.WAIT()
+end
+
+EVENTS.UpgradeStart = function()
+	--CTRL.Util_MissionTitle(239913)	-- 	New Primary Objective: Convert Church To Barracks
+	--CTRL.WAIT()
+end
+
+EVENTS.UpgradeComplete = function()
+	CTRL.Actor_PlaySpeech(ACTOR.Carota, 231330)								-- Field Barracks established.  Additional infantry support available.
+	CTRL.WAIT()
+
+end
+
+EVENTS.ResourcePointComplete = function()
+	CTRL.Actor_PlaySpeech(ACTOR.Lewis, 231340)								-- Munitions point is ours!
+	CTRL.WAIT()
+end
+
+EVENTS.ResourcePoint1Start = function()
+	if Player_OwnsEGroup(player1, ResourcePoint3) == false and Player_OwnsEGroup(player1, ResourcePoint1) == false then
+		CTRL.Actor_PlaySpeech(ACTOR.Thompson, 230950)						-- We need supplies.
+		CTRL.WAIT()
+		Objective_Start(OBJECTIVESECONDARY)
+		CTRL.Actor_PlaySpeech(ACTOR.Thompson, 230960)						-- Pannell, take a squad and capture that supply poing
+		CTRL.WAIT()
+		CTRL.Actor_PlaySpeech(ACTOR.Carota, 240160)						-- Let's go ladies.
+		CTRL.WAIT()
+		CTRL.Actor_PlaySpeech(ACTOR.Lewis, 230021)						--    Come on, Carota. Will you spare us just this one time?
+		CTRL.WAIT()
+	end
+	--CTRL.Util_MissionTitle(239913)										-- OBJECTIVE: Secure the Resource Point
+	--CTRL.WAIT()
+end
+
+EVENTS.ResourcePoint1Remind = function()
+	CTRL.Actor_PlaySpeech(ACTOR.Thompson, 230960)						-- Pannell, take a squad and capture that supply poing
+	CTRL.WAIT()
+	
+end
+
+--~ EVENTS.BuildCheckPointStart = function()
+--~ 	
+--~ 	CTRL.Game_PlaySpeech( "InGame\\portraits\\portrait_conti", 205126, false, "" )  -- Guise, order your men to build an OBSERVATION POST. We need to extend our supply lines.
+--~ 	CTRL.WAIT()
+--~ 	Obsolete_Objective_Create("Connect the resource points to our supply line", OBJ_PRIMARY)
+--~ 	if g_ConnectedResource == false then
+--~ 		CTRL.Util_MissionTitle(200033)	-- OBJECTIVE: Connect the resource to the supply territory
+--~ 		CTRL.WAIT()
+--~ 	end
+--~ 	PingID_BuildCheckPoint = UI_CreateMinimapBlipOnMarker(Marker_ResourcePoint1, 9999999, BLIP_PRIMARY)
+--~ end
+
+--~ EVENTS.BuildCheckPointComplete = function()	
+--~ 	CTRL.Util_MissionTitle(200034)	-- OBJECTIVE COMPLETE: Connect the territory
+--~ 	CTRL.WAIT()
+--~ 	Obsolete_Objective_Complete("Connect the resource points to our supply line", OBJ_PRIMARY)
+--~ 	UI_DeleteMinimapBlip(PingID_BuildCheckPoint)
+--~ 	CTRL.Game_PlaySpeech( "InGame\\portraits\\portrait_conti", 205127, false, "" )  -- Excellent, we got supplies flowin’ in.
+--~ 	CTRL.WAIT()
+--~ end	
+	
+	
+EVENTS.BuildUnitStart = function()			
+	--UI_BindingSetEnabled("squadcap", true)
+	
+	--CTRL.Util_MissionTitle(239912)											-- OBJECTIVE: Recruit 1 squad from the barracks
+	--CTRL.WAIT()
+
+end	
+
+EVENTS.BuildUnitComplete = function()	
+	--CTRL.Util_MissionTitle(239922)							-- OBJECTIVE COMPLETE: Recruit 1 squad from the barracks
+	--CTRL.WAIT()
+	
+end
+
+
+EVENTS.TownHallOver = function()
+	CTRL.Actor_PlaySpeech(ACTOR.Carota, 231270)								-- Lets mop up the rest those Krauts boys
+	CTRL.WAIT()
+--~ 	CTRL.Actor_PlaySpeech(ACTOR.Carota, 231280)								-- Rumble Rumble Rumble	
+--~ 	CTRL.WAIT()
+--~ 	CTRL.Actor_PlaySpeech(ACTOR.Carota, 231290)								-- You hear something coming our way ?
+--~ 	 CTRL.WAIT()
+end
+
+EVENTS.NIS02 = function()
+	
+	CTRL.Game_Letterbox( true, 1.5 ) 
+	CTRL.WAIT()
+	
+	Game_FadeToBlack(FADE_OUT, 1.5)
+	Sound_SetVolume("Speech", 0.0, 1.5)
+	Sound_SetVolume("SFXmaster", 0.0, 1.5)
+	CTRL.Event_Delay(2)
+	CTRL.WAIT()
+	Modifier_Remove(modifymanpower)
+	SGroup_DestroyAllSquads(sg_AxisTownHall)
+	SGroup_DestroyAllSquads(sg_AxisResourcePoint5)
+	SGroup_Hide(sg_AllyTownHall, true)
+	
+--	Camera_MoveToPosition(Marker_D18, 5)
+	FOW_Enable(false)
+	Game_FadeToBlack(FADE_IN, 1.5)
+	World_ClearCasualties()
+	CTRL.Scar_PlayNIS(NIS02)									-- KIll the running Axis
+	CTRL.WAIT()
+--	Game_FadeToBlack(FADE_OUT, 0)
+	FOW_Enable(true)
+
+end
+
+EVENTS.MortarBuilt = function()
+	CTRL.Actor_PlaySpeech(ACTOR.GenericAlly, 230930)						-- Mortar crew ready for action.  
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.Carota, 230940)								-- Keep the mortar crews out of enemy fire.  We need them alive to cover our advances.  	
+	CTRL.WAIT()
+
+end
+
+EVENTS.SniperBuilt = function()
+	CTRL.Actor_PlaySpeech(ACTOR.GenericAlly, 230900)						-- Sniper Reporting for duty!
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.Carota, 230910)								-- The sniper is going to need good sight lines. 	
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.Carota, 230920)								-- Get him into the church or any tall buildings.  
+	CTRL.WAIT()
+	
+end
+EVENTS.PumaDestroyed = function()
+	CTRL.Actor_PlaySpeech(ACTOR.Carota, 231350)						-- Puma Destroyed!
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.Carota, 231360)								-- Look at those Krauts run.	
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.Joey, 260220)								-- Yeah, that’s right you Krauts, run!
+	CTRL.WAIT()
+--~ 	CTRL.Actor_PlaySpeech(ACTOR.Carota, 231370)								-- Poor it on them.
+--~ 	CTRL.WAIT()
+	
+end
+
+
+EVENTS.ManpowerPoint = function()
+	CTRL.Game_PlaySpeech( "InGame\\portraits\\portrait_allied_intel_officer", 205172, false, "" )		-- We can find some Munitions in this position. 
+	CTRL.WAIT()
+	PingID_ResourcePoint2 = UI_CreateMinimapBlipOnMarker(Marker_ResourcePoint2, 9999999, BLIP_PRIMARY)
+end
+
+EVENTS.ChurchAttack = function()
+	
+	CTRL.Actor_PlaySpeech(ACTOR.Carota, 230490)						-- CounterAttack!
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.Carota, 230500)						-- Wake up counterattack!
+	CTRL.WAIT()
+	
+end
+
+EVENTS.Ambient1 =  function()
+	CTRL.Actor_PlaySpeech(ACTOR.Carota, 230510)						-- Anti-Tank gun!
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.Lewis, 230520)						-- They have a PAK38
+	CTRL.WAIT()
+end
+
+EVENTS.Ambient2 =  function()
+--~		CTRL.Actor_PlaySpeech(ACTOR.Carota, 231030)						-- Road Block!
+--~		CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.Carota, 231040)						-- Lay down some mortar fire on that wire to clear the road!
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.Carota, 231050)						-- Get a satchel charge on that wire
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.Carota, 231060)						-- This road need to be clear.
+	CTRL.WAIT()
+end
+
+EVENTS.Ambient3 =  function()
+	if g_UpgradeBarracks == false then
+		CTRL.Actor_PlaySpeech(ACTOR.Carota, 239102 )		-- Secure the Church before heading out!
+		CTRL.WAIT()
+	end
+end
+
+EVENTS.Ambient4 = function()		
+	CTRL.Actor_PlaySpeech(ACTOR.Carota, 231300)								-- Oh shit, Puma!	
+	CTRL.WAIT()
+--~ 	CTRL.Actor_PlaySpeech(ACTOR.Carota, 231310)								-- Those Krauts are feeling confident with their Puma.  
+--~ 	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.Carota, 231320)								-- Destroy that Puma and show them what the airborn is made of. 
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.Joey, 230420)						-- Where’s the Satchel Charges?!?
+	CTRL.WAIT()
+end
+
+EVENTS.Ambient5 =  function()
+	if Player_OwnsEGroup(player1, Blg_Church) == false then
+--~ 		CTRL.Actor_PlaySpeech(ACTOR.GenericAlly, 230460)						-- Alright men, this is it!
+--~ 		CTRL.WAIT()
+		CTRL.Actor_PlaySpeech(ACTOR.Carota, 230470)						-- Take that church!
+		CTRL.WAIT()
+		CTRL.Actor_PlaySpeech(ACTOR.Carota, 230480)						-- Garrison this church on the double.
+		CTRL.WAIT()
+
+		
+	end
+end
+EVENTS.Ambient6 = function()		
+	CTRL.Actor_PlaySpeech(ACTOR.GenericAlly, 239066)						-- Church empty.  We must have someone in the church at all times to recruit squads.  
+	CTRL.WAIT()
+
+end
+EVENTS.Ambient7 = function()		
+	CTRL.Actor_PlaySpeech(ACTOR.Carota, 230481)						-- MG42 by the Church! Flank that position. 
+	CTRL.WAIT()
+end
+EVENTS.Running = function()	
+	CTRL.Actor_PlaySpeech(ACTOR.Carota, 205042, false)	-- Poor it on them, let them have it!
+	CTRL.WAIT()
+end
+	
+EVENTS.Reinforcement = function()
+	CTRL.Actor_PlaySpeech(ACTOR.Carota, 230440)						-- Call in reinforcements!
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.Carota, 230450)						-- Lets get some backup !
+	CTRL.WAIT()
+
+end	
+	
+	
+EVENTS.NoReinforcement = function()
+--~ 		CTRL.Game_PlaySpeech( "InGame\\portraits\\portrait_conti", 205126, false, "" )  -- Right resource point captured.
+--~ 	CTRL.WAIT()
+end
+EVENTS.MissionComplete = function()
+	--CTRL.Util_MissionTitle(239930)	-- Mission Complete
+	--CTRL.WAIT()
+end	
+	
+
+EVENTS.AbleReinforcement = function()
+
+	if 	g_AbleCompany == 1 then 
+		CTRL.Game_PlaySpeech( "InGame\\portraits\\portrait_conti", 205060, false, "" )		-- Able Company first platoon arriving.	
+		CTRL.WAIT()
+	end
+	if 	g_AbleCompany == 2 then 
+		CTRL.Game_PlaySpeech( "InGame\\portraits\\portrait_conti", 205061, false, "" )		-- Able Company second platoon arriving.	
+		CTRL.WAIT()
+	end
+	if 	g_AbleCompany == 3 then 
+		CTRL.Game_PlaySpeech( "InGame\\portraits\\portrait_conti", 205062, false, "" )		-- Able Company third platoon arriving.	
+		CTRL.WAIT()
+	end
+	if 	g_AbleCompany == 4 then 
+		CTRL.Game_PlaySpeech( "InGame\\portraits\\portrait_conti", 205063, false, "" )		-- Able Company fourth platoon arriving.	
+		CTRL.WAIT()
+	end
+	if 	g_AbleCompany == 5 then 
+		CTRL.Game_PlaySpeech( "InGame\\portraits\\portrait_conti", 205064, false, "" )		-- Able Company fifth platoon arriving.	
+		CTRL.WAIT()
+	end
+	if 	g_AbleCompany > 5 then 
+		CTRL.Game_PlaySpeech( "InGame\\portraits\\portrait_conti", 205065, false, "" )		-- Able Company platoon has arrived.	
+		CTRL.WAIT()
+	end
+end

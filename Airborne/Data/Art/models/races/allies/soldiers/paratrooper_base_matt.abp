@@ -1,0 +1,20 @@
+model =
+{
+	"..\\..\\Common\\CompleteMotionTree.abp",
+	"..\\..\\Common\\CommonMeshes.abp",
+	--"CommonItems.abp",
+
+	"Weapons\\M1_Rifle",
+	"Weapons\\M1903 Springfield",
+	"Weapons\\New_Carbine",
+
+	"Weapons\\Mk2 Pineapple Grenade",
+	"Weapons\\Sticky_Bomb",
+
+	"Matt\\Paratrooper",
+}
+
+simvis_attributes =
+{
+	Intermediate_Model = 1
+}

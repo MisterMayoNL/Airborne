@@ -1,0 +1,6 @@
+model =
+{
+	"PanzerArtillery_Command",
+	"..\\Flag.abp",
+	
+}

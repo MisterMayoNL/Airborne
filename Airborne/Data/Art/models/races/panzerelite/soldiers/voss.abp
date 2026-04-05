@@ -1,0 +1,17 @@
+model =
+{
+	-- Common Motion Tree
+	"..\\..\\Common\\CompleteMotionTree.abp",
+	"..\\..\\Common\\CommonMeshes.abp",
+
+	-- Panzer Elite Weapons
+	"..\\..\\Axis\\Soldiers\\Weapons\\Stielgranate",
+	"..\\..\\Axis\\Soldiers\\Weapons\\Kar98",
+	"..\\..\\Axis\\Soldiers\\Weapons\\G43 Sniper Rifle",
+	"..\\..\\Axis\\Soldiers\\Weapons\\Luger",
+
+	-- Panzer Elite Soldier Mesh
+	"..\\..\\PanzerElite\\Soldiers\\Maximillian_Voss\\Maximillian_Voss",
+
+}
+

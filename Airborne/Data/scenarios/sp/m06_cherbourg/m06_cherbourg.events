@@ -1,0 +1,503 @@
+-------------------------------------------------------------------------
+-------------------------------------------------------------------------
+--
+-- NIS File for Mission 6 - CHERBOURG
+--
+-------------------------------------------------------------------------
+-------------------------------------------------------------------------
+
+function NIS_Init()
+
+	-- load NIS's
+	NIS02 = "sp/M06_Cherbourg/NIS/N06_02"
+	nis_load(NIS02)
+	NIS03 = "sp/M06_Cherbourg/NIS/N06_03"
+	nis_load(NIS03)
+	NIS04 = "sp/M06_Cherbourg/NIS/N06_04"
+	nis_load(NIS04)
+	
+	nis_setintransitiontime(0)
+	nis_setouttransitiontime(0)
+
+end
+
+Scar_AddInit(NIS_Init)
+
+
+
+
+
+EVENTS = {}
+
+
+--------------------------------------------------------------------------------
+-- NIS EVENTS
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+-- NIS02: SNIPER
+--------------------------------------------------------------------------------
+
+EVENTS.NIS02 = function()
+	-- set speech and sfx volume groups to 0 so we don't hear any audio in between NIS and Sit Rep.  Sit Rep transition out will re-set volume groups.
+	Sound_SetVolume("Speech", 0.0, 0)
+	Sound_SetVolume("SFXmaster", 0.0, 0)
+	
+	if Misc_IsCommandLineOptionSet("-nosand") then
+		CTRL.Scar_PlayNIS(NIS02)
+			FOW_Enable(false)
+			Game_FadeToBlack(FADE_IN, 1)
+		CTRL.WAIT()
+	else
+		CTRL.Scar_PlayNIS(NIS02)
+			FOW_Enable(false)
+			Game_Letterbox(true, 0)
+			Game_FadeToBlack(FADE_IN, 1)
+		CTRL.WAIT()
+	end
+	
+	nis_stop()
+	
+--	CTRL.Game_Letterbox(false, 1)
+		--Game_FadeToBlack(true, 1)
+		FOW_Enable(true)
+	CTRL.WAIT()
+		-- set view
+		Camera_ResetToDefault()
+		Camera_FocusOnTargetPos(Marker_GetPosition(mkr_player1_start2))
+	
+end
+
+
+
+
+--------------------------------------------------------------------------------
+-- NIS03: NAVAL BOMBARDMENT
+--------------------------------------------------------------------------------
+
+EVENTS.NIS03 = function()
+	
+	nis_setouttransitiontime(0)
+	
+	CTRL.Game_Letterbox(true, 1)
+	CTRL.WAIT()
+	
+	Util_HidePlayerForNIS(ALL, true)
+	FOW_Enable(false)
+	
+	CTRL.Scar_PlayNIS(NIS03)
+	CTRL.WAIT()
+
+	nis_stop()
+	
+	FOW_Enable(true)
+	Util_HidePlayerForNIS(ALL, false)
+	
+	if g_axishq_granted == true then
+		CTRL.Game_Letterbox(false, 1)
+	end
+		Camera_ResetToDefault()
+	CTRL.WAIT()
+	
+end
+
+
+
+
+
+
+--------------------------------------------------------------------------------
+-- NIS04: GERMAN POWs
+--------------------------------------------------------------------------------
+
+EVENTS.NIS04 = function()
+
+	CTRL.Game_Letterbox(true, 1)
+	CTRL.WAIT()
+	Game_FadeToBlack(FADE_OUT, 1.5)
+	Sound_SetVolume("Speech", 0.0, 1.5)
+	Sound_SetVolume("SFXmaster", 0.0, 1.5)
+	CTRL.Event_Delay(2.5)
+	CTRL.WAIT()
+	
+	Util_ClearWrecksFromMarker(mkr_bridge_stugdef2)
+	Util_HidePlayerForNIS(ALL, true)
+	FOW_Enable(false)
+	
+	Game_FadeToBlack(FADE_IN, 1.5)
+	
+	World_ClearCasualties()
+	CTRL.Scar_PlayNIS(NIS04)
+	CTRL.WAIT()
+
+	nis_stop()
+	
+	FOW_Enable(true)
+	Util_HidePlayerForNIS(ALL, false)
+	
+--	CTRL.Game_Letterbox(false, 1)
+		Camera_ResetToDefault()
+	CTRL.WAIT()
+	
+end
+
+
+
+--------------------------------------------------------------------------------
+-- NIS - Mini
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+-- NIS: Show Motor Pool
+--------------------------------------------------------------------------------
+
+EVENTS.NIS_ShowMotorPool = function()
+
+	CTRL.Game_Letterbox(true, 1)
+	CTRL.WAIT()
+	
+	FOW_Enable(false)
+	
+	CTRL.Event_Delay(5)
+		_camera_pos = Camera_GetTargetPos()
+		Camera_FocusOnPosition(EGroup_GetPosition_EVEN_IF_EMPTY(eg_2ndmotorpool), true)
+	CTRL.WAIT()
+	
+	FOW_Enable(true)
+	
+	CTRL.Game_Letterbox(false, 1)
+		Camera_FocusOnPosition(_camera_pos, true)
+	CTRL.WAIT()
+	
+end
+
+
+--------------------------------------------------------------------------------
+-- NIS: Show Naval Guns
+--------------------------------------------------------------------------------
+
+EVENTS.NIS_ShowNavalGuns = function()
+
+	CTRL.Game_Letterbox(true, 1)
+	CTRL.WAIT()
+	
+	FOW_Enable(false)
+	
+	CTRL.Event_Delay(5)
+		_camera_pos = Camera_GetTargetPos()
+		Camera_FocusOnPosition(EGroup_GetPosition_EVEN_IF_EMPTY(eg_navalguns_bunker), true)
+	CTRL.WAIT()
+	
+	FOW_Enable(true)
+	
+	CTRL.Game_Letterbox(false, 1)
+		Camera_FocusOnPosition(_camera_pos, true)
+	CTRL.WAIT()
+	
+end
+
+
+--------------------------------------------------------------------------------
+
+-- OBJECTIVES
+
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+-- OBJ: Town Square
+--------------------------------------------------------------------------------
+
+EVENTS.TownSquare_Start = function()
+	CTRL.Actor_PlaySpeech(ACTOR.McKay, 260201)
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.McKay, 260202)
+	CTRL.WAIT()
+	--CTRL.Event_Delay(0.85)
+	--CTRL.WAIT()
+end
+
+EVENTS.Start_Sniper = function()
+	CTRL.Actor_PlaySpeech(ACTOR.GenericAlly, 260205)
+	CTRL.WAIT()
+	CTRL.Event_Delay(0.25)
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.GenericAlly, 260206)
+	CTRL.WAIT()
+end
+
+--[[ using speech files ]]
+EVENTS.TownSquare_SniperWarning = function()
+	CTRL.Actor_PlaySpeech(ACTOR.GenericAlly, 260120)
+	CTRL.WAIT()	
+	CTRL.Actor_PlaySpeech(ACTOR.GenericAlly, 260130)
+	CTRL.WAIT()	
+end
+
+EVENTS.TownSquare_SniperDown = function()
+	CTRL.Actor_PlaySpeech(ACTOR.Conti, 260160)
+	CTRL.WAIT()
+end
+
+EVENTS.TownSquare_GarrisonWarning = function()
+	CTRL.Actor_PlaySpeech(ACTOR.McKay, 260203)
+	CTRL.WAIT()	
+end
+
+EVENTS.Wurst_Surrender = function()
+	CTRL.Actor_PlaySpeechWithoutPortrait(ACTOR.GenericAxis, 9411020)
+	CTRL.WAIT()	
+end
+
+--[[ using speech files ]]
+EVENTS.TownSquare_Complete = function()
+	CTRL.Actor_PlaySpeech(ACTOR.McKay, 260250)
+	CTRL.WAIT()
+end
+
+
+EVENTS.TownSquare_Fail = function()
+
+end
+
+
+EVENTS.FriendsDead = function()
+	UI_EnableEventSkip(false)
+	CTRL.Event_Delay(1)
+	CTRL.WAIT()
+	Game_Letterbox(true, 0)
+	UI_EnableEventSkip(true)
+	Camera_MoveToPosition(cameraFriends, true, SLOW_CAMERA_PANNING)
+	CTRL.Event_Delay(2.5)
+	CTRL.WAIT()
+end
+
+--------------------------------------------------------------------------------
+-- OBJ: Naval Guns
+--------------------------------------------------------------------------------
+
+--[[ using speech files ]]
+EVENTS.NavalGuns_Start = function()
+	CTRL.Actor_PlaySpeech(ACTOR.McKay, 263010)
+	CTRL.WAIT()	
+	CTRL.Actor_PlaySpeech(ACTOR.McKay, 263011)
+	CTRL.WAIT()	
+end
+
+-- when the player gets close
+-- point out the rear door and suggest a way in
+--[[ using speech files ]]
+EVENTS.NavalGuns_Target1 = function()
+	CTRL.Actor_PlaySpeech(ACTOR.Conti, 260350)
+	CTRL.WAIT()	
+	CTRL.Actor_PlaySpeech(ACTOR.Conti, 260360)
+	CTRL.WAIT()	
+end
+
+-- when the door is gone, point out the final target
+EVENTS.NavalGuns_Target2 = function()
+	CTRL.Actor_PlaySpeech(ACTOR.Conti, 260362)
+	CTRL.WAIT()	
+	CTRL.Actor_PlaySpeech(ACTOR.Conti, 260363)
+	CTRL.WAIT()	
+end
+
+--[[ using speech files ]]
+EVENTS.NavalGuns_Complete = function()
+	CTRL.Actor_PlaySpeech(ACTOR.McKay, 260439)
+	CTRL.WAIT()	
+	CTRL.Actor_PlaySpeech(ACTOR.GenericAlly, 260438)
+	CTRL.WAIT()	
+end
+
+EVENTS.NavalGuns_Fail = function()
+
+end
+
+
+
+
+
+
+
+--------------------------------------------------------------------------------
+-- OBJ: Axis HQ
+--------------------------------------------------------------------------------
+
+EVENTS.AxisHQ_Start = function()
+
+	print("adding axis hq intel event")
+	CTRL.Actor_PlaySpeech(ACTOR.McKay, 260641)
+	CTRL.WAIT()	
+	CTRL.Actor_PlaySpeech(ACTOR.McKay, 260642)
+	CTRL.WAIT()	
+	-- if the player has yet to complete the 'Naval Guns' obj
+	if g_navalguns_complete == false then
+		--CTRL.Actor_PlaySpeech(ACTOR.GenericAlly, 260643)
+		--CTRL.WAIT()	
+	end
+end
+
+
+EVENTS.AxisHQ_KeepAttacking = function()
+	CTRL.Actor_PlaySpeech(ACTOR.Conti, 260644)
+	CTRL.WAIT()	
+end
+
+
+EVENTS.AxisHQ_Complete = function()
+	if g_navalguns_complete == false then
+		--CTRL.Actor_PlaySpeech(ACTOR.GenericAlly, 260661)
+			Objective_Complete(OBJ_NavalGuns)
+		--CTRL.WAIT()	
+	end
+	CTRL.Actor_PlaySpeech(ACTOR.McKay, 260650)
+	CTRL.WAIT()	
+	CTRL.Actor_PlaySpeech(ACTOR.McKay, 260660)
+	CTRL.WAIT()	
+	
+	-- variable delay for the sake of the end NIS
+	CTRL.Event_Delay(3)
+	CTRL.WAIT()	
+end
+
+EVENTS.AxisHQ_Fail = function()
+
+end
+
+
+
+--------------------------------------------------------------------------------
+-- SECONDARY OBJ: MotorPool
+--------------------------------------------------------------------------------
+
+EVENTS.MotorPool_Start = function()
+	CTRL.Actor_PlaySpeech(ACTOR.McKay, 260531)
+	CTRL.WAIT()	
+	CTRL.Actor_PlaySpeech(ACTOR.McKay, 260532)
+	CTRL.WAIT()	
+end
+
+EVENTS.MotorPool_Warning = function()
+	CTRL.Actor_PlaySpeech(ACTOR.McKay, 260533)
+	CTRL.WAIT()	
+end
+
+EVENTS.MotorPool_Complete = function()
+	CTRL.Actor_PlaySpeech(ACTOR.McKay, 260534)
+	CTRL.WAIT()	
+end
+
+EVENTS.MotorPool_Fail = function()
+
+end
+
+
+EVENTS.Bridge_EarnedMotorPool = function()
+	
+	CTRL.Actor_PlaySpeech(ACTOR.McKay, 260535)
+	CTRL.WAIT()
+	
+end
+
+--------------------------------------------------------------------------------
+-- MEDAL OP: Secure Assets
+--------------------------------------------------------------------------------
+
+EVENTS.SecureAssets_Start = function()
+	CTRL.Actor_PlaySpeech(ACTOR.McKay, 260631)
+	CTRL.WAIT()	
+	CTRL.Actor_PlaySpeech(ACTOR.McKay, 260632)
+	CTRL.WAIT()	
+end
+
+EVENTS.SecureAssets_Complete = function()
+	CTRL.Actor_PlaySpeech(ACTOR.McKay, 260621)
+	CTRL.WAIT()	
+end
+
+EVENTS.SecureAssets_Fail = function()
+	if EGroup_IsEmpty(eg_secure_target_all) then
+		
+		CTRL.Actor_PlaySpeech(ACTOR.McKay, 260623)
+		CTRL.WAIT()	
+		
+	else
+		
+		--CTRL.Actor_PlaySpeech(ACTOR.GenericAlly, 260622)
+		--CTRL.WAIT()	
+		
+	end
+
+end
+
+
+
+--------------------------------------------------------------------------------
+-- MEDAL OP: Longest Day
+--------------------------------------------------------------------------------
+
+EVENTS.LongestDay_Start = function()
+	CTRL.Actor_PlaySpeech(ACTOR.McKay, 260491)
+	CTRL.WAIT()	
+	CTRL.Actor_PlaySpeech(ACTOR.McKay, 260492)
+	CTRL.WAIT()	
+end
+
+EVENTS.LongestDay_Incoming = function()
+	CTRL.Actor_PlaySpeech(ACTOR.McKay, 260493)
+	CTRL.WAIT()	
+end
+
+EVENTS.LongestDay_Complete = function()
+	CTRL.Actor_PlaySpeech(ACTOR.McKay, 260495)
+	CTRL.WAIT()	
+end
+
+
+
+
+
+
+
+
+
+--------------------------------------------------------------------------------
+
+-- Help Messages
+
+--------------------------------------------------------------------------------
+
+-- earn reinforcements
+EVENTS.CaptureTerritory1 = function()
+	CTRL.Actor_PlaySpeech(ACTOR.McKay, 260204)
+	CTRL.WAIT()	
+end
+
+
+
+-- earn reinforcements
+EVENTS.CaptureTerritory2 = function()
+	CTRL.Actor_PlaySpeech(ACTOR.McKay, 260204)
+	CTRL.WAIT()	
+end
+
+-- ostwind shows up in the town square
+EVENTS.Warning_OstwindInbound = function()
+	CTRL.Actor_PlaySpeech(ACTOR.Conti, 260241)
+	CTRL.WAIT()	
+end
+
+-- germans are retreating
+EVENTS.Warning_GermansRetreat1 = function()
+	CTRL.Actor_PlaySpeech(ACTOR.Conti, 260242)
+	CTRL.WAIT()	
+end
+EVENTS.Warning_GermansRetreat2 = function()
+	CTRL.Actor_PlaySpeech(ACTOR.Conti, 260243)
+	CTRL.WAIT()	
+end
+EVENTS.Warning_GermansRetreat3 = function()
+	CTRL.Actor_PlaySpeech(ACTOR.Conti, 260244)
+	CTRL.WAIT()	
+end

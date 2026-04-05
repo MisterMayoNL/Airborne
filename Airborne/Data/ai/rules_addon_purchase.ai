@@ -1,0 +1,94 @@
+
+---------------------------------------------------------------------------------
+-- list all the addons we never want to build - quicker to do this instead of using the demand override functions below
+s_ignore_addons = {}
+s_ignore_addons[BP_GetID(UPG.ALLIES.ENGINEER_MINESWEEPER)] = 1
+s_ignore_addons[BP_GetID(UPG.ALLIES.SHERMAN_CRAB)] = 1
+s_ignore_addons[BP_GetID(UPG.AXIS.PIONEER_MINESWEEPER)] = 1
+s_ignore_addons[BP_GetID(UPG.CW.MOBILEHQ)] = 1
+s_ignore_addons[BP_GetID(UPG.CW.ENABLE_MOBILE_HQ)] = 1
+s_ignore_addons[BP_GetID(UPG.JOEY.ENGINEER6_MINESWEEPER)] = 1
+s_ignore_addons[BP_GetID(UPG.JOEY.PIONEER4_MINESWEEPER)] = 1
+
+---------------------------------------------------------------------------------
+-- Rules for squad-addons
+
+-- generic - addons should decrease in demand as they increase in count
+function DecreasedDemandOnCount( upgradePBG )
+	local ucount = UtilPBG_CountTotal( upgradePBG )
+	if (ucount > 0) then
+		return -ucount*ucount*3 -- 3,12,27,...
+	end
+	
+	return 0
+end
+
+function AlliesSquadAddonUpgradeRules( upgradePBG, currentDemand )
+	
+	if (upgradePBG == UPG.ALLIES.HALFTRACK_QUAD ) then
+		return 50
+	end
+	
+	if (upgradePBG == UPG.ALLIES.ENGINEER_FLAMETHROWER ) then
+		
+		-- some rules to delay flamethrower
+		if (cache.engineer_count < 3 or AIPlayer_TotalDamageReceived(s_selfplayer) < 10) then
+			return DEMAND_NeverBuild
+		end
+	
+	end
+	
+	-- INSERT MORE RULES HERE
+
+	return DecreasedDemandOnCount( upgradePBG )
+end
+
+function AxisSquadAddonUpgradeRules( upgradePBG, currentDemand )
+	
+	-- increase the demand for these items - they only show up when we have halftracks
+	if (upgradePBG == UPG.AXIS.HALFTRACK_FLAMETHROWER ) then
+		return 20
+	elseif (upgradePBG == UPG.AXIS.HALFTRACK_STUKA ) then
+		return 20
+	end
+	
+	-- INSERT MORE RULES HERE
+	
+	
+	return DecreasedDemandOnCount( upgradePBG )
+end
+
+
+function AlliesCWSquadAddonUpgradeRules( upgradePBG, currentDemand )
+
+	if (upgradePBG == UPG.CW.RIFLE_GRENADE ) then
+		return 20
+	elseif (upgradePBG == UPG.CW.BREN ) then
+		return 20
+	elseif (upgradePBG == UPG.CW.BREN_CARRIER_MMG ) then		
+		return 20
+	end
+	
+	
+	
+	-- INSERT MORE RULES HERE
+	
+	return DecreasedDemandOnCount( upgradePBG )
+end
+
+
+function AxisPESquadAddonUpgradeRules( upgradePBG, currentDemand )
+
+	
+	if (upgradePBG == UPG.ELITE.PANZERSCHRECK ) then
+		return 20
+	elseif (upgradePBG == UPG.ELITE.MP44 ) then
+		return 20
+	elseif (upgradePBG == UPG.ELITE.PANZERJAGER ) then		
+		return 20
+	end
+		
+	-- INSERT MORE RULES HERE
+	
+	return DecreasedDemandOnCount( upgradePBG )
+end

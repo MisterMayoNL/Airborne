@@ -1,0 +1,310 @@
+-------------------------------------------------------------------------
+-------------------------------------------------------------------------
+--
+-- NIS File for Mission 8 - ARTILLERY DUEL
+--
+-------------------------------------------------------------------------
+-------------------------------------------------------------------------
+EVENTS = {}
+
+function NIS_Init()
+
+	-- load NIS's
+	NIS01 = "sp/M08_Artillery_Duel/NIS/N08_01"
+	nis_load(NIS01)
+	NIS02 = "sp/M08_Artillery_Duel/NIS/N08_02"
+	nis_load(NIS02)
+	
+	nis_setintransitiontime(0)
+	nis_setouttransitiontime(0)
+
+end
+
+Scar_AddInit(NIS_Init)
+
+
+
+
+
+
+--------------------------------------------------------------------------------
+-- OBJECTIVE - REPAIR BRIDGE
+--------------------------------------------------------------------------------
+EVENTS.OBJ_RB_Start = function() 
+	CTRL.Actor_PlaySpeech(ACTOR.McKay, 281110)
+	CTRL.WAIT()	
+	CTRL.Actor_PlaySpeech(ACTOR.McKay, 281120)
+	CTRL.WAIT()	
+	CTRL.Event_Delay(0.25)
+	CTRL.WAIT() 
+	CTRL.Actor_PlaySpeech(ACTOR.Joey, 18500000)
+	CTRL.WAIT()	
+end
+
+EVENTS.Greg_Spotted = function()
+	CTRL.Actor_PlaySpeech(ACTOR.Joey, 18500010)
+	CTRL.WAIT()
+end
+
+EVENTS.Greg_Medic_Collected = function()
+	CTRL.Actor_PlaySpeech(ACTOR.Joey, 18500020)
+	CTRL.WAIT()
+end
+
+EVENTS.Greg_Rescued = function()
+	CTRL.Actor_PlaySpeech(ACTOR.Joey, 18500030)
+	CTRL.WAIT()
+end
+
+t_eng_near_bridge = {281130, 281140}
+EVENTS.OBJ_RB_EngineersNotRepairing = function()
+	local text = t_eng_near_bridge[World_GetRand(1, table.getn(t_eng_near_bridge))]
+	CTRL.Actor_PlaySpeech(ACTOR.Conti, text)
+	CTRL.WAIT()	
+end
+
+EVENTS.OBJ_RB_RepairStarted = function() 
+	CTRL.Actor_PlaySpeech(ACTOR.Conti, 280250)
+	CTRL.WAIT()
+	--CTRL.Actor_PlaySpeech(ACTOR.Joey, 18500010)
+	--CTRL.WAIT()	
+end
+
+EVENTS.OBJ_RB_Repair50 = function()
+	CTRL.Actor_PlaySpeech(ACTOR.Conti, 281260)
+	CTRL.WAIT()
+	--CTRL.Actor_PlaySpeech(ACTOR.Joey, 18500020)
+	--CTRL.WAIT()
+end
+
+EVENTS.OBJ_RB_AlmostDone = function()
+	CTRL.Actor_PlaySpeech(ACTOR.Conti, 280280)
+	CTRL.WAIT()
+	--CTRL.Actor_PlaySpeech(ACTOR.Joey, 18500030)
+	--CTRL.WAIT()	
+end
+
+t_eng_under_fire = {280271, 280272, 280273, 280274, 280275}
+EVENTS.OBJ_RB_EngineersUnderFire = function()
+	local text = t_eng_under_fire[World_GetRand(1, table.getn(t_eng_under_fire))]
+	CTRL.Actor_PlaySpeech(ACTOR.Conti, text)
+	CTRL.WAIT()
+end
+
+EVENTS.OBJ_RB_EngineersDead = function()
+	CTRL.Actor_PlaySpeech(ACTOR.Conti, 280276)
+	CTRL.WAIT()
+end
+
+EVENTS.OBJ_RB_Complete = function()
+	CTRL.Actor_PlaySpeech(ACTOR.McKay, 280520)
+	CTRL.WAIT()	
+end
+
+t_obj_rb_aa = {280200, 280210}
+EVENTS.OBJ_RB_AA_Attack = function()
+	local text = t_obj_rb_aa[World_GetRand(1, table.getn(t_obj_rb_aa))]
+	CTRL.Actor_PlaySpeech(ACTOR.Carota, text)
+	CTRL.WAIT()
+end
+
+EVENTS.FriendsDead = function()
+	UI_EnableEventSkip(false)
+	CTRL.Event_Delay(1)
+	CTRL.WAIT()
+	Game_Letterbox(true, 0)
+	UI_EnableEventSkip(true)
+	Camera_MoveToPosition(cameraFriends, true, SLOW_CAMERA_PANNING)
+	CTRL.Event_Delay(2.5)
+	CTRL.WAIT()
+end
+
+
+--------------------------------------------------------------------------------
+-- OBJECTIVE - CAPTURE TOWN SQUARE
+--------------------------------------------------------------------------------
+
+EVENTS.OBJ_TS_EnterSquare = function()
+	CTRL.Actor_PlaySpeech(ACTOR.Conti, 281220)
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.Conti, 281230)
+	CTRL.WAIT()
+end
+
+EVENTS.OBJ_TS_Complete = function()
+	CTRL.Actor_PlaySpeech(ACTOR.Conti, 280530)
+	CTRL.WAIT()	
+end
+
+
+
+--------------------------------------------------------------------------------
+-- OBJECTIVE - DEFEND TOWN SQUARE
+--------------------------------------------------------------------------------
+EVENTS.OBJ_DTS_Start = function()
+	CTRL.Actor_PlaySpeech(ACTOR.Conti, 281710)
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.Conti, 281730)
+	CTRL.WAIT()
+	CTRL.Event_Delay(4)
+	CTRL.Actor_PlaySpeech(ACTOR.Conti, 281600)
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.Conti, 281610)
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.Conti, 281620)
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.Conti, 281630)
+	CTRL.WAIT()
+end
+
+g_OBJ_DTS_Progression = 1
+t_dts_progression = {281740, 281750, 281760, 281770}
+EVENTS.OBJ_DTS_Progression = function()
+	local text = t_dts_progression[g_OBJ_DTS_Progression]
+	CTRL.Actor_PlaySpeech(ACTOR.Conti, text)
+	CTRL.WAIT()
+	if g_OBJ_DTS_Progression < table.getn(t_dts_progression) then
+		g_OBJ_DTS_Progression = g_OBJ_DTS_Progression + 1
+	end
+end
+
+t_dts_failing = {281775, 281780, 281790}
+EVENTS.OBJ_DTS_Failing = function()
+	local text = t_dts_failing[World_GetRand(1, table.getn(t_dts_failing))]
+	CTRL.Actor_PlaySpeech(ACTOR.Conti, text)
+	CTRL.WAIT()
+end
+
+EVENTS.OBJ_DTS_RecapturePoint = function()
+	CTRL.Actor_PlaySpeech(ACTOR.Conti, 281800)
+	CTRL.WAIT()
+end
+
+EVENTS.OBJ_DTS_Complete = function()
+	CTRL.Actor_PlaySpeech(ACTOR.McKay, 281820)
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.McKay, 281830)
+	CTRL.WAIT()
+end
+
+EVENTS.OBJ_DTS_ChurchSpotted = function()
+	CTRL.Actor_PlaySpeech(ACTOR.Conti, 281340)
+	CTRL.WAIT()
+end
+
+
+t_panzers_spotted = {280620, 281810}
+EVENTS.OBJ_DTS_PanzersSpotted = function()
+	local text = t_panzers_spotted[World_GetRand(1, table.getn(t_panzers_spotted))]
+	CTRL.Actor_PlaySpeech(ACTOR.Joey, text)
+	CTRL.WAIT()
+end
+
+
+--------------------------------------------------------------------------------
+-- MEDAL OPPORTUNITY - DESTROY AXIS HQ (CHATEAU)
+--------------------------------------------------------------------------------
+
+
+
+EVENTS.OBJ_DC_Start = function()
+	CTRL.Actor_PlaySpeech(ACTOR.Joey, 280540)
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.McKay, 280560)
+	CTRL.WAIT()
+end
+
+EVENTS.OBJ_DC_Complete = function()
+	CTRL.Actor_PlaySpeech(ACTOR.McKay, 282000)
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.McKay, 282010)
+	CTRL.WAIT()
+end
+
+--------------------------------------------------------------------------------
+-- OBJECTIVE - NEBELWEFERS
+--------------------------------------------------------------------------------
+EVENTS.OBJ_NW_Start = function()
+	CTRL.Actor_PlaySpeech(ACTOR.McKay, 281300)
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.McKay, 281315)
+	CTRL.WAIT()
+end
+
+t_neb_spotted = {280400, 280410, 280420, 280430}
+EVENTS.OBJ_NW_NebSpotted = function()
+	local text = t_neb_spotted[World_GetRand(1, table.getn(t_neb_spotted))]
+	CTRL.Actor_PlaySpeech(ACTOR.Carota, text)
+	CTRL.WAIT()	
+end
+
+t_neb_destroyed = {281440, 281450}
+EVENTS.OBJ_NW_NebDestroyed = function()
+	local text = t_neb_destroyed[World_GetRand(1, table.getn(t_neb_destroyed))]
+	CTRL.Actor_PlaySpeech(ACTOR.McKay, text)
+	CTRL.WAIT()	
+end
+
+t_neb_attack = {280330, 280341, 280350}
+EVENTS.OBJ_NW_NebAttack = function()
+	local text = t_neb_attack[World_GetRand(1, table.getn(t_neb_attack))]
+	CTRL.Actor_PlaySpeech(ACTOR.Joey, text)
+	CTRL.WAIT()	
+end
+
+EVENTS.OBJ_NW_Complete = function()
+	CTRL.Actor_PlaySpeech(ACTOR.Conti, 281460)
+	CTRL.WAIT()	
+	CTRL.Actor_PlaySpeech(ACTOR.McKay, 280470)
+	CTRL.WAIT()
+end
+
+--------------------------------------------------------------------------------
+-- NIS01: GOLIATH
+--------------------------------------------------------------------------------
+
+EVENTS.NIS01 = function()
+	-- set speech and sfx volume groups to 0 so we don't hear any audio in between NIS and Sit Rep.  Sit Rep transition out will re-set volume groups.
+	Sound_SetVolume("Speech", 0.0, 0)
+	Sound_SetVolume("SFXmaster", 0.0, 0)
+
+	CTRL.Game_Letterbox(true, 1)
+		Game_FadeToBlack(FADE_IN, 0.5)
+	CTRL.WAIT()
+	
+	FOW_Enable(false)
+	CTRL.Scar_PlayNIS(NIS01)
+	CTRL.WAIT()
+	nis_stop()
+	Camera_ResetToDefault()
+	FOW_Enable(true)
+	CTRL.WAIT()
+	CTRL.Event_Delay(2)
+	CTRL.WAIT()
+	Camera_MoveToPosition(Marker_GetPosition(counterattack3), true, SLOW_CAMERA_PANNING)
+	CTRL.WAIT()
+	
+end
+
+--------------------------------------------------------------------------------
+-- NIS02: NEBELWERFERS
+--------------------------------------------------------------------------------
+
+EVENTS.NIS02 = function()
+
+	CTRL.Game_Letterbox(true, 1)
+	CTRL.WAIT()
+	
+	FOW_Enable(false)
+	
+	CTRL.Scar_PlayNIS(NIS02)
+	CTRL.WAIT()
+
+	nis_stop()
+	
+	FOW_Enable(true)
+	
+	CTRL.Game_Letterbox(false, 1)
+	CTRL.WAIT()
+
+end

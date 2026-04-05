@@ -1,0 +1,12 @@
+model =
+{
+	"..\\..\\Common\\CompleteMotionTree.abp",
+
+	"..\\..\\amer\\Soldiers\\Weapons\\R870\\R870",
+
+	"Weapons\\Mk2 Pineapple Grenade",
+	
+	"Luke\\Ranger_legs",
+	"Luke\\Carota",
+	"Luke\\Ranger1",	
+}

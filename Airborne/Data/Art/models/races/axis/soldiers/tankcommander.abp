@@ -1,0 +1,12 @@
+model =
+{
+	"..\\..\\Common\\CompleteMotionTree.abp",
+	--"..\\..\\Common\\CommonMeshes.abp",
+
+	-- Mesh
+	"Rolevariations\\RandomRV_tc",
+	"Vehiclecrew\\tiger_crew",
+	"Vehiclecrew\\Tank_Commander",
+	"Vehiclecrew\\Random_Skins",
+}
+

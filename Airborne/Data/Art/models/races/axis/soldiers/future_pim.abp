@@ -1,0 +1,15 @@
+model =
+{
+	"..\\..\\Common\\CompleteMotionTree.abp",
+	
+	-- Weapons
+	"..\\..\\allies\\Soldiers\\Weapons\\Mk2 Pineapple Grenade",
+	--"Weapons\\Stielgranate",
+	"..\\..\\china\\Soldiers\\Weapons\\RPG\\RPG",
+	
+	-- Mesh
+	"Pim\\GrenadierSV",
+	"equipment\\equipment2", 
+	"equipment\\Hose",
+	"..\\..\\PanzerElite\\Soldiers\\Pim\\PGrenadier",
+}	

@@ -1,0 +1,9 @@
+model =
+{
+	"..\\..\\Common\\CompleteMotionTree.abp",
+
+	"Vehiclecrew\\Engineer",
+	"Vehiclecrew\\tank_jacket",
+	"Vehiclecrew\\tank_crew",
+}
+

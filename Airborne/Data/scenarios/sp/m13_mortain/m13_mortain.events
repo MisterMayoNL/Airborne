@@ -1,0 +1,161 @@
+--
+-- NIS File for Mission 13 - Mortain
+--
+-------------------------------------------------------------------------
+-------------------------------------------------------------------------
+
+function NIS_Init()
+
+	-- load NIS's -- waiting for NIS to be finished.
+ 	NIS13_01 = "SP/M13_Mortain/NIS/N13_01"
+ 	nis_load(NIS13_01)
+	
+	NIS13_02 = "SP/M13_Mortain/NIS/N13_02"
+ 	nis_load(NIS13_02)
+	
+	nis_setintransitiontime(0)
+	nis_setouttransitiontime(0)
+
+end
+
+Scar_AddInit(NIS_Init)
+
+
+
+EVENTS = {}
+
+--------------------------------------------------------------------------------
+-- NIS13_01: Able Relieves Dog Company
+--------------------------------------------------------------------------------
+
+EVENTS.NIS13_01 = function()
+	-- set speech and sfx volume groups to 0 so we don't hear any audio in between NIS and Sit Rep.  Sit Rep transition out will re-set volume groups.
+	Sound_SetVolume("Speech", 0.0, 0)
+	Sound_SetVolume("SFXmaster", 0.0, 0)
+
+	Game_FadeToBlack(FADE_IN, 0.25)
+	CTRL.Game_Letterbox(true, 0.25)
+	CTRL.WAIT()
+	
+	FOW_Enable(false)
+	
+	CTRL.Scar_PlayNIS(NIS13_01)
+	CTRL.WAIT()
+
+	nis_stop()
+	
+	Game_LoadAtmosphere("data:art/scenarios/presets/atmosphere/m13_lighting.aps", 0)
+	FOW_Enable(true)
+	Camera_ResetToDefault()
+	Camera_ResetToDefault()
+	Camera_MoveToEGroup( EG_playerHQ )
+	Game_FadeToBlack(FADE_IN, 6 )
+	
+	CTRL.Game_TextTitleFade( 38035, .5, 4, 1, "" )	-- 2003hrs, August 6th. D-Day + 33
+	CTRL.WAIT()
+	
+	CTRL.Event_Delay(.5 )
+	CTRL.WAIT()
+
+	CTRL.Game_TextTitleFade( 339023, .5, 4, 1, "" )  --HQ established.
+	CTRL.WAIT()
+	Camera_MoveToPosition( bombard8, true, 0.1 )
+	CTRL.Event_Delay( 6 )
+	CTRL.WAIT()
+--~ 	Game_Letterbox(false, 0.25)
+end
+
+--------------------------------------------------------------------------------
+-- NIS13_02: Flares
+--------------------------------------------------------------------------------
+
+EVENTS.NIS13_02 = function()
+	
+	CTRL.Game_Letterbox(true, 1)
+	CTRL.WAIT()
+	
+	FOW_Enable(false)
+	Camera_MoveToPosition( MRK_NIS2_GI, true, 0 )
+	nis_setouttransitiontime( 0 )
+	Util_HidePlayerForNIS(player1, true)
+	CTRL.Scar_PlayNIS(NIS13_02) 
+	CTRL.WAIT()
+
+	nis_stop()
+	
+	Util_HidePlayerForNIS(player1, false)
+	FOW_Enable(true)
+	
+	Game_Letterbox(false, 1)
+
+	Camera_ResetToDefault()
+	Camera_ResetToDefault()
+	Game_FadeToBlack(FADE_IN, 1)
+	
+end
+
+EVENTS.FIRST_ATTACK = function()
+	CTRL.Actor_PlaySpeech (ACTOR.Conti, 338970)  --	Stand to!  Stand to!  The hill's under attack!
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech (ACTOR.Conti, 338971)  --	Our whole damn perimeter is vulnerable.
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech (ACTOR.Conti, 338972)  -- We've gotta reinforce the line now. Get some MG nests and barbed wire on those approaches.	
+	CTRL.WAIT()
+end
+
+EVENTS.FriendsDead = function()
+	UI_EnableEventSkip(false)
+	CTRL.Event_Delay(1)
+	CTRL.WAIT()
+	Game_Letterbox(true, 0)
+	UI_EnableEventSkip(true)
+	Camera_MoveToPosition(cameraFriends, true, SLOW_CAMERA_PANNING)
+	CTRL.Event_Delay(2.5)
+	CTRL.WAIT()
+end
+
+EVENTS.MORTAIN_ATTACK1 = function()
+	CTRL.Actor_PlaySpeech ( ACTOR.Conti, 338980 ) --They're at Mortain! Krauts are attacking the town! 
+	CTRL.WAIT()
+end
+
+EVENTS.MORTAIN_ATTACK2 = function()
+	CTRL.Actor_PlaySpeech ( ACTOR.Conti, 338981 ) --Krauts are trying to take Mortain. We gotta push them back.
+	CTRL.WAIT()
+end
+EVENTS.KRAUTS_ON_HILL1 = function()
+	CTRL.Actor_PlaySpeech (ACTOR.Conti, 338100) --Hold the line! We got krauts on our hill!
+	CTRL.WAIT()
+end
+EVENTS.KRAUTS_ON_HILL2 = function()
+	CTRL.Actor_PlaySpeech (ACTOR.Conti, 338101) --Fritz is on our hill! Hold them back!
+	CTRL.WAIT()
+end
+EVENTS.HQ_ATTACK = function()
+	CTRL.Actor_PlaySpeech(ACTOR.Conti, 338990) --Our HQ is under attack!!
+	CTRL.WAIT()
+end
+EVENTS.HQ_DESTROYED = function()
+	CTRL.Actor_PlaySpeech(ACTOR.Conti, 338991)--They've taken out our headquarters! We are losing!
+	CTRL.WAIT()
+end
+--Artillary warnings
+EVENTS.TO_THE_TRENCHES = function()
+	CTRL.Actor_PlaySpeech(ACTOR.Joey, 338105)--	Incoming! To the trenches! We gotta hold this hill!
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.Conti, 338110)--	Incoming! To the trenches! We gotta hold this hill!
+	CTRL.WAIT()
+end
+EVENTS.INCOMING = function()
+	CTRL.Actor_PlaySpeech(ACTOR.Conti, 338120)--	We got incoming! Hold the line!
+	CTRL.WAIT()
+end
+EVENTS.ANOTHER_WAVE = function()
+	CTRL.Actor_PlaySpeech(ACTOR.Conti, 338140)--They're coming! Another wave! Ready defense!
+	CTRL.WAIT()
+end
+EVENTS.REGAIN_CONTROL = function()
+	CTRL.Actor_PlaySpeech( ACTOR.Conti, 338950 )--If we don't regain control of the Victory Point on Hill 317 quickly we're gonna lose this fight!
+	CTRL.WAIT()
+end
+

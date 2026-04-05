@@ -1,0 +1,176 @@
+
+Name = "$38000"
+Description = "$38001"
+ModName = "WW2"
+Group = "WW2"
+
+UI =
+{
+	-- brw 12/09/2008 - putting in missing art for the campaign main menu file because
+	-- it is not being hooked up correctly.
+--~ 	EnabledImage = [[Data:art\ui\textures\textures_fe\m02_paradrop_icon]],
+	EnabledImage = [[Data:art\ui\textures\textures_fe\not_used]],
+	HoverImage = [[Data:art\ui\textures\textures_fe\m02_paradrop_icon_on]],-- this doesn't appear to be working nor is it used
+	CampaignNameKey = "$559200",
+	MainTooltipKey = "$559201",
+	ContinueTooltipKey = "$559202",
+	DisabledTooltipKey = "$559203",
+}
+
+Missions =
+{
+	{
+		name = "M01",
+		mission = "M01_D-Day",
+		medals =
+		{
+			"medals/expert_infantryman_badge",
+		},
+	},
+	{
+		name = "M02",
+		mission = "M02_Paradrop",
+		sandmap = "Sandmap2",
+		SubtitleFile = "Subtitles/Sandmap2.lua",
+		medals =
+		{
+			"medals/parachutist_badge",
+		},
+	},
+	{
+		name = "M03",
+		mission = "M03_Carentan",
+		sandmap = "Sandmap3",
+		SubtitleFile = "Subtitles/Sandmap3.lua",
+		medals =
+		{
+			"medals/army_sharpshooter_badge",
+		},
+	},
+	{
+		name = "M04",
+		mission = "M04_Carentan_Counterattack",
+		counterattack = "M03_Carentan",
+		medals =
+		{
+			"medals/bronze_star_m04",
+		},
+	},
+	{
+		name = "M05",
+		mission = "M05_Redball_Express",
+		sandmap = "Sandmap5",
+		SubtitleFile = "Subtitles/Sandmap5.lua",
+		medals =
+		{
+			"medals/distinguished_service_cross",
+		},
+	},
+	{
+		name = "M06",
+		mission = "M06_Cherbourg",
+		sandmap = "Sandmap6",
+		SubtitleFile = "Subtitles/Sandmap6.lua",
+		medals =
+		{
+			"medals/soldiers_medal_m06",
+		},
+	},
+	{
+		name = "M07",
+		mission = "M07_V2_Rocket",
+		sandmap = "Sandmap7",
+		SubtitleFile = "Subtitles/Sandmap7.lua",
+		medals =
+		{
+			"medals/air_medal",
+		},
+	},
+	{
+		name = "M08",
+		mission = "M08_Artillery_Duel",
+		sandmap = "Sandmap8",
+		SubtitleFile = "Subtitles/Sandmap8.lua",
+		medals =
+		{
+			"medals/bronze_star_m08",
+		},
+	},
+	{
+		name = "M09",
+		mission = "M09_Hill_192",
+		sandmap = "Sandmap9",
+		SubtitleFile = "Subtitles/Sandmap9.lua",
+		medals =
+		{
+			"medals/soldiers_medal",
+		},
+	},
+	{
+		name = "M10",
+		mission = "M10_St_Lo_Counterattack",
+		sandmap = "Sandmap10",
+		SubtitleFile = "Subtitles/Sandmap10.lua",
+		medals =
+		{
+			"medals/army_ranger_badge",
+		},
+	},
+	{
+		name = "M12",
+		mission = "M12_Death_Of_A_Division",
+		sandmap = "Sandmap12",
+		SubtitleFile = "Subtitles/Sandmap12.lua",
+		medals =
+		{
+			"medals/distinguished_service_medal",
+		},
+	},
+	{
+		name = "M13",
+		mission = "M13_Mortain",
+		sandmap = "Sandmap13",
+		SubtitleFile = "Subtitles/Sandmap13.lua",
+		medals =
+		{
+			"medals/army_expert_badge",
+		},
+	},
+	{
+		name = "M14",
+		mission = "M14_Mortain",
+		counterattack = "M13_Mortain",
+		medals =
+		{
+			"medals/silver_star_m14",
+		},
+	},
+	{
+		name = "M15",
+		mission = "M15_Cornered_Tiger",
+		sandmap = "Sandmap15",
+		SubtitleFile = "Subtitles/Sandmap15.lua",
+		medals =
+		{
+			"medals/legion_of_merit",
+		},
+	},
+	{
+		name = "M16",
+		mission = "M16_Chambois",
+		sandmap = "Sandmap16",
+		SubtitleFile = "Subtitles/Sandmap16.lua",
+		medals =
+		{
+			"medals/medal_of_honor",
+		},
+	},
+}
+
+CompletionMedals =
+{
+	"medals/american_campaign_medal",
+	"medals/reward_friends_sp",
+}
+
+CreditsMovie = "CreditsMovie"

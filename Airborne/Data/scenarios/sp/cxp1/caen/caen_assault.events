@@ -1,0 +1,536 @@
+function NIS_Init()
+	NIS01 = "sp/CXP1/Caen/NIS/N06_01"
+	nis_load(NIS01)
+	NIS01A = "sp/CXP1/Caen/NIS/N06_01A"
+	nis_load(NIS01A)
+	
+	nis_setintransitiontime(0)
+	nis_setouttransitiontime(0)
+end
+
+Scar_AddInit(NIS_Init)
+
+EVENTS = { }
+
+EVENTS.NIS01 = function()
+
+	CTRL.Game_Letterbox(true, 0.75)
+	CTRL.WAIT()
+
+	 
+	-- pre-NIS fixups go here
+	
+
+	CTRL.Scar_PlayNIS(NIS01)
+	CTRL.WAIT()
+
+	nis_stop()
+
+	
+	-- post-NIS fixups go here
+	
+
+	Game_Letterbox(false, 0.75)
+	Game_FadeToBlack(false, 0.75)
+	 
+	 
+end
+
+EVENTS.GlennDead = function()
+	UI_EnableEventSkip(false)
+	CTRL.Event_Delay(1)
+	CTRL.WAIT()
+	Game_Letterbox(true, 0)
+	UI_EnableEventSkip(true)
+	Camera_MoveToPosition(cameraGlenn, true, SLOW_CAMERA_PANNING)
+	CTRL.Event_Delay(2.5)
+	CTRL.WAIT()
+end
+
+EVENTS.NIS01A = function()
+
+--~ 	CTRL.Game_Letterbox(true, 0.75)
+--~ 	CTRL.WAIT()
+
+	 
+	-- pre-NIS fixups go here
+	
+	Game_FadeToBlack(FADE_IN, 2)
+	Game_Letterbox(true, 0)
+	CTRL.Scar_PlayNIS(NIS01A)
+	CTRL.WAIT()
+
+	-- post-NIS fixups go here
+	
+
+	Game_Letterbox(false, 0.75)
+	Game_FadeToBlack(false, 0.75)
+	 
+	 
+end
+
+
+----------------------------------------------------------------------------------------------------------
+-- Bridgehead Speech
+
+----------------------------------------------------------------------------------------------------------
+
+EVENTS.Bridgehead_Charge = function()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Cutting, 1350600) 	-- Right, BAILEY get your men moving and secure the area!  Move!
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Cutting, 1350610) 	-- No gagglefucking, get in there quick and establish a foothold.
+	CTRL.WAIT()
+end
+
+
+EVENTS.Mortars = function()
+	
+	local choices = {}
+
+	choices[1] = {actor = ACTOR.CXP1.Degnan, line = 1350620}	-- Get the Canadian's on those positions!
+	choices[2] = {actor = ACTOR.CXP1.Degnan, line = 1350630}	-- Mortars!  On the bloody flanks!  Get your sections over there!
+	choices[3] = {actor = ACTOR.CXP1.Degnan, line = 1350640}	-- They've got us zeroed with mortars!  
+
+	local rand = World_GetRand(1, table.getn(choices))
+
+	CTRL.Actor_PlaySpeech(choices[rand].actor, choices[rand].line)
+	CTRL.WAIT()
+end
+
+
+EVENTS.Bridgehead_MortarsDead = function()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Bailey, 1350730) 	-- Chateau has been secured. Mobile command HQs on my position.
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Blackmore, 1350740) 	-- Right, good bloody work 3rd Battalion.
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Blackmore, 1350750) 	-- Re-org the troops.  We need to keep the momentum if we want to capture the city.
+	CTRL.WAIT()
+end
+
+
+
+
+
+
+----------------------------------------------------------------------------------------------------------
+-- Rescue Ally Speech
+
+----------------------------------------------------------------------------------------------------------
+
+EVENTS.Help_Start = function()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Cutting, 1351210) 	-- Baker Company is taking heavy casualties!  We need to provide them immediate support!
+	CTRL.WAIT()
+end
+
+EVENTS.Help_Reminder = function()
+
+	local choices = {}
+
+	choices[1] = {actor = ACTOR.CXP1.Cutting, line = 1351220}	-- We have to hold that flank!  Get your lads over there!
+	choices[2] = {actor = ACTOR.CXP1.Cutting, line = 1351230}	-- Get our lads over there and help those poor sod's out!
+
+	local rand = World_GetRand(1, table.getn(choices))
+
+	CTRL.Actor_PlaySpeech(choices[rand].actor, choices[rand].line)
+	CTRL.WAIT()
+end
+
+EVENTS.Help_Complete = function()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.GenericCommonwealth, 1352200) 	-- <Roger 3rd Battalion, thanks for the help>
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.GenericCommonwealth, 1352210) 	-- <Our Intel suggested Jerry had pulled out, guess that was wrong>
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.GenericCommonwealth, 1352220) 	-- <We are now under 3rd Battalion command!>
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.GenericCommonwealth, 1352230) 	-- <Lets push those Jerry's out of Caen>
+	CTRL.WAIT()
+end
+
+
+----------------------------------------------------------------------------------------------------------
+-- Recon Speech
+
+----------------------------------------------------------------------------------------------------------
+
+EVENTS.Recon_Start = function()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Bailey, 1350900) 	-- We need to recce the area.
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Bailey, 1350910) 	-- Int' reports indicate light forces scattered throughout but they're dug in and ready to fight.
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Bailey, 1350920) 	-- Deploy Howitzers to cover the advance and provide fire support as needed.
+	CTRL.WAIT()	
+end
+
+EVENTS.Recon_Positions_Spotted = function()
+	CTRL.Actor_PlaySpeech(ACTOR.McKay, 1352240) 	-- <Position ID'ed. Jerry's dug in hard>
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.McKay, 1352250) 	-- <LT Tennant Get closer and call in an air strike!>
+	CTRL.WAIT()
+end
+
+EVENTS.Recon_Reminder = function()
+
+	local choices = {}
+
+	choices[1] = {actor = ACTOR.CXP1.Bailey, line = 1352510}	-- Degnan, I want combat teams to move and secure the objectives on the double.
+	choices[2] = {actor = ACTOR.CXP1.Bailey, line = 1352520}	-- 3rd Battalion, those targets are our objectives. Capture and Hold them.
+
+	local rand = World_GetRand(1, table.getn(choices))
+
+	CTRL.Actor_PlaySpeech(choices[rand].actor, choices[rand].line)
+	CTRL.WAIT()
+end
+
+
+
+----------------------------------------------------------------------------------------------------------
+-- Nebelwerfer Speech
+
+----------------------------------------------------------------------------------------------------------
+
+EVENTS.Nebelwerfer_Warning = function()
+	
+	local choices = {}
+
+	choices[1] = {actor = ACTOR.CXP1.Degnan, line = 1351140}	-- Those are Nebelwerfers!  They've got us pegged lads!
+	choices[2] = {actor = ACTOR.CXP1.Degnan, line = 1351150}	-- They're using Nebelwerfers!  Find the launchers!
+	choices[3] = {actor = ACTOR.CXP1.Degnan, line = 1351160}	-- Incoming rockets!  They're got us zeroed!
+	choices[4] = {actor = ACTOR.CXP1.Degnan, line = 1351161}	-- Rockets!  Does anyone see their trails!?
+	choices[5] = {actor = ACTOR.CXP1.Degnan, line = 1351162}	-- Nebelwerfers!  Can anyone follow the trails to get a LocRef' on 'em?!
+	choices[6] = {actor = ACTOR.CXP1.Degnan, line = 1351163}	-- Incoming!  Those are rockets!  Find the launchers!
+
+	local rand = World_GetRand(1, table.getn(choices))
+
+	CTRL.Actor_PlaySpeech(choices[rand].actor, choices[rand].line)
+	CTRL.WAIT()
+end
+
+EVENTS.Nebelwerfers_Destroyed = function()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Degnan, 1351164) 	-- Nebelwerfers destroyed, bloody good job!
+	CTRL.WAIT()
+end
+
+
+----------------------------------------------------------------------------------------------------------
+-- Flak 88 Speech
+
+----------------------------------------------------------------------------------------------------------
+
+EVENTS.Flak88_Warning = function()
+	CTRL.Actor_PlaySpeech(ACTOR.McKay, 1352350) 	-- Let's hit those 88's and clear a path for the fighter bombers.
+	CTRL.WAIT()
+end
+
+
+----------------------------------------------------------------------------------------------------------
+-- No Man's Land Artillery Speech
+
+----------------------------------------------------------------------------------------------------------
+
+EVENTS.No_Mans_Land_First = function()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Degnan, 1351170) 	-- Jerries got the whole area zeroed in!  Get out of here!
+	CTRL.WAIT()
+end
+
+
+EVENTS.No_Mans_Land = function()
+
+	local choices = {}
+
+	choices[1] = {actor = ACTOR.CXP1.Degnan, line = 1351180}	-- Incoming rockets!  Get out of the area!
+	choices[2] = {actor = ACTOR.CXP1.Degnan, line = 1351190}	-- Incoming artillery!  Move out! Go!
+	--choices[3] = {actor = ACTOR.CXP1.Degnan, line = 1351200}	-- We need to locate the launchers!
+
+
+	local rand = World_GetRand(1, table.getn(choices))
+
+	CTRL.Actor_PlaySpeech(choices[rand].actor, choices[rand].line)
+	CTRL.WAIT()
+end
+
+
+----------------------------------------------------------------------------------------------------------
+-- Encounter a tank speech
+
+----------------------------------------------------------------------------------------------------------
+
+EVENTS.Panzer_Warning = function()
+	
+	local choices = {}
+
+	choices[1] = {actor = ACTOR.CXP1.Degnan, line = 1351110}	-- Panzers!  Get AT up here right bloody now!
+	choices[2] = {actor = ACTOR.CXP1.Degnan, line = 1351120}	-- Close up and use those fuckin' PIATS!
+	choices[3] = {actor = ACTOR.CXP1.Degnan, line = 1351121}	-- Where the fuck is Tennant!?  We need bloody armor support!
+	choices[4] = {actor = ACTOR.CXP1.Degnan, line = 1351130}	-- Flank the armor and hit 'em up the arse!
+
+	local rand = World_GetRand(1, table.getn(choices))
+
+	CTRL.Actor_PlaySpeech(choices[rand].actor, choices[rand].line)
+	CTRL.WAIT()
+end
+
+
+
+----------------------------------------------------------------------------------------------------------
+-- Officer is near a strongpoint speech
+
+----------------------------------------------------------------------------------------------------------
+
+EVENTS.Officer_Near_Strongpoint = function()
+	
+	local choices = {}
+
+	choices[1] = {actor = ACTOR.McKay, line = 1352270}	-- Understood.  (beat)  Fighter bombers on station and ready to hit the second position onced you've marked it.
+	choices[2] = {actor = ACTOR.McKay, line = 1352280}	-- Forward Air Control indicates pilots waiting for your smoke.  Light up the next bunker lad.
+	choices[3] = {actor = ACTOR.McKay, line = 1352290}	-- Give me the LOCREP for those bunkers.  Second wave of CAP is overhead and standing by.
+	choices[4] = {actor = ACTOR.McKay, line = 1352300}	-- Get on those bloody targets.  You've got fighters overhead burning fuel waiting to drop their payloads.
+	choices[5] = {actor = ACTOR.McKay, line = 1352250}	-- BAILEY, mark that position so fighter support can neutralize it!
+	choices[6] = {actor = ACTOR.McKay, line = 1352260}	-- Move up, LTs mark those targets!  Fighter bombers running CAP above your positions!
+
+	local rand = World_GetRand(1, table.getn(choices))
+
+	CTRL.Actor_PlaySpeech(choices[rand].actor, choices[rand].line)
+	CTRL.WAIT()
+end
+
+
+----------------------------------------------------------------------------------------------------------
+-- Tactical event: player is fighting speech
+
+----------------------------------------------------------------------------------------------------------
+
+EVENTS.Combat = function()
+	
+	local choices = {}
+
+	choices[1] = {actor = ACTOR.CXP1.Degnan, line = 1350930}	-- It's a fuckin' hornet's nest out here!
+	choices[2] = {actor = ACTOR.CXP1.Degnan, line = 1350940}	-- We need fuckin' infantry combat teams with armor!  Have arty stand by!
+	choices[3] = {actor = ACTOR.CXP1.Degnan, line = 1350950}	-- Watch the gaps between your teams or Jerry will take us apart!
+	choices[4] = {actor = ACTOR.CXP1.Degnan, line = 1351050}	-- Contact. Get rounds down range!
+	choices[5] = {actor = ACTOR.CXP1.Degnan, line = 1351060}	-- Call in the bloody Stuarts!  Get those fuckin' tankers off their arses!
+	choices[6] = {actor = ACTOR.CXP1.Degnan, line = 1351061}	-- Bring up the fuckin' Stuarts mate!
+	choices[7] = {actor = ACTOR.CXP1.Degnan, line = 1351062}	-- Section! Section! Section!  Target's to your front!
+	choices[8] = {actor = ACTOR.CXP1.Degnan, line = 1351070}	-- Flank those bastards lads!  Let's fuckin' move!
+
+	local rand = World_GetRand(1, table.getn(choices))
+
+	CTRL.Actor_PlaySpeech(choices[rand].actor, choices[rand].line)
+	CTRL.WAIT()
+end
+
+----------------------------------------------------------------------------------------------------------
+-- Player is near a strategic point to capture
+
+----------------------------------------------------------------------------------------------------------
+
+EVENTS.Capture_Point = function()
+	
+	local choices = {}
+
+	choices[1] = {actor = ACTOR.CXP1.Bailey, line = 1350680}	-- Corporal Degnan!  Get your lads on that point!
+	choices[2] = {actor = ACTOR.CXP1.Bailey, line = 1350690}	-- We need to take that bloody point!
+	choices[3] = {actor = ACTOR.CXP1.Degnan, line = 1350710}	-- Elbows and arses!  Secure those fuckin' positions!
+	choices[4] = {actor = ACTOR.CXP1.Degnan, line = 1350720}	-- Fuck sakes, Neville!  Get on that bloody point!
+
+	local rand = World_GetRand(1, table.getn(choices))
+
+	CTRL.Actor_PlaySpeech(choices[rand].actor, choices[rand].line)
+	CTRL.WAIT()
+end
+
+EVENTS.Capture_VP = function()
+	
+	local choices = {}
+
+	choices[1] = {actor = ACTOR.CXP1.Bailey, line = 1352530}	-- Objective in range, Degnan capture that point and defend it.
+	choices[2] = {actor = ACTOR.CXP1.Bailey, line = 1352540}	-- Bloody hell, objective in sight. Capture and defend it.
+	choices[3] = {actor = ACTOR.CXP1.Bailey, line = 1352550}	-- That's our mark. Secure that point and prepare for counter attacks.
+
+	local rand = World_GetRand(1, table.getn(choices))
+
+	CTRL.Actor_PlaySpeech(choices[rand].actor, choices[rand].line)
+	CTRL.WAIT()
+end
+
+----------------------------------------------------------------------------------------------------------
+-- Tactical event: Destroy the AA guns
+
+----------------------------------------------------------------------------------------------------------
+
+EVENTS.Flak_Guns = function()
+	
+	local choices = {}
+
+	choices[1] = {actor = ACTOR.McKay, line = 1352350}	-- Those A-A guns need to be destroyed before the fighters can drop down.
+	choices[2] = {actor = ACTOR.McKay, line = 1352360}	-- Our fighters won't have a chance against that Anit-Air fire.  Assemble the sections and neutralize those guns!
+	choices[3] = {actor = ACTOR.McKay, line = 1352370}	-- They can easily be used against our planes.  Take them out so we can take out those bunkers!
+
+	local rand = World_GetRand(1, table.getn(choices))
+
+	CTRL.Actor_PlaySpeech(choices[rand].actor, choices[rand].line)
+	CTRL.WAIT()
+end
+
+
+----------------------------------------------------------------------------------------------------------
+-- Victory Point speech
+
+----------------------------------------------------------------------------------------------------------
+
+
+EVENTS.All_VPs_Captured = function()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Bailey, 1352630) 	-- All objectives secure!
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Bailey, 1352640) 	-- Fighter Command, you are free to begin your attack run.
+	CTRL.WAIT()
+end
+
+EVENTS.First_VP_Captured = function()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Bailey, 1352610) 	-- Objective secure. Well done.
+	CTRL.WAIT()
+end
+
+EVENTS.Second_VP_Captured = function()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Bailey, 1352620) 	-- Second Objective is secure, 3rd Battalion.
+	CTRL.WAIT()
+end
+
+EVENTS.Lost_VP = function()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Bailey, 1352600) 	-- We've lost an objective, get it back.
+	CTRL.WAIT()
+end
+
+EVENTS.Losing_VP = function()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Bailey, 1352590) 	-- We're losing an objective.
+	CTRL.WAIT()
+end
+
+EVENTS.Counterattack = function()
+	local choices = {}
+
+	choices[1] = {actor = ACTOR.CXP1.Bailey, line = 1352560}	-- Counter Attack. Defend that objective.
+	choices[2] = {actor = ACTOR.CXP1.Bailey, line = 1352570}	-- Contact! Enemies attacking our objective point.
+	choices[3] = {actor = ACTOR.CXP1.Bailey, line = 1352580}	-- Incoming. Degnan watch the front and defend those Objectives.
+
+	local rand = World_GetRand(1, table.getn(choices))
+
+	CTRL.Actor_PlaySpeech(choices[rand].actor, choices[rand].line)
+	CTRL.WAIT()
+end
+
+
+----------------------------------------------------------------------------------------------------------
+-- Bombing Run speech
+
+----------------------------------------------------------------------------------------------------------
+
+
+EVENTS.Start_Bombing_Run = function()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Bailey, 1352650) 	-- Fighters inbound lads, that'll show em.
+	CTRL.WAIT()
+end
+
+
+
+----------------------------------------------------------------------------------------------------------
+-- Ambient Event speech
+
+----------------------------------------------------------------------------------------------------------
+
+EVENTS.Ambient_Bombing_Runs = function()
+	local choices = {}
+
+	choices[1] = {actor = ACTOR.CXP1.GenericCommonwealth, line = 1352380}	-- Right bloody on Boudica's boys!  Stick it to 'em your sorry fucks!
+	choices[2] = {actor = ACTOR.CXP1.GenericCommonwealth, line = 1352390}	-- Only the RAF flies like that! Bloody brilliant CRAB Air!
+	choices[3] = {actor = ACTOR.CXP1.GenericCommonwealth, line = 1352400}	-- Cracked it right open gents!  That's the gen.
+	choices[4] = {actor = ACTOR.CXP1.GenericCommonwealth, line = 1352401}	-- Keep it dropping! Jeery needs some love!
+	choices[5] = {actor = ACTOR.CXP1.GenericCommonwealth, line = 1352402}	-- That's it!  That's it!  Keep it comin' you beautiful CRAB bastards!
+	choices[6] = {actor = ACTOR.CXP1.Degnan, line = 1352410}	-- Fuckin' hell.  Wouldn't want to be on the receiving' end of that eh mate.
+
+	local rand = World_GetRand(1, table.getn(choices))
+
+	CTRL.Actor_PlaySpeechWithoutPortrait(choices[rand].actor, choices[rand].line)
+	CTRL.WAIT()
+end
+
+
+EVENTS.Ambient_First_Bombing_Run = function()
+	CTRL.Actor_PlaySpeechWithoutPortrait(ACTOR.CXP1.Degnan, 1352420) 	-- Holy shite!  I felt that in me ball sack!
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeechWithoutPortrait(ACTOR.CXP1.Degnan, 1352430) 	-- Fuckin' hell! Adrain get your hands off me! Brown hatter bastard!
+	CTRL.WAIT()
+end
+
+
+EVENTS.Ambient_Help_Ally = function()
+	local choices = {}
+
+	choices[1] = {actor = ACTOR.CXP1.GenericCommonwealth, line = 1351240}	-- Covering fire on the flank!  They're tryin' to swing 'round mate!
+	choices[2] = {actor = ACTOR.CXP1.GenericCommonwealth, line = 1351241}	-- Cuntybuggeryfucktoleybumshite! Kill those fuckers lads!
+	choices[3] = {actor = ACTOR.CXP1.GenericCommonwealth, line = 1351250}	-- We've lost 2 section! All bloody hell!
+	choices[4] = {actor = ACTOR.CXP1.GenericCommonwealth, line = 1351260}	-- Grant Justin's fuckin'hit!  He's fucked mate!  
+	choices[5] = {actor = ACTOR.CXP1.GenericCommonwealth, line = 1351261}	-- Where the bloody hell is 3rd Battalion?!
+	choices[6] = {actor = ACTOR.CXP1.GenericCommonwealth, line = 1351262}	-- Come on Boudica's boys we need you!
+	choices[7] = {actor = ACTOR.CXP1.GenericCommonwealth, line = 1351263}	-- Get another message up the chain!  We need the 3rd over here right bloody now!
+	choices[8] = {actor = ACTOR.CXP1.GenericCommonwealth, line = 1351264}	-- We've lost a fuckin' section there! 
+	choices[9] = {actor = ACTOR.CXP1.GenericCommonwealth, line = 1351265}	-- There's a whole other fuckin company! 
+	choices[10] = {actor = ACTOR.CXP1.GenericCommonwealth, line = 1351266}	-- Watch 'em there, wha?!  They're tryin' to flank us!
+	choices[11] = {actor = ACTOR.CXP1.GenericCommonwealth, line = 1351267}	-- We've lost the RSM!
+	choices[12] = {actor = ACTOR.CXP1.GenericCommonwealth, line = 1351268}	-- Where's the OC, what?  We need to get a message out to headquarters!
+	choices[13] = {actor = ACTOR.CXP1.GenericCommonwealth, line = 1351270}	-- We're on the way lads!  Hold on! 
+	choices[14] = {actor = ACTOR.CXP1.GenericCommonwealth, line = 1351280}	-- Fuckin' hell!  We need to get over there!
+	choices[15] = {actor = ACTOR.CXP1.GenericCommonwealth, line = 1351281}	-- Shite! Shite! They killed little Darwin!
+	choices[16] = {actor = ACTOR.CXP1.GenericCommonwealth, line = 1352190}	-- Kill those blummin sheep shagging bastards, for Darwin lads!
+	choices[17] = {actor = ACTOR.CXP1.GenericCommonwealth, line = 1352191}	-- Creeping bloody Huns put up a good fight!
+	choices[18] = {actor = ACTOR.CXP1.GenericCommonwealth, line = 1352192}	-- Get the balance of the men!  We need to get over there!
+
+
+	local rand = World_GetRand(1, table.getn(choices))
+
+	CTRL.Actor_PlaySpeechWithoutPortrait(choices[rand].actor, choices[rand].line)
+	CTRL.WAIT()
+end
+
+
+EVENTS.Ambient_Combat = function()
+	
+	local choices = {}
+
+	choices[1] = {actor = ACTOR.CXP1.Seville, line = 1350960}	-- Fire superiority!  Pour it on them!
+	choices[2] = {actor = ACTOR.CXP1.Seville, line = 1350970}	-- Maintain flank and rear security!
+	choices[3] = {actor = ACTOR.CXP1.Seville, line = 1350971}	-- Sacramouille de vierge!
+	choices[4] = {actor = ACTOR.CXP1.Seville, line = 1350980}	-- Watch the side streets!
+	choices[5] = {actor = ACTOR.CXP1.Degnan, line = 1350990}	-- Rear fuckin' security!  Don't let them get around us!
+	choices[6] = {actor = ACTOR.CXP1.Degnan, line = 1351000}	-- Mother fucking Jerry assholes need to feel some pain!
+	choices[7] = {actor = ACTOR.CXP1.Degnan, line = 1351001}	-- Fire and move!  Fire and move!
+	choices[8] = {actor = ACTOR.CXP1.Degnan, line = 1351010}	-- Try to flank them!
+	choices[9] = {actor = ACTOR.CXP1.GenericCommonwealth, line = 1351020}	-- Where are all these fuckin' Jerries comin' from!
+	choices[10] = {actor = ACTOR.CXP1.GenericCommonwealth, line = 1351021}	-- Bloomin hell mates!
+	choices[11] = {actor = ACTOR.CXP1.GenericCommonwealth, line = 1351030}	-- Corporal!  Get your lads to swing 'round mate!
+	choices[12] = {actor = ACTOR.CXP1.GenericCommonwealth, line = 1351040}	-- Get the lads to concentrate their fire power!
+
+	local rand = World_GetRand(1, table.getn(choices))
+
+	CTRL.Actor_PlaySpeechWithoutPortrait(choices[rand].actor, choices[rand].line)
+	CTRL.WAIT()
+end
+
+----------------------------------------------------------------------------------------------------------
+-- End Mission Speech
+
+----------------------------------------------------------------------------------------------------------
+
+EVENTS.End_Mission = function()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Cutting, 1352440) 	-- I'm showing all targets destoryed.  Good bloody show gents.
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Cutting, 1352450) 	-- Major all targets neutralized.  
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Cutting, 1352460) 	-- The lads took a beatin' but they're in good spirits.
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Blackmore, 1352470) 	-- They did a bloody good job of it.  Pass it down the line.
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Blackmore, 1352471) 	-- Let's tend to the wounded and re-org' the troops.
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Blackmore, 1352480) 	-- We've only just started the battle for Caen.
+	CTRL.WAIT()
+end

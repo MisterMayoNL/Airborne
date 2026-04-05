@@ -1,0 +1,2946 @@
+-------------------------------------------------------------------------
+-------------------------------------------------------------------------
+
+-- Hill 112 Defense Mission Script
+
+-------------------------------------------------------------------------
+-------------------------------------------------------------------------
+
+import("ScarUtil.scar")
+import("CloseInManager.scar")
+
+
+-------------------------------------------------------------------------
+-- SETUP
+-------------------------------------------------------------------------
+
+function OnGameSetup()
+	player1 = Setup_Player(1, 1309070, TRACE_ALLIES_COMMONWEALTH, 1)
+	player2 = Setup_Player(2, 1309071, TRACE_AXIS, 2)
+	player3 = Setup_Player(3, 1309071, TRACE_AXIS, 2)			-- AI units
+	player4 = Setup_Player(4, 1309071, TRACE_AXIS, 2)			-- Upgraded units for the final push
+end
+
+function OnGameRestore()
+	player1 = World_GetPlayerAt(1)
+	player2 = World_GetPlayerAt(2)
+	player3 = World_GetPlayerAt(3)
+	player4 = World_GetPlayerAt(4)
+
+	-- function takes care of restoring all global mission parameters after a save/load
+	Game_DefaultGameRestore()
+end
+
+
+
+
+-------------------------------------------------------------------------
+-- ONINIT
+-------------------------------------------------------------------------
+
+function OnInit()
+
+	g_MissionSpeechPath="Caen\\sp2\\Mission5"
+	
+	-- a constant that stores the mission number for use with
+	-- setting the global speech paths, tech tree setup, and 
+	-- the player's starting resources
+	MISSION_NUMBER = 0105
+	
+	Setup_MissionPreset(MISSION_NUMBER)
+	
+	--[[ PRESET GAME STATE ]]
+	AutoCinematic(true, 0)
+	Camera_FocusOnPosition(Marker_GetPosition(mkr_camera_mission5start), false)
+	
+	-- Setup debug stuff if appropriate flags are set
+	if Misc_IsCommandLineOptionSet("mayo") then
+		Mission_Debug()
+	end
+	
+	-- Register all objectives
+	Mission_Objective_Register()
+	
+	--[[ MOD INITIAL STATS ]]
+	Mission_Set_StatMods()
+	
+	--[[ SET RESTRICTIONS ]]
+	Mission_Restrictions()
+	
+	--[[ SET INITIAL MOOD ]]
+	Mission_SetMood()
+	
+	--[[ SET DIFFICULTY ]]
+	Mission_Difficulty()
+	
+	--[[ MISSION PRESETS ]]
+	Mission_Preset()
+	
+	--[[ GAME START CHECK ]]
+	Rule_Add(Mission_Start)
+
+end
+
+Scar_AddInit(OnInit)
+
+
+-- set up debug parameters
+function Mission_Debug()
+	
+	if Misc_IsCommandLineOptionSet("debug") then
+		
+		-- enable debugging flag
+		g_debug = true
+		
+	end
+	
+	-- set up bindings for NISes
+	Scar_DebugConsoleExecute("bind([[ALT+1]], [[Scar_DoString('Util_StartNIS(EVENTS.NIS01)')]])")
+
+end
+
+
+-- Register and initialize all of the objectives for the mission
+function Mission_Objective_Register()
+	Initialize_OBJ_Defend()
+	Initialize_OBJ_Medal_Bridge()
+end
+
+
+-- Apply some modifiers for this mission
+function Mission_Set_StatMods()
+	
+	-- mod resource rates
+--~ 	player1resourcemodifiers = {}
+--~ 	player1resourcemodifiers[1] = Modify_PlayerResourceRate(player1, RT_Manpower, 2)
+--~ 	player1resourcemodifiers[2] = Modify_PlayerResourceRate(player1, RT_Munition, 2)
+--~ 	player1resourcemodifiers[3] = Modify_PlayerResourceRate(player1, RT_Fuel, 1)
+	
+
+end
+
+
+-- Set up the restrictions / can do's / can't do's for this mission
+function Mission_Restrictions()
+
+	--[[ UN/RESTRICT UPGRADES 
+	Cmd_InstantUpgrade(player1, UPG.ALLIED_PHASE2)
+	]]
+	
+	-- UN/RESTRICT ABILITIES 
+	Player_SetAbilityAvailability(player1, ABILITY.SP.HILL112_WALKINGBARRAGE, ITEM_REMOVED)
+	Player_SetUpgradeAvailability(player1, UPG.JOEY.ESEL_CW, ITEM_REMOVED)
+	Player_SetSquadProductionAvailability(player1, SBP.JOEY.GLENN, ITEM_REMOVED)
+	Player_SetUpgradeAvailability(player1, UPG.JOEY.SNIPER_ELITE_CW, ITEM_REMOVED)
+	Player_SetUpgradeAvailability(player1, UPG.JOEY.CW_POPCAP, ITEM_REMOVED)
+	Player_SetAbilityAvailability(player1, ABILITY.JOEY.GLENN_PARADROP, ITEM_REMOVED)
+	Player_SetSquadProductionAvailability(player3, SBP.JOEY.PIM, ITEM_REMOVED)
+	Player_SetSquadProductionAvailability(player3, SBP.JOEY.SAM, ITEM_REMOVED)
+	Player_SetSquadProductionAvailability(player3, SBP.JOEY.RODNY, ITEM_REMOVED)
+	Player_SetSquadProductionAvailability(player3, SBP.JOEY.WURST, ITEM_REMOVED)
+	Player_SetSquadProductionAvailability(player3, SBP.JOEY.AXIS_OFFICER, ITEM_REMOVED)
+	Player_SetSquadProductionAvailability(player3, SBP.JOEY.TIGER205, ITEM_REMOVED)
+	Player_SetSquadProductionAvailability(player3, SBP.JOEY.BERGETIGER, ITEM_REMOVED)
+	Player_SetSquadProductionAvailability(player3, SBP.JOEY.AXIS_SCOUT, ITEM_REMOVED)
+	Player_SetSquadProductionAvailability(player3, SBP.JOEY.PIONEER4, ITEM_REMOVED)
+	Player_SetUpgradeAvailability(player3, UPG.JOEY.AXIS_POPCAP, ITEM_REMOVED)
+	Player_SetUpgradeAvailability(player3, UPG.JOEY.GRIEF, ITEM_REMOVED)
+	Player_SetUpgradeAvailability(player3, UPG.JOEY.V2, ITEM_REMOVED)
+	Player_SetUpgradeAvailability(player3, UPG.JOEY.MAUS, ITEM_REMOVED)
+	Player_SetUpgradeAvailability(player3, UPG.JOEY.ESEL_AXIS, ITEM_REMOVED)
+	Player_SetUpgradeAvailability(player3, UPG.JOEY.AXIS_DEMOLITION, ITEM_REMOVED)
+	Player_SetUpgradeAvailability(player3, UPG.JOEY.AXIS_PRODUCTION, ITEM_REMOVED)
+	Player_SetUpgradeAvailability(player3, UPG.JOEY.AXIS_PRODUCTION2, ITEM_REMOVED)
+	Player_SetAbilityAvailability(player3, ABILITY.JOEY.SAM_REINFORCEMENTS, ITEM_REMOVED)
+	Player_SetAbilityAvailability(player3, ABILITY.JOEY.PIM_REINFORCEMENTS, ITEM_REMOVED)
+	Player_SetAbilityAvailability(player3, ABILITY.JOEY.RODNY_REINFORCEMENTS, ITEM_REMOVED)
+	
+	Cmd_InstantUpgrade(player1, UPG.SP.NO_CANADIAN)
+	
+	--[[ UN/RESTRICT FOW 
+	World_EnablePlayerToPlayerFOW(player1, player3, true)
+	]]
+	
+	--[[ UN/RESTRICT POP CAP 
+	Player_SetMaxPopulation(player1, CT_Personnel, 100)
+	]]
+	
+	--[[ UN/RESTRICT UI 
+	UI_BindingSetEnabled("company_commander", false)
+	UI_BindingSetEnabled("squadcap", false)
+	]]
+	
+	--[[ UN/RESTRICT SBPS 
+	local sbps = {SBP.ALLIED_SHERMAN, SBP.ALLIED_CROCODILE, SBP.ALLIED_GREYHOUN, SBP.ALLIED_PERSHING }
+	for i = 1, table.getn(sbps) do
+		local id = Util_GetSquadBlueprintID(sbps[i])
+		Player_SetSquadProductionAvailability(player1, id, ITEM_LOCKED)
+	end
+	]]
+	
+	-- UN/RESTRICT EBPs
+	Player_SetSquadProductionAvailability(player1, SBP.CW.ARMOUR_HQ, ITEM_DEFAULT)
+	
+	-- Pop cap changes
+	Player_SetPopCapOverride(player1, 118)
+
+end
+
+function Mission_Difficulty()
+
+	-- get the difficulty
+	g_difficulty = Game_GetSPDifficulty()  -- set a global difficulty variable
+	print("********* DIFFICULTY: "..g_difficulty)
+
+	Setup_Difficulty(player1, g_difficulty) -- pass the player and difficulty global variable into the Set Health function
+	Setup_Difficulty(player2, g_difficulty) -- do it for each player that you have defined
+	Setup_Difficulty(player3, g_difficulty) -- do it for each player that you have defined
+	Setup_Difficulty(player4, g_difficulty) -- do it for each player that you have defined
+
+	--[[ left as an example 
+	
+	-- set health bonus for player 1
+	
+	t_difficulty = {
+		base_def_spawn 			= Util_DifVar( {2*60, 1.5*60, 1*60, 0.75*60} ),			-- amount of time required before spawning base defense soldiers
+		base_def_squad_num		= Util_DifVar( {1, 1, 2, 3} ),							-- number of squads to spawn for the base defense
+		sniper_vulnerability 	= Util_DifVar( {2.5, 2, 1.5, 1} ),						-- the vulnerability factor on the snipers
+		sniper_number			= Util_DifVar( {1, 2, 2, 3} ),							-- number of snipers to spawn
+		sniper_wpn_cooldown		= Util_DifVar( {2, 1.5, 1, 1} ),						-- weapon cooldown time for the snipers
+		stronghold_attack_num	= Util_DifVar( {1, 1, 2, 2} ),							-- number of squads to spawn from the guard tower to spawn and attack the player on alert
+		aa_def_sbps				= Util_DifVar( {SBP.AXIS.VOLKSGRENADIER, SBP.AXIS.GRENADIER, SBP.AXIS.STORMTROOPER, SBP.AXIS.KNIGHTSCROSS} ), -- types of squads to defend the AA Guns
+	}
+	
+	]]
+	
+end
+
+function Mission_SetMood()
+	Player_SetDefaultSquadMoodMode(player1, MM_Auto)
+	Player_SetDefaultSquadMoodMode(player2, MM_Auto)
+end
+
+
+
+
+
+-------------------------------------------------------------------------
+-- MISSION PRESET
+-------------------------------------------------------------------------
+
+function Mission_Preset()
+
+	-- create misc. temporary groups
+	sg_temp = SGroup_CreateIfNotFound("sg_temp")
+	sg_blah = SGroup_CreateIfNotFound("sg_blah")
+	eg_temp = EGroup_CreateIfNotFound("eg_temp")
+	eg_blah = EGroup_CreateIfNotFound("eg_blah")
+	
+	-- set player resources
+	Player_SetResource(player1, RT_Manpower, 1500)
+	Player_SetResource(player1, RT_Munition, 600)
+	Player_SetResource(player1, RT_Fuel, 150)
+	
+	-- timer id's
+	timer_phase2start = 1
+	timer_phase2end = 2
+	timer_phase3start = 3
+	timer_phase3end = 4
+	timer_hilllost = 5
+	timer_hilllost_reminder = 6
+	
+	-- id's for the the hintpoints that go over the Baron and Tourmau points
+	hpid_baron = false
+	hpid_baron_across = false
+	hpid_tourmau = false
+	hpid_tourmau_across = false
+	
+	hpid_baron_bridge = false
+	hpid_tourmau_bridge = false
+	
+	medal_ui_baron = false
+	medal_ui_baron_across = false
+	medal_ui_baron_bridge = false
+	
+	medal_ui_tourmau = false
+	medal_ui_tourmau_across = false
+	medal_ui_tourmau_bridge = false
+	
+	-- store some sector ids
+	sectorid_hilltop = World_GetTerritorySectorID(EGroup_GetPosition(eg_flags_hilltop))
+	sectorid_hill_1 = World_GetTerritorySectorID(EGroup_GetPosition(eg_hill_flag1))
+	sectorid_hill_2 = World_GetTerritorySectorID(EGroup_GetPosition(eg_hill_flag2))
+	sectorid_hill_3 = World_GetTerritorySectorID(EGroup_GetPosition(eg_hill_flag3))
+	sectorid_hill_4 = World_GetTerritorySectorID(EGroup_GetPosition(eg_hill_flag4))
+	sectorid_hill_5 = World_GetTerritorySectorID(EGroup_GetPosition(eg_hill_flag5))
+	sectorid_middle = World_GetTerritorySectorID(EGroup_GetPosition(eg_flags_middle))
+	sectorid_baron = World_GetTerritorySectorID(EGroup_GetPosition(eg_flags_baron))
+	sectorid_baron_across = World_GetTerritorySectorID(EGroup_GetPosition(eg_flags_baron_across))
+	sectorid_tourmau = World_GetTerritorySectorID(EGroup_GetPosition(eg_flags_tourmau))
+	sectorid_tourmau_across = World_GetTerritorySectorID(EGroup_GetPosition(eg_flags_tourmau_across))
+	
+	-- set up the default times for the speech events
+	last_left_flank_warning = World_GetGameTime()
+	last_middle_warning = World_GetGameTime()
+	last_right_flank_warning = World_GetGameTime()
+	last_ambient_first_wave = World_GetGameTime()
+	last_ambient_second_wave = World_GetGameTime()
+	last_ambient_third_wave = World_GetGameTime()
+	
+	-- table of all of the points to keep track of for speech when the player loses a point
+	t_points = {
+		{egroup = eg_flags_hilltop, owner = player1},
+		{egroup = eg_flags_middle, owner = player1},
+		{egroup = eg_hill_flag1, owner = player1},
+		{egroup = eg_hill_flag2, owner = player1},
+		{egroup = eg_hill_flag3, owner = player1},
+		{egroup = eg_hill_flag4, owner = player1},
+		{egroup = eg_hill_flag5, owner = player1},
+	}
+	
+------------------------------------------
+------ MAP CHANGE SCRIPTS GO BELOW HERE --
+------------------------------------------
+	
+	if EGroup_IsEmpty(eg_baron_house1) == false then
+		
+		--Util_CreateSquads(player2, sg_blah, SBP.AXIS.HEAVYMG, eg_baron_house1)		-- THIS IS TEST SCRIPT
+		--Cmd_InstantUpgrade(eg_baron_house1, UPG.AXIS.CONVERT_AMBIENT_BUILDING)			-- this one gives an ambient upgrade to a building, so we can see if it reverts properly below
+		EGroup_InstantRevertOccupiedBuilding(eg_baron_house1)
+		
+	end
+	
+	
+	
+	if EGroup_IsEmpty(eg_baron_house2) == false then
+		
+		Util_CreateSquads(player2, sg_blah, SBP.AXIS.HEAVYMG, eg_baron_house2)		-- this one just puts guys in a building (but with no upgrade), so wee can see if this one reverts properly, too
+		
+	end
+	
+	-- respawn the victory point for this mission
+	EGroup_ReSpawn(eg_victory)
+	
+	data_baron = {
+		name = "Baron",
+		zone = mkr_baron_triggerzone,
+		houses = eg_baronhouses,
+		spawnhq = mkr_hill_hq1, -- mkr_baron_spawnhq1
+		spawninfantryhq = mkr_baron_spawnhq2, -- mkr_hill_hq2
+		spawnarmourhq = mkr_baron_spawnhq1, -- mkr_hill_hq3
+		entrypoint = mkr_edge_point6,
+		sectorid = World_GetTerritorySectorID(EGroup_GetPosition(eg_flags_baron)),
+		spawnlt = mkr_baron_spawnhq2,
+	}
+	data_tourmau = {
+		name = "Tourmau",
+		zone = mkr_tourmau_triggerzone,
+		houses = eg_tourmauhouses,
+		spawnhq = mkr_hill_hq1, -- mkr_tourmau_spawnhq1
+		spawninfantryhq =  mkr_tourmau_spawnhq2, -- mkr_hill_hq2
+		spawnarmourhq = mkr_tourmau_spawnhq1,  -- mkr_hill_hq3
+		entrypoint = mkr_edge_point7,
+		sectorid = World_GetTerritorySectorID(EGroup_GetPosition(eg_flags_tourmau)),
+		spawnlt = mkr_tourmau_spawnhq2,
+	}
+	
+
+	
+	
+----------------------------------------------------------------------------------------------------------
+-- NIS Speech
+
+----------------------------------------------------------------------------------------------------------
+	t_events = {}
+	-- the first sitrep that happens before the mission starts
+
+	
+------
+------ GATHER INFORMATION prior to the reset
+------
+	
+	-- figure out which village to use as the "home village" and set relevant data
+	Player_GetAll(player1)
+	SGroup_Filter(sg_allsquads, SBP.CW.HQ, FILTER_KEEP)
+	if SGroup_Count(sg_allsquads) >= 1 then
+		local distance_to_tourmau = World_DistanceEGroupToPoint(eg_allentities, Marker_GetPosition(mkr_tourmau_spawnhq1), true)
+		local distance_to_baron   = World_DistanceEGroupToPoint(eg_allentities, Marker_GetPosition(mkr_baron_spawnhq1), true)
+		if distance_to_tourmau < distance_to_baron then
+			homevillage = data_tourmau
+			othervillage = data_baron
+		else
+			homevillage = data_baron
+			othervillage = data_tourmau
+		end
+	else
+		homevillage = data_tourmau
+		othervillage = data_baron
+	end
+	
+------
+------ REMOVE OLD UNITS left over on the map
+------
+	
+	-- this is a list of all commonwealth and axis buildable entities, so we can clear them off the map
+	local filterlist = {EBP.CW.MG_NEST, EBP.CW.ANTITANK_NEST, EBP.CW.HOWITZER_NEST, 
+						EBP.AXIS.HQ, EBP.AXIS.QUARTERS, EBP.AXIS.BARRACKS, EBP.AXIS.ARMORY, EBP.AXIS.COMMAND, EBP.AXIS.KAMPFKRAFT, 
+						EBP.AXIS.BUNKER, EBP.AXIS.BARBED_WIRE, EBP.AXIS.OBSERVATION_POST, EBP.AXIS.MINES, EBP.AXIS.SANDBAG, EBP.AXIS.TANK_TRAP}
+	
+	-- player 1
+	Player_GetAll(player1)
+	EGroup_Filter(eg_allentities, filterlist, FILTER_KEEP)
+	SGroup_DestroyAllSquads(sg_allsquads)
+	EGroup_DestroyAllEntities(eg_allentities)
+
+	-- player 2
+	Player_GetAll(player2)
+	EGroup_Filter(eg_allentities, filterlist, FILTER_KEEP)
+	SGroup_DestroyAllSquads(sg_allsquads)
+	EGroup_DestroyAllEntities(eg_allentities)
+
+	-- player 3
+	Player_GetAll(player3)
+	EGroup_Filter(eg_allentities, filterlist, FILTER_KEEP)
+	SGroup_DestroyAllSquads(sg_allsquads)
+	EGroup_DestroyAllEntities(eg_allentities)
+	
+	-- misc map items
+	EGroup_DestroyAllEntities(LAYER_RemoveForCounterattack)
+	
+	
+------
+------ SET TERRITORY / OBJECT ownership
+------
+
+	EGroup_InstantCaptureStrategicPoint(eg_allpoints, player1)
+	EGroup_InstantCaptureStrategicPoint(eg_victory, player1)
+	
+	
+------
+------ REPAIR bridges
+------
+	
+	Bridges_CheckStatus()
+	
+	if bridge_baron == false then
+		EGroup_SetAvgHealth(eg_bridge_baron, 1.0)
+	end
+	if bridge_tourmau == false then
+		EGroup_SetAvgHealth(eg_bridge_tourmau, 1.0)
+	end
+	
+	-- rebind the bridges again, as repairing one may have caused it to fall out of the egroup!
+	Bridges_CheckStatus()
+
+------
+------ PLACE NEW UNITS on the map
+------
+	
+	sg_playerhq = SGroup_CreateIfNotFound("sg_playerhq")
+	sg_playersoldierhq = SGroup_CreateIfNotFound("sg_playersoldierhq")
+	sg_playerarmourhq = SGroup_CreateIfNotFound("sg_playerarmourhq")
+	
+	-- create the HQ units for the player
+	EGroup_Clear(eg_temp)
+	Util_CreateSquads(player1, sg_playerhq, SBP.CW.HQ, homevillage.spawnhq)
+	Util_CreateSquads(player1, sg_playersoldierhq, SBP.CW.INFANTRY_HQ, homevillage.spawninfantryhq)
+	
+	if g_difficulty == GD_EASY or g_difficulty == GD_NORMAL then
+		Util_CreateSquads(player1, sg_playerarmourhq, SBP.CW.ARMOUR_HQ, homevillage.spawnarmourhq)
+		Util_SetCommonwealthHQMobility(sg_playerarmourhq, false, true)
+	end
+	
+	
+	
+	
+	-- create the officers
+	sg_playercaptain = SGroup_CreateIfNotFound("sg_playercaptain")
+	sg_playerlieutenant = SGroup_CreateIfNotFound("sg_playerlieutenant")
+	sg_playerlieutenant_a = SGroup_CreateIfNotFound("sg_playerlieutenant_a")
+	sg_playerlieutenant_b = SGroup_CreateIfNotFound("sg_playerlieutenant_b")
+	Util_CreateSquads(player1, sg_playercaptain, SBP.CW.CAPTAIN, mkr_spawn_playercaptain)				-- captain on the top of the hill
+	Util_CreateSquads(player1, sg_playerlieutenant, SBP.CW.LIEUTENANT, mkr_spawn_playerlieutenant)		-- lieutenant on the top of the hill
+	
+	-- put all the home village houses into a temp group, and place lieutenants in random ones
+	EGroup_Duplicate(homevillage.houses, eg_temp)
+	Util_CreateSquads(player1, sg_playerlieutenant_a, SBP.CW.LIEUTENANT, homevillage.spawnlt)		
+	if EGroup_Count(eg_temp) >= 1 then
+		local eid = Cmd_InstantGarrison(sg_playerlieutenant_a, eg_temp)
+		EGroup_Remove(eg_temp, eid)
+	end
+	
+	EGroup_Duplicate(othervillage.houses, eg_temp)
+	Util_CreateSquads(player1, sg_playerlieutenant_b, SBP.CW.LIEUTENANT, othervillage.spawnlt)		
+	if EGroup_Count(eg_temp) >= 1 then
+		local eid = Cmd_InstantGarrison(sg_playerlieutenant_b, eg_temp)
+		EGroup_Remove(eg_temp, eid)
+	end
+	
+	-- put all the home village houses into a temp group, and place units in random ones
+	EGroup_Duplicate(homevillage.houses, eg_temp)
+	for n = 1, 2 do
+		SGroup_Clear(sg_temp)
+		Util_CreateSquads(player1, sg_temp, SBP.CW.TOMMIES, Util_GetRandomPosition(homevillage.zone))
+		if EGroup_Count(eg_temp) >= 1 then
+			local eid = Cmd_InstantGarrison(sg_temp, eg_temp)
+			EGroup_Remove(eg_temp, eid)
+		end
+	end
+
+	-- do the same for the "other" village to a lesser extent
+	EGroup_Duplicate(othervillage.houses, eg_temp)
+	for n = 1, 2 do
+		SGroup_Clear(sg_temp)
+		Util_CreateSquads(player1, sg_temp, SBP.CW.TOMMIES, Util_GetRandomPosition(othervillage.zone))
+		if EGroup_Count(eg_temp) >= 1 then
+			local eid = Cmd_InstantGarrison(sg_temp, eg_temp)
+			EGroup_Remove(eg_temp, eid)
+		end
+	end
+	
+	tsg_extra_tank = SGroup_CreateTable("sg_extra_tank%d", 2)
+	Util_CreateSquads(player1, tsg_extra_tank[n], SBP.CW.STUART, mkr_tourmau_spawnhq3)
+	Util_CreateSquads(player1, tsg_extra_tank[n], SBP.CW.STUART, mkr_baron_spawnhq3)
+	
+	
+	
+	
+	-- create the night watch units at the top of the hill
+	sg_nightwatch = SGroup_CreateIfNotFound("sg_nightwatch")
+	sg_playerpiat = SGroup_CreateIfNotFound("sg_playerpiat")
+	Util_CreateSquads(player1, sg_nightwatch, SBP.CW.TOMMIES, mkr_hill_defendspot1, nil, nil, nil, nil, nil, UPG.CW.RECON_TEAM)
+	Util_CreateSquads(player1, sg_nightwatch, SBP.CW.TOMMIES, mkr_hill_defendspot2, nil, nil, nil, nil, nil, UPG.CW.RECON_TEAM)
+	Util_CreateSquads(player1, sg_playerpiat, SBP.CW.SAPPER, mkr_hill_defendspot3, nil, nil, nil, nil, nil, UPG.CW.PIAT)
+	Util_CreateSquads(player1, sg_nightwatch, SBP.CW.TOMMIES, mkr_hill_defendspot6, nil, nil, nil, nil, nil, UPG.CW.BREN)
+	
+	tmkr_start_tanks = Marker_GetTable("mkr_start_tank%d")
+	tsg_start_tank = SGroup_CreateTable("sg_start_tank%d", table.getn(tmkr_start_tanks))
+	for n = 1, table.getn(tsg_start_tank) do
+		Util_CreateSquads(player1, tsg_start_tank[n], SBP.CW.CROMWELL, tmkr_start_tanks[n])
+	end
+	
+	
+
+	
+	eg_hill_artillery = EGroup_CreateIfNotFound("eg_hill_artillery")
+	eg_hill_bodenturm = EGroup_CreateIfNotFound("eg_hill_bodenturm")
+	
+	
+	
+	if EGroup_IsEmpty(eg_hill_artillery) == true then
+		
+		World_GetNeutralEntitiesNearMarker(eg_hill_artillery, mkr_hill_artillery_detect)
+		EGroup_Filter(eg_hill_artillery, {EBP.SP.HILL112_MORTAR_BUNKER, EBP.SP.HILL112_MORTAR_BUNKER_WRECK} , FILTER_KEEP)
+		
+		
+		
+		
+	end
+	
+	--set to full health here
+	if EGroup_IsEmpty(eg_hill_artillery) == false then
+		
+		EGroup_SetAvgHealth(eg_hill_artillery, 1.0)
+		
+		World_GetNeutralEntitiesNearMarker(eg_hill_artillery, mkr_hill_artillery_detect)
+		EGroup_Filter(eg_hill_artillery, EBP.SP.HILL112_MORTAR_BUNKER , FILTER_KEEP)
+		
+		if EGroup_IsEmpty(eg_hill_artillery) == false then
+			Util_CreateSquads(player1, sg_nightwatch, SBP.CW.TOMMIES, eg_hill_artillery, nil, nil, nil, nil, nil, UPG.CW.BREN)
+		end
+		
+		Modify_AbilityMaxCastRange(player1, ABILITY.AXIS.BUNKER_MORTAR, 1.5)
+		Modify_AbilityMaxCastRange(player3, ABILITY.AXIS.BUNKER_MORTAR, 1.5)
+		
+	end
+	
+	if EGroup_IsEmpty(eg_hill_bodenturm) == true then
+		
+		World_GetNeutralEntitiesNearMarker(eg_hill_bodenturm, mkr_bodenturm_detect)
+		EGroup_Filter(eg_hill_bodenturm, {EBP.SP.BODENTURM, EBP.SP.BODENTURM_WRECK}, FILTER_KEEP)
+		
+	end
+	
+	--set to full health here
+	if EGroup_IsEmpty(eg_hill_bodenturm) == false then
+		
+		EGroup_SetAvgHealth(eg_hill_bodenturm, 1.0)
+		
+		World_GetNeutralEntitiesNearMarker(eg_hill_bodenturm, mkr_bodenturm_detect)
+		EGroup_Filter(eg_hill_bodenturm, EBP.SP.BODENTURM, FILTER_KEEP)
+		
+	end
+	
+	
+	
+	
+	SGroup_AddGroup(sg_nightwatch, sg_playerpiat)
+	
+	SGroup_Clear(sg_temp)
+	if EGroup_CountSpawned(eg_n0501_bunker) >= 1 then
+		Util_CreateSquads(player1, sg_temp, SBP.CW.TOMMIES, eg_n0501_bunker, nil, nil, 2)
+		Modify_Vulnerability(sg_temp, 2.5)
+	end
+	
+	-- create the 25 pounder gun on the hilltop
+	eg_25pounder = EGroup_CreateIfNotFound("eg_25pounder")
+	Util_CreateEntities(player1, eg_25pounder, EBP.CW.HOWITZER_NEST, mkr_player_spawn25pdr, 1)
+	swid_25pounder = SyncWeapon_GetFromEGroup(eg_25pounder)
+	local bp = BP_GetUpgradeBlueprint("upgrade/allies_cw/commonwealth_howitzer_upgrade_sp.lua")
+	Cmd_InstantUpgrade(player1, bp)
+	
+	-- create the units that encounter the first attack
+	Util_CreateSquads(player1, sg_nightwatch, SBP.CW.TOMMIES, mkr_nis0501_firstlinespawn1, nil, nil, nil, nil, nil, UPG.CW.BREN)
+	
+	Cmd_InstantSetupTeamWeapon(sg_nightwatch)
+	
+
+------
+------ REVEAL FOW for the hill top
+------
+	
+	FOW_RevealMarker(mkr_hill_artilleryzone, -1)
+	
+	
+	
+	BridgeTerritory_Add(eg_bridge_baron, eg_bridgeflags_baron, eg_flags_baron, eg_flags_baron_across)
+	BridgeTerritory_Add(eg_bridge_tourmau, eg_bridgeflags_tourmau, eg_flags_tourmau, eg_flags_tourmau_across)
+	
+	
+end
+
+
+
+
+
+-------------------------------------------------------------------------
+-- MISSION START
+-------------------------------------------------------------------------
+
+function Mission_Start()
+
+	Rule_RemoveMe()
+	sg_glenn = SGroup_CreateIfNotFound("sg_glenn")
+	Util_SetCommonwealthHQMobility(sg_playerhq, false, true)
+	Util_SetCommonwealthHQMobility(sg_playersoldierhq, false, true)
+	
+	-- out of cinematic
+	AutoCinematic(false, 2)
+
+	Util_StartNIS(EVENTS.NIS01)
+	
+	Rule_Add(Mission_StartB)
+	
+end
+
+function Mission_StartB()
+
+	if Event_IsAnyRunning() == false then
+		
+		Rule_RemoveMe()
+		
+		-- delay first objective
+		Rule_AddOneShot(Mission_DelayOBJ_Defend, 2)
+		
+		-- Initialise all mission sections
+		Phase1_Init()
+		Phase2_Init()
+		Phase3_Init()
+		Deploy_Init()
+		Defend_Init()
+		Firefly_Init()
+		FakeSupply_Init()
+		ProbingAttacks_Init()
+		
+		Rule_AddInterval(Rule_EndMission, 5)
+		
+		-- start checking the bridge points
+		Rule_AddInterval(Check_Bridge_Points, 5)
+		
+		Rule_AddOneShot(Mission_OpeningArtillery1, 0.1)
+		Rule_AddOneShot(Mission_OpeningArtillery2, 1.8)
+		Rule_AddOneShot(Mission_OpeningArtillery3, 2.8)
+		Rule_AddOneShot(Mission_OpeningArtillery4, 4.5)
+		Rule_AddOneShot(Mission_OpeningArtillery5, 6)
+		
+	end
+	
+end
+
+
+-- Trigger the first objective
+function Mission_DelayOBJ_Defend()
+	Objective_Start(OBJ_Defend)
+end
+
+
+function Rule_Glenn()
+	if SGroup_IsEmpty(sg_glenn) then
+		Util_StartNIS(EVENTS.GlennDead)
+		Game_EndSP(false, 18500150, true)
+	else
+		SGroup_SetCrushable(sg_glenn, false)
+		cameraGlenn = SGroup_GetPosition_EVEN_IF_EMPTY(sg_glenn)
+	end
+end
+
+
+function Mission_OpeningArtillery1()
+	Cmd_Ability(player2, ABILITY.SP.SINGLE_HOWITZER, mkr_postnis_arty1)
+end
+function Mission_OpeningArtillery2()
+	Cmd_Ability(player2, ABILITY.SP.SINGLE_HOWITZER, mkr_postnis_arty2)
+end
+function Mission_OpeningArtillery3()
+	Cmd_Ability(player2, ABILITY.SP.SINGLE_HOWITZER, mkr_postnis_arty3)
+end
+function Mission_OpeningArtillery4()
+	Cmd_Ability(player2, ABILITY.SP.SINGLE_HOWITZER, mkr_postnis_arty4)
+end
+function Mission_OpeningArtillery5()
+	Cmd_Ability(player2, ABILITY.SP.SINGLE_HOWITZER, mkr_postnis_arty5)
+end
+
+
+
+
+
+
+
+
+
+
+-------------------------------------------------------------------------
+-- DEFEND THE HILL (Objective)
+-------------------------------------------------------------------------
+--
+-------------------------------------------------------------------------
+
+function Initialize_OBJ_Defend()
+
+	OBJ_Defend = {
+		
+		SetupUI = function()
+			OBJ_Defend.PingID = Objective_AddUIElements(OBJ_Defend, mkr_hill_victorypoint, true, false, true)
+		end,
+		
+		OnStart = function()
+			Sound_PlayMusic("Music/SP/Caen/motivation/coh_offensive_line.bsc",0,0)
+			-- announce the goal
+			--Util_StartIntel(EVENTS.Defend_Start)
+			
+			-- start related action and add completion check
+			Defend_ActionKickoff()
+			Rule_AddInterval(Defend_WinConditionCheck, 5)
+			
+		end,
+		
+		OnComplete = function()
+			
+			-- tell the player they did good
+			--Util_StartIntel(EVENTS.Defend_Complete)
+			
+		end,
+		
+		OnFail = function()
+			
+			-- tell the player they did good
+			--Util_StartIntel(EVENTS.Defend_Fail)
+			
+		end,
+		
+		Title 			= 1389100,		-- Hold Hill 112
+		Description 	= 1389110,		-- Defend the victory point on top of Hill 112, and don't let the enemy capture it
+		TitleEnd		= 1389102,
+		Type			= OT_Primary,
+		
+		-- the sitrep shouldn't play until later on in this objective, so we kind of add the details in later on!
+		-- SitRep = {},
+		
+	}
+	
+	Objective_Register(OBJ_Defend)
+
+end
+
+
+
+-------------------------------------------------------------------------
+-- Defend Hill Objective Functions
+-------------------------------------------------------------------------
+
+-- Initialise any hill-related stuff
+function Defend_Init()
+
+	hillowned = true
+
+end
+
+
+function Defend_ActionKickoff()
+
+	Rule_AddInterval(Defend_CheckVictoryPoint, 3)
+	
+end
+
+
+
+function Defend_CheckVictoryPoint()
+	
+	if Event_IsAnyRunning() == false then
+		
+		-- see if the point has changed hands since the last check
+		if hillowned == true and Player_OwnsEGroup(player1, eg_victory) == false then			-- lost the point
+			
+			Timer_Start(timer_hilllost, 120)
+			Timer_Start(timer_hilllost_reminder, 30)
+			Objective_UpdateText(OBJ_Defend, 1389101, 1389111)
+			
+			Util_StartIntel(EVENTS.Hill_Lost)
+			
+			hillowned = false
+			
+		elseif hillowned == false and Player_OwnsEGroup(player1, eg_victory) == true then		-- regained the point
+			
+			Timer_End(timer_hilllost)
+			Timer_End(timer_hilllost_reminder)
+			Objective_UpdateText(OBJ_Defend, 1389100, 1389110)
+			
+			Util_StartIntel(EVENTS.Hill_Recaptured)
+			--EventCue_Create(CUE.NORMAL, 1389170, 1389999, eg_victory)
+			
+			hillowned = true
+			
+		end
+		
+		if Timer_Exists(timer_hilllost) and Timer_GetRemaining(timer_hilllost) == 0 then
+			
+			Rule_RemoveMe()
+			if Rule_Exists(Defend_WinConditionCheck) then Rule_Remove(Defend_WinConditionCheck) end
+			
+			Objective_Fail(OBJ_Defend) -- message is played in the Mission_End function
+			
+		elseif Timer_Exists(timer_hilllost_reminder) and Timer_GetRemaining(timer_hilllost_reminder) == 0 then
+			
+			Timer_Start(timer_hilllost_reminder, 30) -- restart timer
+			
+			Util_StartIntel(EVENTS.Hill_RecaptureReminder)
+			
+		end
+		
+	end
+	
+end
+
+
+
+function Defend_WinConditionCheck()
+
+	if Timer_Exists(timer_phase3end) then
+		if Timer_GetRemaining(timer_phase3end) == 0 then	
+			
+			Rule_RemoveMe()
+			if Rule_Exists(Defend_CheckVictoryPoint) then Rule_Remove(Defend_CheckVictoryPoint) end
+			
+			Util_StartIntel(EVENTS.Mission_Complete)
+			
+			Objective_Complete(OBJ_Defend)
+			
+		end
+	end
+	
+end
+
+
+
+
+
+
+
+
+
+-------------------------------------------------------------------------
+-- Phase ONE (Encounter)
+-------------------------------------------------------------------------
+-- Initial encounter that commences during the opening NIS. 
+-------------------------------------------------------------------------
+
+function Phase1_Init()
+
+	sg_phase1axis = SGroup_CreateIfNotFound("sg_phase1axis")
+	sg_phase1axistank = SGroup_CreateIfNotFound("sg_phase1axistank")
+	sg_phase1axisinfantry1 = SGroup_CreateIfNotFound("sg_phase1axisinfantry1")
+	sg_phase1axisinfantry2 = SGroup_CreateIfNotFound("sg_phase1axisinfantry2")
+	sg_phase1axisinfantry3 = SGroup_CreateIfNotFound("sg_phase1axisinfantry3")
+	sg_phase1axisbike1 = SGroup_CreateIfNotFound("sg_phase1axisbike1")
+	sg_phase1axisbike2 = SGroup_CreateIfNotFound("sg_phase1axisbike2")
+	
+	flag_artilleryselected = false
+	flag_mortarbunkerselected = false
+	
+	Rule_Add(Phase1_Start)
+	
+end
+
+
+-- start the units doing the initial attack
+function Phase1_Start()
+
+	if Event_IsAnyRunning() == false then
+		
+		Rule_RemoveMe()
+		
+		-- spawn the tanks (might be removed later if they remain-at-end)
+		Cmd_SquadPath(sg_phase1axistank, "path_n0501_tank", true, false, false, 0)
+		Cmd_SquadPath(sg_phase1axisinfantry1, "path_n0501_infantry1", true, false, true, 2)
+		
+		SGroup_AddGroup(sg_phase1axis, sg_phase1axistank)
+		SGroup_AddGroup(sg_phase1axis, sg_phase1axisinfantry1)
+		
+		ThreatArrow_CreateGroup(sg_phase1axis)
+		hpid_25pounder = HintPoint_Add(eg_25pounder, true, 1389120)		-- 25 Pounder Artillery
+		hpid_mortarbunker = HintPoint_Add(eg_hill_artillery, true, 1389126)		-- hill bunker
+		
+		--Modify_Vulnerability(sg_phase1axis, 1.2)
+		
+		gamephase = 1
+		
+		Rule_AddOneShot(Phase1_AttackPart2, 12)
+		Rule_Add(Phase1_IsArtillerySelected)
+		Rule_Add(Phase1_IsMortarBunkerSelected)
+		Rule_AddOneShot(Phase1_MentionArtillery, 30)
+		Rule_AddInterval(Phase1_TriggerSpeech, 1)
+		
+		-- store the camera settings
+		cam_orbit = Camera_GetOrbit()
+		cam_declination = Camera_GetDeclination()
+		cam_zoom = Camera_GetZoomDist()
+		cam_target = Camera_GetTargetPos()
+		
+		Rule_AddOneShot(Phase1_CameraFocus, 4)
+		
+		Rule_AddDelayedInterval(Phase1_Suppression_Hint, 2, 1)
+		
+	end
+	
+end
+
+
+function Phase1_CameraFocus()
+
+	if cam_orbit == Camera_GetOrbit() and cam_declination == Camera_GetDeclination() and cam_zoom == Camera_GetZoomDist() and World_DistancePointToPoint(cam_target, Camera_GetTargetPos()) <= 1 then
+		
+		--Camera_FocusOnPosition(Marker_GetPosition(mkr_nis0501_area), true)
+		Camera_MoveToPosition(mkr_nis0501_area, true, SLOW_CAMERA_PANNING)
+		Rule_RemoveMe()
+		
+	end
+	
+end
+
+
+function Phase1_Suppression_Hint()
+
+	local lastattacker = SGroup_CreateIfNotFound("lastattacker")
+	SGroup_GetLastAttacker(sg_nightwatch, lastattacker)
+
+	if SGroup_IsEmpty(sg_phase1axistank) == false and SGroup_Compare(lastattacker, sg_phase1axistank) == true then
+		
+		flashID_suppress_button = UI_FlashAbilityButton( ABILITY.CW.BUTTON_ENEMY_VEHICLE, false, BT_UI_Strong_AbilityBtn ) -- to highlight vehicle suppression button
+		
+		Rule_RemoveMe()
+		
+		Rule_AddInterval(Phase1_Suppression_Stop, 1)
+		
+	elseif SGroup_IsEmpty(sg_phase1axistank) == true then
+		
+		Rule_RemoveMe()
+		
+	end
+
+end
+
+
+function Phase1_Suppression_Stop()
+
+	if SGroup_IsEmpty(sg_phase1axistank) == true then
+		
+		UI_StopFlashing(flashID_suppress_button)
+		
+		Rule_RemoveMe()
+		
+	end
+
+end
+
+
+function Phase1_TriggerSpeech()
+	if Event_IsAnyRunning() == false and Prox_AreSquadsNearMarker(sg_phase1axistank, mkr_nis0501_area, ANY) then
+		Rule_RemoveMe()
+		Util_StartIntel(EVENTS.FirstAttack_Chatter)
+		Cmd_Move(sg_playerpiat, mkr_nis0501_piatdest)
+		Cmd_Move(sg_playerlieutenant, mkr_nis0501_firstlinespawn1)
+		Rule_AddInterval(Phase1_TriggerSpeechB, 1)
+	end
+end
+function Phase1_TriggerSpeechB()
+	if Event_IsAnyRunning() == false and Prox_AreSquadsNearMarker(sg_playerlieutenant, mkr_nis0501_area, ANY) then
+		Rule_RemoveMe()
+		Util_StartAmbient(EVENTS.FirstAttack_LieutenantResponse)
+	end
+end
+
+
+-- send some guys in to attempt to capture the flag near the player
+function Phase1_AttackPart2()
+
+	Util_CreateSquads(player2, sg_phase1axisinfantry2, SBP.AXIS.GRENADIER, mkr_edge_point13b)
+	Cmd_SquadPath(sg_phase1axisinfantry2, "path_n0501_infantry2", true, false, false, 3)
+	Cmd_MoveToThenCapture(sg_phase1axisinfantry2, eg_hill_flag1, true)
+	
+	SGroup_AddGroup(sg_phase1axis, sg_phase1axisinfantry1)
+	
+	Rule_AddOneShot(Phase1_AttackPart3, 30)
+	
+end
+
+
+-- send in first bike
+function Phase1_AttackPart3()
+
+	Util_CreateSquads(player2, sg_phase1axisbike1, SBP.AXIS.MOTORCYCLE, mkr_edge_point17)
+	Cmd_SquadPath(sg_phase1axisbike1, "path_n0501_bike1", true, false, false, 0)
+	
+	Modify_Vulnerability(sg_phase1axisbike1, 1.3)
+	
+	SGroup_AddGroup(sg_phase1axis, sg_phase1axisbike1)
+	
+	Rule_AddOneShot(Phase1_AttackPart4, 5)
+	
+end
+
+
+-- send in second bike
+function Phase1_AttackPart4()
+
+	Util_CreateSquads(player2, sg_phase1axisbike2, SBP.AXIS.MOTORCYCLE, mkr_edge_point13b)
+	Cmd_SquadPath(sg_phase1axisbike2, "path_n0501_bike2", true, false, false, 0)
+	
+	Modify_Vulnerability(sg_phase1axisbike2, 1.4)
+	
+	SGroup_AddGroup(sg_phase1axis, sg_phase1axisbike2)
+	
+	Rule_AddOneShot(Phase1_AttackPart5, 15)
+	
+end
+
+
+
+-- send in final infantry stragglers
+function Phase1_AttackPart5()
+
+	Util_CreateSquads(player2, sg_phase1axisinfantry3, SBP.AXIS.GRENADIER, mkr_edge_point17b, nil, 2)
+	Cmd_SquadPath(sg_phase1axisinfantry3, "path_n0501_infantry3", true, false, false, 0)
+	
+	Modify_Vulnerability(sg_phase1axisinfantry3, 1.4)
+	
+	SGroup_AddGroup(sg_phase1axis, sg_phase1axisinfantry3)
+	
+	Rule_AddInterval(Phase1_AttackDead, 1)
+	Rule_AddInterval(Phase1_AttackCaptureFlag, 5)
+	
+end
+
+
+-- if the enemy kills everyone, carry on to the flag
+function Phase1_AttackCaptureFlag()
+	
+	Player_GetAllSquadsNearMarker(player1, sg_temp, World_GetTerritorySectorID(EGroup_GetPosition(eg_hill_flag1)))
+	
+	if SGroup_Count(sg_temp) <= 1 then
+		
+		Rule_RemoveMe()
+		
+		Cmd_AttackMoveThenCapture(sg_phase1axis, eg_victory)
+		
+	end
+	
+end
+
+
+-- tell the player to use the artillery gun
+function Phase1_MentionArtillery()
+
+	cueid_artillery = EventCue_Create(CUE.NORMAL, 1389160, 1389160, eg_25pounder, nil, Phase1_MentionArtillery_EventCueClicked, -1, true)	-- Artillery Ready
+
+	Rule_AddDelayedInterval(Phase1_MentionArtilleryB, 3, 1)
+
+end
+function Phase1_MentionArtilleryB()
+
+	if Event_IsAnyRunning() == false then
+		
+		Rule_RemoveMe()
+		
+		Util_StartIntel(EVENTS.FirstAttack_MentionArtillery)
+		
+		if cueid_artillery ~= nil then
+			flashid_eventcue_artillery = UI_FlashEventCue(cueid_artillery, true, BT_UI_Weak_EventCue)
+		end
+		
+		Rule_AddDelayedInterval(Phase1_MentionArtilleryAgain, 25, 1)
+		
+	end
+	
+end
+
+
+-- scream at the player about the artillery gun (if they still haven't even selected it)
+function Phase1_MentionArtilleryAgain()
+
+	if flag_artilleryselected == true then
+		
+		Rule_RemoveMe()
+		
+	elseif Event_IsAnyRunning() == false then
+		
+		Rule_RemoveMe()
+		
+		Util_StartIntel(EVENTS.FirstAttack_MentionArtilleryAgain)
+		
+		if cueid_artillery ~= nil then
+			UI_StopFlashing(flashid_eventcue_artillery)
+			flashid_eventcue_artillery = UI_FlashEventCue(cueid_artillery, true, BT_UI_Strong_EventCue)
+		end
+		
+	end
+	
+end
+
+
+-- mark if the event cue is clicked on
+function Phase1_MentionArtillery_EventCueClicked()
+	if flashid_eventcue_artillery ~= nil then
+		UI_StopFlashing(flashid_eventcue_artillery)
+		flashid_eventcue_artillery = nil 
+	end
+	cueid_artillery = nil
+end
+
+
+-- mark that the player has selected the artillery gun
+function Phase1_IsArtillerySelected()
+	if Misc_IsEGroupSelected(eg_25pounder, ANY) then
+		Rule_RemoveMe()
+		HintPoint_Remove(hpid_25pounder)
+		flag_artilleryselected = true
+	end
+end
+
+-- mark that the player has selected the mortar bunker
+function Phase1_IsMortarBunkerSelected()
+	if Misc_IsEGroupSelected(eg_hill_artillery, ANY) then
+		Rule_RemoveMe()
+		HintPoint_Remove(hpid_mortarbunker)
+		flag_mortarbunkerselected = true
+	end
+end
+
+
+-- check for this initial attack being over
+function Phase1_AttackDead()
+
+	if SGroup_TotalMembersCount(sg_phase1axis) <= 9 and SGroup_Count(sg_phase1axistank) == 0 then
+		
+		Rule_RemoveMe()
+		if Rule_Exists(Phase1_AttackCaptureFlag) then Rule_Remove(Phase1_AttackCaptureFlag) end
+		if Rule_Exists(Phase1_MentionArtillery) then Rule_Remove(Phase1_MentionArtillery) end
+		if Rule_Exists(Phase1_MentionArtilleryAgain) then Rule_Remove(Phase1_MentionArtilleryAgain) end
+		
+		Cmd_Retreat(sg_phase1axis, mkr_edge_point17, mkr_edge_point17)
+		
+		Util_StartIntel(EVENTS.FirstAttack_PostBattleChatter)
+		
+		Rule_AddInterval(Phase1_StartSitRep, 1)
+		
+	end
+	
+end
+
+
+-- start giving the player deployment instructions
+function Phase1_StartSitRep()
+
+	if Event_IsAnyRunning() == false then
+		Sound_PlayMusic("Music/SP/Caen/preparation/coh_they're_out_there.bsc",2,0)
+		Rule_RemoveMe()
+		
+		-- surreptitiously add in the sitrep and pretend it was always there
+		OBJ_Defend.OnStart = function() end
+		OBJ_Defend.SitRep = {
+			Movie = "CXP1_SR_05-01",
+			Force = true,
+			SpeechTiming =
+			{
+				{ 1,	ACTOR.CXP1.Wallis, 1380241 },
+				{ 3,	ACTOR.CXP1.Dillingham, 1380242 },
+				{ 5,	ACTOR.CXP1.Wallis, 1380243 },
+				{ 10,	ACTOR.CXP1.Wallis, 1380244 },
+				--{ 17,	ACTOR.GenericAlly, 1380245 }, --? Grease marker direction was recorded as line?
+				{ 14,	ACTOR.CXP1.Wallis, 1380246 },
+				{ 21,	ACTOR.CXP1.Wallis, 1380247 },
+				{ 25,	ACTOR.CXP1.Wallis, 1380248 },
+			--	{ 33,	ACTOR.CXP1.Wallis, 1380249 }, -- No longer used, July 17, 2007 -cmartin
+				
+				
+			},
+		},
+		
+		-- and force the sitrep to play
+		Obj_SetObjectiveFunction(OBJ_Defend.ID, FN_OnActivate, __ObjectiveOnActivateCallback)
+		Objective_ForceSitRep(OBJ_Defend)
+
+		Rule_Add(Phase1_SitRepOver)
+		
+	end
+	
+end
+
+
+
+function Phase1_SitRepOver()
+	
+	if Event_IsAnyRunning() == false then
+		
+		Rule_RemoveMe()
+		
+		Util_StartIntel(EVENTS.Deploy_Start)
+		
+		-- start the countdown towards phase 2
+		Timer_Start(timer_phase2start, 300)			-- difficulty
+		
+		Deploy_Start()
+		ProbingAttacks_Start()
+		
+		
+		
+		-- assign the points their current owner (this is for the point capture speech function below this one)
+		for k, this in pairs(t_points) do
+			this.owner = Util_GetPlayerOwner(this.egroup)
+		end
+		
+		-- check if a point is being taken from the player and if so, play speech
+		Rule_AddInterval(Event_Losing_Point, 3)
+		
+		-- start checking for left flank speech
+		Rule_AddInterval(Event_Left_Flank, 5)
+		Rule_AddInterval(Event_Right_Flank, 5)
+		Rule_AddInterval(Event_Middle, 5)
+	end
+	
+end
+
+
+
+
+
+
+
+-------------------------------------------------------------------------
+-- Deployment Phase
+-------------------------------------------------------------------------
+-- Give helpful hints to the player during the deployment phase
+-------------------------------------------------------------------------
+
+function Deploy_Init()
+
+end
+
+
+-- called after the sitrep
+function Deploy_Start()
+
+-- Commented out because we decided that it would be cooler for the player to build it themselves
+	--Rule_AddDelayedInterval(Deploy_BringInArmourHQ, 10, 1)
+	Rule_AddDelayedInterval(Deploy_MoveHQHint, 10, 1)
+	
+	Rule_AddDelayedInterval(Deploy_FireflysSoon, 175, 1)
+	
+	Rule_AddInterval(Deploy_CheckIfEmpty_Tourmau, 30)
+	Rule_AddDelayedInterval(Deploy_CheckIfEmpty_Baron, 10, 30)
+	Rule_AddDelayedInterval(Deploy_CheckIfEmpty_Hill, 20, 30)
+	
+end
+
+
+-- bring in the armour HQ for the player
+function Deploy_BringInArmourHQ()
+
+	if Event_IsAnyRunning() == false then
+		
+		Rule_RemoveMe()
+		
+		
+		
+		Player_GetAll(player1) 
+		
+		if SGroup_ContainsBlueprints(sg_allsquads, SBP.CW.ARMOUR_HQ, ANY) == false then
+		
+		
+			Util_CreateSquads(player1, sg_playerarmourhq, SBP.CW.ARMOUR_HQ, homevillage.entrypoint)
+			--Util_SetCommonwealthHQMobility(sg_playerarmourhq, true)
+			Cmd_Move(sg_playerarmourhq, homevillage.spawnarmourhq)
+			
+			Util_StartIntel(EVENTS.Deploy_ArmourHQArrived)
+			EventCue_Create(CUE.NORMAL, 1389162, 1389999, sg_playerarmourhq)
+			
+			Rule_AddInterval(Deploy_BringInArmourHQB, 1)
+		
+		end
+		
+	end
+	
+end
+
+function Deploy_BringInArmourHQB()
+	if Misc_IsSGroupSelected(sg_playerarmourhq, ANY) then
+		Rule_RemoveMe()
+	elseif SGroup_IsMoving(sg_playerarmourhq, ANY) == false then
+		Rule_RemoveMe()
+		--Util_SetCommonwealthHQMobility(sg_playerarmourhq, false)
+	end
+end
+
+
+
+function Deploy_MoveHQHint()
+
+	if Event_IsAnyRunning() == false then
+		
+		Rule_RemoveMe()
+		
+		if Prox_AreSquadsNearMarker(sg_playerhq, homevillage.sectorid, ANY) == true then
+			
+			Util_StartIntel(EVENTS.Deploy_SuggestMovingHQ)
+			EventCue_Create(CUE.NORMAL, 1389161, 1389999, sg_playerhq, 1389121)
+			
+		end
+		
+	end
+	
+end
+
+
+-- tell the player off if they desert either of the two villages or the top of the hill gets low on troops
+function Deploy_CheckIfEmpty_Tourmau()
+
+	if Event_IsAnyRunning() == false then
+		
+		if gamephase == 2 then
+			Rule_RemoveMe()
+		else
+			
+			local sectorid = World_GetTerritorySectorID(EGroup_GetPosition(eg_flags_tourmau))
+			Player_GetAllSquadsNearMarker(player1, sg_temp, sectorid)
+			
+			if SGroup_Count(sg_temp) == 0 then
+				
+				Rule_RemoveMe()
+				Util_StartIntel(EVENTS.Deploy_TourmauEmpty)
+				
+			end
+			
+		end
+		
+	end
+	
+end
+
+
+function Deploy_CheckIfEmpty_Baron()
+
+	if Event_IsAnyRunning() == false then
+		
+		if gamephase == 2 then
+			Rule_RemoveMe()
+		else
+			
+			local sectorid = World_GetTerritorySectorID(EGroup_GetPosition(eg_flags_baron))
+			Player_GetAllSquadsNearMarker(player1, sg_temp, sectorid)
+			
+			if SGroup_Count(sg_temp) == 0 then
+				
+				Rule_RemoveMe()
+				Util_StartIntel(EVENTS.Deploy_BaronEmpty)
+				
+			end
+			
+		end
+		
+	end
+	
+end
+
+
+function Deploy_CheckIfEmpty_Hill()
+
+	if Event_IsAnyRunning() == false then
+		
+		if gamephase == 2 then
+			Rule_RemoveMe()
+		else
+			
+			local sectorid = World_GetTerritorySectorID(EGroup_GetPosition(eg_flags_hilltop))
+			Player_GetAllSquadsNearMarker(player1, sg_temp, sectorid)
+			
+			if SGroup_Count(sg_temp) <= 5 then
+				
+				Rule_RemoveMe()
+				Util_StartIntel(EVENTS.Deploy_HillLow)
+				
+			end
+			
+		end
+		
+	end
+	
+end
+
+
+-- mention that fireflys should be arriving soon
+function Deploy_FireflysSoon()
+
+	if Event_IsAnyRunning() == false then
+		
+		Rule_RemoveMe()
+		Util_StartIntel(EVENTS.Deploy_FireflysArrivingShortly)
+		
+	end
+	
+end
+
+
+-------------------------------------------------------------------------
+-- Phase TWO (Encounter)
+-------------------------------------------------------------------------
+-- Axis tanks start coming in near the villages
+-------------------------------------------------------------------------
+
+function Phase2_Init()
+
+	sg_phase2_baron = SGroup_CreateIfNotFound("sg_phase2_baron")
+	sg_phase2_baron_infantry = SGroup_CreateIfNotFound("sg_phase2_baron_infantry")
+	sg_phase2_baron_across = SGroup_CreateIfNotFound("sg_phase2_baron_across")
+	sg_phase2_baron_across_infantry = SGroup_CreateIfNotFound("sg_phase2_baron_across_infantry")
+	sg_phase2_tourmau = SGroup_CreateIfNotFound("sg_phase2_tourmau")
+	sg_phase2_tourmau_infantry = SGroup_CreateIfNotFound("sg_phase2_tourmau_infantry")
+	sg_phase2_tourmau_across = SGroup_CreateIfNotFound("sg_phase2_tourmau_across")
+	sg_phase2_tourmau_across_infantry = SGroup_CreateIfNotFound("sg_phase2_tourmau_across_infantry")
+	
+	data_phase2_combinedbaron = false
+	data_phase2_combinedtourmau = false
+	
+	if g_difficulty == GD_EASY then
+	
+		-- style sheets for the initial attacks into the villages
+		data_phase2_firstwavestyle = {}				-- difficulty
+		data_phase2_firstwavestyle[1] = {}
+		data_phase2_firstwavestyle[1][1] = { {location = 1, unit = SBP.AXIS.STUG, count = 1, kind = "Vehicle", smoke = true, vul_mod = 1.3} }
+		data_phase2_firstwavestyle[1][2] = { {location = 2, unit = SBP.AXIS.MOTORCYCLE, count = 1, kind = "Vehicle"}, {location = 2, unit = SBP.AXIS.VOLKSGRENADIER, count = 1, kind = "Infantry", smoke = true} }
+		data_phase2_firstwavestyle[1][3] = { {location = 1, unit = SBP.AXIS.VOLKSGRENADIER, count = 1, kind = "Infantry", smoke = true} }
+		
+		-- style sheets for subsequent attacks
+		data_phase2_subsequentwavestyle = {}		-- difficulty
+		data_phase2_subsequentwavestyle[1] = {}
+		data_phase2_subsequentwavestyle[1][1] = { {location = 1, unit = SBP.ELITE.ARMOURCAR_221, count = 1, kind = "Vehicle", smoke = true, vul_mod = 1.3} }
+		data_phase2_subsequentwavestyle[1][2] = { {location = 1, unit = SBP.AXIS.VOLKSGRENADIER, count = 1, kind = "Infantry", smoke = true} }
+		data_phase2_subsequentwavestyle[2] = {}
+		data_phase2_subsequentwavestyle[2][1] = { {location = 1, unit = SBP.AXIS.MOTORCYCLE, count = 1, kind = "Vehicle"}, {location = 1, unit = SBP.AXIS.GRENADIER, count = 1, kind = "Infantry", smoke = true} }
+		--data_phase2_subsequentwavestyle[2][2] = { {location = 2, unit = SBP.AXIS.GRENADIER, count = 1, kind = "Infantry", smoke = true} }
+		
+	elseif g_difficulty == GD_NORMAL then
+	
+		-- style sheets for the initial attacks into the villages
+		data_phase2_firstwavestyle = {}				-- difficulty
+		data_phase2_firstwavestyle[1] = {}
+		data_phase2_firstwavestyle[1][1] = { {location = 1, unit = SBP.AXIS.PANZER, count = 1, kind = "Vehicle", smoke = true, vul_mod = 1.3} }
+		data_phase2_firstwavestyle[1][2] = { {location = 2, unit = SBP.AXIS.MOTORCYCLE, count = 1, kind = "Vehicle"}, {location = 2, unit = SBP.AXIS.VOLKSGRENADIER, count = 1, kind = "Infantry", smoke = true} }
+		data_phase2_firstwavestyle[1][3] = { {location = 1, unit = SBP.AXIS.VOLKSGRENADIER, count = 1, kind = "Infantry", smoke = true} }
+		
+		-- style sheets for subsequent attacks
+		data_phase2_subsequentwavestyle = {}		-- difficulty
+		data_phase2_subsequentwavestyle[1] = {}
+		data_phase2_subsequentwavestyle[1][1] = { {location = 1, unit = SBP.ELITE.ARMOURCAR_221, count = 1, kind = "Vehicle", smoke = true, vul_mod = 1.3} }
+		data_phase2_subsequentwavestyle[1][2] = { {location = 1, unit = SBP.AXIS.VOLKSGRENADIER, count = 1, kind = "Infantry", smoke = true} }
+		data_phase2_subsequentwavestyle[2] = {}
+		data_phase2_subsequentwavestyle[2][1] = { {location = 1, unit = SBP.AXIS.MOTORCYCLE, count = 1, kind = "Vehicle"}, {location = 1, unit = SBP.AXIS.GRENADIER, count = 1, kind = "Infantry", smoke = true} }
+		--data_phase2_subsequentwavestyle[2][2] = { {location = 2, unit = SBP.AXIS.GRENADIER, count = 1, kind = "Infantry", smoke = true} }
+		
+	else
+	
+	-- style sheets for the initial attacks into the villages
+		data_phase2_firstwavestyle = {}				-- difficulty
+		data_phase2_firstwavestyle[1] = {}
+		data_phase2_firstwavestyle[1][1] = { {location = 1, unit = SBP.AXIS.PANZER, count = 1, kind = "Vehicle", smoke = true} }
+		data_phase2_firstwavestyle[1][2] = { {location = 2, unit = SBP.AXIS.MOTORCYCLE, count = 1, kind = "Vehicle"}, {location = 2, unit = SBP.AXIS.STORMTROOPER, count = 1, kind = "Infantry", smoke = true} }
+		data_phase2_firstwavestyle[1][3] = { {location = 1, unit = SBP.AXIS.STORMTROOPER, count = 1, kind = "Infantry", smoke = true} }
+		
+		-- style sheets for subsequent attacks
+		data_phase2_subsequentwavestyle = {}		-- difficulty
+		data_phase2_subsequentwavestyle[1] = {}
+		data_phase2_subsequentwavestyle[1][1] = { {location = 1, unit = SBP.AXIS.STUG, count = 1, kind = "Vehicle", smoke = true} }
+		data_phase2_subsequentwavestyle[1][2] = { {location = 1, unit = SBP.AXIS.STORMTROOPER, count = 1, kind = "Infantry", smoke = true} }
+		data_phase2_subsequentwavestyle[2] = {}
+		data_phase2_subsequentwavestyle[2][1] = { {location = 1, unit = SBP.AXIS.MOTORCYCLE, count = 1, kind = "Vehicle"}, {location = 1, unit = SBP.AXIS.GRENADIER, count = 1, kind = "Infantry", smoke = true} }
+		--data_phase2_subsequentwavestyle[2][2] = { {location = 2, unit = SBP.AXIS.GRENADIER, count = 1, kind = "Infantry", smoke = true} }
+	
+	end
+
+	-- list of possible entrance locations for phase 2
+	data_phase2_possiblelocations = {}
+	data_phase2_possiblelocations[1] = {name = "Baron",          spawn = {mkr_edge_point2, mkr_edge_point3},   flag = eg_flags_baron,          flag2 = eg_hill_flag3,    group = sg_phase2_baron,          infantry = sg_phase2_baron_infantry,          reinforcements = 3, artilleryarea = mkr_nebelexclusion_baron, speech = EVENTS.VillageAttacks_Baron, eventcue = 1389165}
+	data_phase2_possiblelocations[2] = {name = "Baron Across",   spawn = {mkr_edge_point4, mkr_edge_point5},   flag = eg_flags_baron_across,   flag2 = eg_flags_baron,   group = sg_phase2_baron_across,   infantry = sg_phase2_baron_across_infantry,   reinforcements = 3, artilleryarea = nil, speech = nil, eventcue = nil}
+	data_phase2_possiblelocations[3] = {name = "Tourmau Across", spawn = {mkr_edge_point8, mkr_edge_point9},   flag = eg_flags_tourmau_across, flag2 = eg_flags_tourmau, group = sg_phase2_tourmau_across, infantry = sg_phase2_tourmau_across_infantry, reinforcements = 3, artilleryarea = nil, speech = nil, eventcue = nil}
+	data_phase2_possiblelocations[4] = {name = "Tourmau",        spawn = {mkr_edge_point10, mkr_edge_point11}, flag = eg_flags_tourmau,        flag2 = eg_flags_middle,  group = sg_phase2_tourmau,        infantry = sg_phase2_tourmau_infantry,        reinforcements = 3, artilleryarea = mkr_nebelexclusion_tourmau, speech = EVENTS.VillageAttacks_Tourmau, eventcue = 1389164}
+	
+	for n = 1, table.getn(data_phase2_possiblelocations) do
+		data_phase2_possiblelocations[n].sector = World_GetTerritorySectorID(EGroup_GetPosition(data_phase2_possiblelocations[n].flag))
+	end
+	
+	-- those move into this list as they're chosen
+	data_phase2_actuallocations = {}
+	
+	-- list of connecting territories
+	data_phase2_midlocations = {}
+	data_phase2_midlocations[1] = {flag = eg_hill_flag3}
+	data_phase2_midlocations[2] = {flag = eg_flags_middle}
+	
+	for n = 1, table.getn(data_phase2_midlocations) do
+		data_phase2_midlocations[n].sector = World_GetTerritorySectorID(EGroup_GetPosition(data_phase2_midlocations[n].flag))
+	end
+	
+	Rule_AddInterval(Phase2_Start, 5)
+	
+end
+
+
+
+-- see if the countdown timer to phase 2 has reached low enough to start the firefly routines
+function Phase2_Start()
+
+	if Timer_Exists(timer_phase2start) and Timer_GetRemaining(timer_phase2start) <= 25 then
+		
+		Rule_RemoveMe()
+		
+		Firefly_Start()
+		Rule_AddInterval(Phase2_StartB, 5)
+		
+	end
+	
+end
+
+
+-- see if the countdown timer to phase 2 has reached 0
+function Phase2_StartB()
+
+	if Timer_Exists(timer_phase2start) and Timer_GetRemaining(timer_phase2start) == 0 then
+		
+		Rule_RemoveMe()
+		
+		Objective_Start(OBJ_Medal_Bridge)
+		
+		gamephase = 2
+		
+		-- switch on the AI for player 3
+		AI_Enable(player3, true)
+		AI_EnableComponent(player3, true, COMPONENT_Attacking)
+		AI_EnableComponent(player3, true, COMPONENT_Defending)
+		AI_EnableComponent(player3, true, COMPONENT_Resourcing)
+		AI_EnableComponent(player3, true, COMPONENT_Securing)
+		AI_EnableComponent(player3, true, COMPONENT_Tactics)
+		AI_EnableComponent(player3, false, COMPONENT_ForwardDefending)
+		AI_EnableComponent(player3, false, COMPONENT_BuildUnits)
+		AI_EnableComponent(player3, false, COMPONENT_BuildStructures)
+		AI_EnableComponent(player3, false, COMPONENT_BuildResearch)
+		AI_EnableComponent(player3, false, COMPONENT_BuildAddOns)
+		
+		Rule_AddIntervalEx(Phase2_StartNewVillageAttack, 1, table.getn(data_phase2_possiblelocations))
+		Rule_AddInterval(Phase2_End, 5)
+		
+	end
+	
+end
+
+
+
+function Phase2_StartNewVillageAttack()
+
+	-- this calculates how many units the player has in each sector that the P2 units can come in from
+	for n = 1, table.getn(data_phase2_possiblelocations) do
+		Player_GetAllSquadsNearMarker(player1, sg_temp, data_phase2_possiblelocations[n].sector)
+		data_phase2_possiblelocations[n].playercount = SGroup_Count(sg_temp)
+	end
+	
+	-- this sorts the sectors, so the first is the MOST populated by the player
+	local _SortTable = function(a, b)
+		if a.playercount > b.playercount then
+			return true
+		else
+			return false
+		end
+	end
+	table.sort(data_phase2_possiblelocations, _SortTable)
+	
+	-- this picks the first (MOST populated) element, with a slight chance it will pick the second for randomisation purposes 
+	local rand = Table_GetRandomItem({1, 1, 2})		
+	if table.getn(data_phase2_possiblelocations) == 1 then	-- can't choose item 2 if there's only 1 item!
+		rand = 1
+	end
+	
+	-- randomise the order of the two spawn markers
+	if World_GetRand(1, 2) == 1 then	
+		data_phase2_possiblelocations[rand].spawn = {data_phase2_possiblelocations[rand].spawn[2], data_phase2_possiblelocations[rand].spawn[1]}
+	end
+	
+	-- moves the location from the POSSIBLE list to the ACTUAL list
+	table.insert(data_phase2_actuallocations, data_phase2_possiblelocations[rand])
+	table.remove(data_phase2_possiblelocations, rand)
+
+	-- trigger a wave at each location sequentially
+	data_phase2_currentwave = 0
+	if table.getn(data_phase2_actuallocations) == 1 then
+		Phase2_SpawnWave()
+	else
+		Phase2_SpawnWave()
+		Rule_AddIntervalEx(Phase2_SpawnWave, 60, table.getn(data_phase2_actuallocations) - 1)
+	end
+	
+	Rule_ChangeInterval(Phase2_StartNewVillageAttack, 60 * table.getn(data_phase2_actuallocations))
+	
+end
+
+
+
+
+
+-- spawn subsequent waves for all currently active areas, then finally spawn a fresh wave at a new location
+function Phase2_SpawnWave()
+	
+	data_phase2_currentwave = data_phase2_currentwave + 1
+	local wave = data_phase2_currentwave
+	
+	-- pass existing units over to the AI
+	SGroup_SetPlayerOwner(data_phase2_actuallocations[wave].infantry, player3)
+	SGroup_SetPlayerOwner(data_phase2_actuallocations[wave].group, player3)
+	
+	-- choose the appropriate wave style
+	if wave == table.getn(data_phase2_actuallocations) then
+		data_phase2_currentstyle = Table_GetRandomItem(data_phase2_firstwavestyle)
+	else
+		data_phase2_currentstyle = Table_GetRandomItem(data_phase2_subsequentwavestyle)
+	end
+	
+	-- trigger a series of spawners to cover the style
+	data_phase2_currentsegment = 0
+	if table.getn(data_phase2_currentstyle) == 1 then
+		Phase2_SpawnWaveSegment()
+	else
+		Phase2_SpawnWaveSegment()
+		Rule_AddIntervalEx(Phase2_SpawnWaveSegment, 10, table.getn(data_phase2_currentstyle) - 1)
+	end
+	
+end
+
+
+
+
+function Phase2_SpawnWaveSegment()
+
+	data_phase2_currentsegment = data_phase2_currentsegment + 1
+	
+	local wave = data_phase2_actuallocations[data_phase2_currentwave]
+	local segment = data_phase2_currentsegment
+	local style = data_phase2_currentstyle
+	
+	print("Wave = "..data_phase2_currentwave.."   Segment = "..data_phase2_currentsegment)
+	
+	for n = 1, table.getn(style[segment]) do 
+		
+		if style[segment][n].smoke == true then
+			
+--~ 			local group = nil 
+--~ 			if style[segment][n].kind == "Infantry" then
+--~ 				group = wave.infantry
+--~ 			else
+--~ 				group = wave.group
+--~ 			end
+--~ 			
+--~ 			local dest = Util_GetRandomPosition(EGroup_GetPosition(wave.flag), 20)
+--~ 			local spawn = wave.spawn[style[segment][n].location]
+--~ 			local blueprint =  style[segment][n].unit
+--~ 			local count = style[segment][n].count
+			
+			SmokeEntrance_Do(wave.spawn[style[segment][n].location])
+			
+			EventCue_Create(CUE.NORMAL, 1389163, 1389999, wave.spawn[style[segment][n].location])
+			
+		end
+		
+	end
+	
+	-- trigger artillery if this is the first attack on an area
+	if wave.artilleryarea ~= nil then
+		Cmd_Ability(player2, ABILITY.COMMANDER_TREE.AXIS.FIRESTORM, Util_GetRandomPosition(wave.artilleryarea), nil, true)
+		wave.artilleryarea = nil
+	end
+	
+	Rule_AddOneShot(Phase2_SpawnWaveSegmentB, 8)
+	
+end
+
+
+
+function Phase2_SpawnWaveSegmentB()
+
+	local wave = data_phase2_actuallocations[data_phase2_currentwave]
+	local segment = data_phase2_currentsegment
+	local style = data_phase2_currentstyle
+	
+	for n = 1, table.getn(style[segment]) do 
+		
+		local group = nil 
+		if style[segment][n].kind == "Infantry" then
+			group = wave.infantry
+		else
+			group = wave.group
+		end
+		
+		local flag = wave.flag
+		if Player_OwnsEGroup(player2, wave.flag) then
+			flag = wave.flag2
+		end
+		
+		local dest = Util_GetRandomPosition(EGroup_GetPosition(flag), 20)
+		local spawn = wave.spawn[style[segment][n].location]
+		local blueprint =  style[segment][n].unit
+		local count = style[segment][n].count
+		
+		Util_CreateSquads(player2, group, blueprint, spawn, dest, count)
+		if style[segment][n].kind == "Infantry" then
+			Cmd_AttackMoveThenCapture(group, flag)
+		end
+		
+		if style[segment][n].vul_mod ~= nil then
+			Modify_Vulnerability(group, style[segment][n].vul_mod)
+		end
+		
+	end
+	
+	if wave.speech ~= nil then
+		Util_StartIntel(wave.speech)
+		wave.speech = nil
+	end
+	
+	if wave.eventcue ~= nil then
+		EventCue_Create(CUE.NORMAL, wave.eventcue, 1389999, wave.flag)
+		wave.eventcue = nil
+	end
+	
+end
+
+
+
+
+
+
+
+-- this triggers the end of phase 2
+function Phase2_End()
+	
+	if Rule_Exists(Phase2_StartNewVillageAttack) == false and Rule_Exists(Phase2_SpawnWave) == false then
+		
+		Rule_RemoveMe()
+		
+		Timer_Start(timer_phase3start, 180)
+		
+	end
+	
+end
+
+
+
+
+
+
+
+
+
+-------------------------------------------------------------------------
+-- Phase THREE (Encounter)
+-------------------------------------------------------------------------
+-- Axis tanks start moving up the hill
+-------------------------------------------------------------------------
+
+function Phase3_Init()
+
+	-- list of possible entry locations on the hill
+	data_phase3_possiblelocations = {}
+	data_phase3_possiblelocations[1] = { marker = {mkr_edge_point1a, mkr_edge_point1b, mkr_edge_point1,},   paths = {"path_point1a", "path_point1b", "path_point1vp"},    flag = eg_hill_flag2, retreat = mkr_edge_point1 }
+	data_phase3_possiblelocations[2] = { marker = {mkr_edge_point14a, mkr_edge_point14b, mkr_edge_point14}, paths = {"path_point14a", "path_point14b", "path_point14vp"}, flag = eg_hill_flag5, retreat = mkr_edge_point14b }
+	data_phase3_possiblelocations[3] = { marker = {mkr_edge_point15a, mkr_edge_point15b, mkr_edge_point15}, paths = {"path_point15a", "path_point15b", "path_point15vp"}, flag = eg_hill_flag5, retreat = mkr_edge_point14 }
+	data_phase3_possiblelocations[4] = { marker = {mkr_edge_point17a, mkr_edge_point17b, mkr_edge_point17}, paths = {"path_point17a", "path_point17b", "path_point17vp"}, flag = eg_hill_flag1, retreat = mkr_edge_point17 }
+	data_phase3_possiblelocations[5] = { marker = {mkr_edge_point18a, mkr_edge_point18b, mkr_edge_point18}, paths = {"path_point18a", "path_point18b", "path_point18vp"}, flag = eg_hill_flag1, retreat = mkr_edge_point1a }
+	data_phase3_possiblelocations[6] = { marker = {mkr_edge_point19a, mkr_edge_point19b, mkr_edge_point19}, paths = {"path_point19a", "path_point19b", "path_point19vp"}, flag = eg_hill_flag4, retreat = mkr_edge_point19 }
+	data_phase3_possiblelocations[7] = { marker = {mkr_edge_point12a, mkr_edge_point12b, mkr_edge_point12}, paths = {"path_point12a", "path_point12b", "path_point12vp"}, flag = eg_hill_flag3, retreat = mkr_edge_point12 }
+	data_phase3_possiblelocations[8] = { marker = {mkr_edge_point2a, mkr_edge_point2b, mkr_edge_point2,},   paths = {"path_point2a", "path_point2b", "path_point2vp"},    flag = eg_hill_flag3, retreat = mkr_edge_point1 }
+	data_phase3_possiblelocations[9] = { marker = {mkr_edge_point13a, mkr_edge_point13b, mkr_edge_point13}, paths = {"path_point13a", "path_point13b", "path_point13vp"}, flag = eg_hill_flag1, retreat = mkr_edge_point13b }
+	
+	sg_phase3_wave1_a = SGroup_CreateIfNotFound("sg_phase3_wave1_a")
+	sg_phase3_wave1_b = SGroup_CreateIfNotFound("sg_phase3_wave1_b")
+	sg_phase3_wave1_c = SGroup_CreateIfNotFound("sg_phase3_wave1_c")
+	
+	sg_phase3_wave2a_a = SGroup_CreateIfNotFound("sg_phase3_wave2a_a")
+	sg_phase3_wave2a_b = SGroup_CreateIfNotFound("sg_phase3_wave2a_b")
+	sg_phase3_wave2b_a = SGroup_CreateIfNotFound("sg_phase3_wave2b_a")
+	sg_phase3_wave2b_b = SGroup_CreateIfNotFound("sg_phase3_wave2b_b")
+	sg_phase3_wave2_c = SGroup_CreateIfNotFound("sg_phase3_wave2_c")
+	
+	sg_phase3_wave3a_a = SGroup_CreateIfNotFound("sg_phase3_wave3a_a")
+	sg_phase3_wave3a_b = SGroup_CreateIfNotFound("sg_phase3_wave3a_b")
+	sg_phase3_wave3b_a = SGroup_CreateIfNotFound("sg_phase3_wave3b_a")
+	sg_phase3_wave3b_b = SGroup_CreateIfNotFound("sg_phase3_wave3b_b")
+	sg_phase3_wave3c_a = SGroup_CreateIfNotFound("sg_phase3_wave3c_a")
+	sg_phase3_wave3c_b = SGroup_CreateIfNotFound("sg_phase3_wave3c_b")
+	sg_phase3_wave3_c = SGroup_CreateIfNotFound("sg_phase3_wave3_c")
+
+	data_phase3_entrylocations = {}
+	data_phase3_entrylocations[1] = {}
+	data_phase3_entrylocations[1][1] = {groups = {sg_phase3_wave1_a, sg_phase3_wave1_b, sg_phase3_wave1_c}}
+	data_phase3_entrylocations[2] = {}
+	data_phase3_entrylocations[2][1] = {groups = {sg_phase3_wave2a_a, sg_phase3_wave2a_b, nil}}
+	data_phase3_entrylocations[2][2] = {groups = {sg_phase3_wave2b_a, sg_phase3_wave2b_b, sg_phase3_wave2_c}}
+	data_phase3_entrylocations[3] = {}
+	data_phase3_entrylocations[3][1] = {groups = {sg_phase3_wave3a_a, sg_phase3_wave3a_b, nil}}
+	data_phase3_entrylocations[3][2] = {groups = {sg_phase3_wave3b_a, sg_phase3_wave3b_b, nil}}
+	data_phase3_entrylocations[3][3] = {groups = {sg_phase3_wave3c_a, sg_phase3_wave3c_b, sg_phase3_wave3_c}}
+	
+	wave = 0
+	
+	Rule_AddInterval(Phase3_Start, 5)
+	
+end
+
+
+
+function Phase3_Start()
+	
+	if Timer_Exists(timer_phase3start) then
+		if Timer_GetRemaining(timer_phase3start) == 0 then
+			
+			Sound_PlayMusic("Music/SP/Caen/motivation/coh_armoured_assault.bsc",2,0)
+			Rule_RemoveMe()
+			
+			gamephase = 3
+			
+			Util_CreateEntities(player3, eg_blah, EBP.STRAT_POINT.AI_HIGH , mkr_hill_basezone, 1)
+			AI_UpdateStatics(player3)
+			
+			Rule_AddOneShot(Phase3_StartWave, 5)
+			
+		end
+	end
+	
+end
+
+
+
+-- initialise a wave, and start the rules that create/manage a wave
+function Phase3_StartWave()
+	
+	-- increment the wave counter
+	wave = wave + 1
+	local sections = table.getn(data_phase3_entrylocations[wave])
+	
+	-- if this is the last wave, kill off the probing attacks
+	if wave == 3 then
+		ProbingAttacks_Stop()
+	end
+
+	-- count the number of player 1 squads near to each particular point
+	for n = 1, table.getn(data_phase3_possiblelocations) do 
+		Player_GetAllSquadsNearMarker(player1, sg_temp, data_phase3_possiblelocations[n].marker[3], 125)
+		data_phase3_possiblelocations[n].count = SGroup_Count(sg_temp)
+	end
+	
+	-- sort this table so that the LEAST populated point is first
+	local _SortTable = function(a, b)
+		
+		if a ~= nil and b ~= nil then
+			return a.count < b.count
+		end
+		
+	end
+	table.sort(data_phase3_possiblelocations, _SortTable)
+	
+	
+	-- pick some of the first (highest presence) locations for this wave
+	for n = 1, sections do
+		
+		local rand = Table_GetRandomItem({1, 1, 2})
+		-- custom retreat location 
+		data_phase3_entrylocations[wave][n].retreat = data_phase3_possiblelocations[rand].retreat
+		-- original marker assignment
+		data_phase3_entrylocations[wave][n].marker = data_phase3_possiblelocations[rand].marker 
+		data_phase3_entrylocations[wave][n].paths = data_phase3_possiblelocations[rand].paths
+		data_phase3_entrylocations[wave][n].flag = data_phase3_possiblelocations[rand].flag
+		table.remove(data_phase3_possiblelocations, rand)
+		
+	end
+	
+	-- reset the counts for each section (this allows them to be staggered)
+	data_phase3counts = {A = 0, B = 0, C = 0, D = 0}
+	
+	-- queue up the different parts of the wave
+	Rule_AddDelayedIntervalEx(Phase3_DoWavePartA, 1, 40, sections)
+	Rule_AddDelayedIntervalEx(Phase3_DoWavePartB, 5, 40, sections)
+	Rule_AddDelayedIntervalEx(Phase3_DoWavePartC, 10, 40, sections)
+	Rule_AddOneShot(Phase3_DoWavePartD, 15 + (sections * 40) )
+	
+	-- if this is the last wave, no need to check for new waves!
+	if wave == table.getn(data_phase3_entrylocations) then
+		Rule_RemoveMe()
+	end
+	
+	Rule_AddDelayedInterval(Phase3_RetreatWave, 30 + (sections * 40), 5)		-- must occur AFTER the lead tank is generates (part D above)
+	
+end
+
+
+
+-- if the leader of a wave is killed, retreat the wave and start the countdown to the next one
+function Phase3_RetreatWave()
+
+	if SGroup_Count(sg_phase3_wave1_c) + SGroup_Count(sg_phase3_wave2_c) + SGroup_Count(sg_phase3_wave3_c) == 0 and
+	   SGroup_Count(sg_phase3_wave1_b) + SGroup_Count(sg_phase3_wave2a_b) + SGroup_Count(sg_phase3_wave2b_b) + SGroup_Count(sg_phase3_wave3a_b) + SGroup_Count(sg_phase3_wave3b_b) + SGroup_Count(sg_phase3_wave3c_b) <= 1 then
+		
+		Rule_RemoveMe()
+		
+		
+		for n = 1, table.getn(data_phase3_entrylocations[wave]) do 
+			
+			local section = data_phase3_entrylocations[wave][n]
+			
+			Cmd_Retreat(section.groups[1], section.retreat, section.retreat)
+			Cmd_Move(section.groups[2], section.retreat, false, section.retreat)
+			
+		end
+		
+		Util_StartIntel(EVENTS.Wave_Retreats)
+		
+		if wave == 3 then
+			
+			Timer_Start(timer_phase3end, 15)
+			
+		else
+			
+			Rule_AddOneShot(Phase3_StartWave, World_GetRand(20, 30))
+			
+		end
+		
+	end
+
+end
+
+
+
+
+
+
+
+-- Part A: Artillery
+function Phase3_DoWavePartA()
+	
+	data_phase3counts.A = data_phase3counts.A + 1
+	local section = data_phase3counts.A
+	local this = data_phase3_entrylocations[wave][section]
+	
+	SmokeEntrance_Do(this.marker[1])
+	SmokeEntrance_Do(this.marker[2])
+	SmokeEntrance_Do(this.marker[3])
+	
+	EventCue_Create(CUE.NORMAL, 1389163, 1389999, this.marker[1])
+end
+
+
+-- Part B: Infantry Charge
+function Phase3_DoWavePartB()
+
+	data_phase3counts.B = data_phase3counts.B + 1
+	local section = data_phase3counts.B
+	local this = data_phase3_entrylocations[wave][section]
+	
+	SGroup_Clear(sg_temp)
+	Util_CreateSquads(player2, sg_temp, SBP.AXIS.STORMTROOPER, this.marker[1])
+	Cmd_SquadPath(sg_temp, this.paths[1], false, false, true, 5)
+	SGroup_AddGroup(this.groups[1], sg_temp)
+	
+	SGroup_Clear(sg_temp)
+	Util_CreateSquads(player2, sg_temp, SBP.AXIS.STORMTROOPER, this.marker[2])
+	Cmd_SquadPath(sg_temp, this.paths[2], false, false, true, 5)
+	SGroup_AddGroup(this.groups[1], sg_temp)
+	
+	if Player_OwnsEGroup(player2, this.flag) == false then
+		-- capture the flag when they get there, then head to the hilltop
+		Cmd_AttackMoveThenCapture(this.groups[1], this.flag, true)
+		Cmd_SquadPath(sg_temp, this.paths[3], false, false, true, 5, false, true)
+	else
+		-- head straight towards the hilltop
+		Cmd_SquadPath(sg_temp, this.paths[3], false, false, true, 5, false, true)
+	end
+	
+end
+
+
+-- Part C: Tanks
+function Phase3_DoWavePartC()
+	
+	data_phase3counts.C = data_phase3counts.C + 1
+	local section = data_phase3counts.C
+	local this = data_phase3_entrylocations[wave][section]
+	
+	SGroup_Clear(sg_temp)
+	Util_CreateSquads(player2, sg_temp, SBP.AXIS.PANZER, this.marker[1])
+	Cmd_SquadPath(sg_temp, this.paths[1], false, false, true, 2)
+	Cmd_SquadPath(sg_temp, this.paths[3], false, false, true, 2, false, true)
+	SGroup_AddGroup(this.groups[2], sg_temp)
+
+	SGroup_Clear(sg_temp)
+	Util_CreateSquads(player2, sg_temp, SBP.AXIS.PANZER, this.marker[2])
+	Cmd_SquadPath(sg_temp, this.paths[2], false, false, true, 2)
+	Cmd_SquadPath(sg_temp, this.paths[3], false, false, true, 2, false, true)
+	SGroup_AddGroup(this.groups[2], sg_temp)
+
+end
+
+
+-- Part D: Mr. Tank Boss, Sir
+function Phase3_DoWavePartD()
+
+	--data_phase3counts.D = data_phase3counts.D + 1
+	local section = data_phase3counts.C
+	local this = data_phase3_entrylocations[wave][section]
+	
+	if wave == 1 then
+		Cmd_InstantUpgrade(player4, UPG.AXIS.VETERANCY.TANK1)
+		Util_StartIntel(EVENTS.Phase3_First_Wave)
+		-- start ambient events
+		Rule_AddDelayedInterval(Ambient_First_Wave, 20, 3)
+		
+	elseif wave == 2 then
+		Cmd_InstantUpgrade(player4, UPG.AXIS.VETERANCY.TANK2)
+		-- start ambient events
+		Rule_AddDelayedInterval(Ambient_Second_Wave, 20, 3)
+		
+		
+	elseif wave == 3 then
+		Cmd_InstantUpgrade(player4, UPG.AXIS.VETERANCY.TANK3)
+		-- start ambient events
+		Rule_AddDelayedInterval(Ambient_Third_Wave, 20, 3)
+	end
+	
+	Util_CreateSquads(player4, this.groups[3], SBP.AXIS.PANTHER, this.marker[3])
+	Cmd_SquadPath(this.groups[3], this.paths[3], false, false, true, 0)
+
+end
+
+
+
+
+
+
+
+-------------------------------------------------------------------------
+-- Probing Infantry Attacks (Encounters)
+-------------------------------------------------------------------------
+-- This sends small infantry groups up the hill to provide some nuisance
+-- to the player. 
+-------------------------------------------------------------------------
+
+function ProbingAttacks_Init()
+
+	-- potential routes for a probing attack
+	data_probingattacks = {}
+	data_probingattacks[1] = { {marker = mkr_edge_point15, route = {"path_point15vp"}},  {marker = mkr_edge_point15a, route = {"path_point15a", eg_hill_flag5, "path_point15vp"}},     {marker = mkr_edge_point15b, route = {"path_point15b", eg_hill_flag5, "path_point15vp"}} }
+	data_probingattacks[2] = { {marker = mkr_edge_point18, route = {"path_point18vp"}},  {marker = mkr_edge_point18a, route = {"path_point18a", eg_hill_flag1, "path_point18vp"}},     {marker = mkr_edge_point18b, route = {"path_point18b", eg_hill_flag1, "path_point18vp"}} }
+	data_probingattacks[3] = { {marker = mkr_edge_point19, route = {"path_point19vp"}},  {marker = mkr_edge_point19a, route = {"path_point19a", eg_hill_flag4, "path_point19vp"}},     {marker = mkr_edge_point19b, route = {"path_point19b", eg_hill_flag4, "path_point19vp"}} }
+	data_probingattacks[4] = { {marker = mkr_edge_point1,  route = {"path_point1vp"}},   {marker = mkr_edge_point1a,  route = {"path_point1a", eg_hill_flag2, "path_point1vp"}},       {marker = mkr_edge_point1b, route = {"path_point1b", eg_hill_flag2, "path_point1vp"}} }
+	data_probingattacks[5] = { {marker = mkr_edge_point2,  route = {"path_point2vp"}},   {marker = mkr_edge_point2a,  route = {"path_point2a", eg_hill_flag3, "path_point2vp"}} }      -- no b routes for this, as it goes right through the village
+	data_probingattacks[6] = { {marker = mkr_edge_point12,  route = {"path_point12vp"}}, {marker = mkr_edge_point12a,  route = {"path_point12a", eg_hill_flag3, "path_point12vp"}} }   -- no b routes for this, as it goes right through the village
+
+	-- different types of attack "styles" 
+	data_probingattackstyles = {}		-- difficulty
+	
+	if g_difficulty == GD_EASY then
+		data_probingattackstyles[1] = {unit = SBP.AXIS.STORMTROOPER, count = 1, delay = 40}
+		data_probingattackstyles[2] = {unit = SBP.AXIS.GRENADIER, count = 1, delay = 30}
+		data_probingattackstyles[3] = {unit = SBP.AXIS.VOLKSGRENADIER, count = 2, delay = 10}
+	elseif g_difficulty == GD_NORMAL then
+		data_probingattackstyles[1] = {unit = SBP.AXIS.STORMTROOPER, count = 1, delay = 15}
+		data_probingattackstyles[2] = {unit = SBP.AXIS.GRENADIER, count = 2, delay = 10}
+		data_probingattackstyles[3] = {unit = SBP.AXIS.GRENADIER, count = 1, delay = 0}
+	else
+		data_probingattackstyles[1] = {unit = SBP.AXIS.STORMTROOPER, count = 1, delay = 15}
+		data_probingattackstyles[2] = {unit = SBP.AXIS.GRENADIER, count = 2, delay = 0}
+		data_probingattackstyles[3] = {unit = SBP.ELITE.ARMOURCAR_221, count = 1, delay = 20}
+	end
+	
+	sg_probingattacks = SGroup_CreateTable("sg_probingattacks%d", table.getn(data_probingattacks))
+	
+	data_probingattackcurrent = nil
+	
+end
+
+
+function ProbingAttacks_Start()
+
+	if Rule_Exists(ProbingAttacks_Do) == false then
+		Rule_AddInterval(ProbingAttacks_Do, 20)
+	end
+	
+end
+
+
+function ProbingAttacks_Stop()
+
+	if Rule_Exists(ProbingAttacks_Do) == true then
+		Rule_Remove(ProbingAttacks_Do)
+	end
+	
+end
+
+
+function ProbingAttacks_Do()
+	
+	local group = nil
+	
+	-- get a free group
+	for n = 1, table.getn(sg_probingattacks) do
+		if SGroup_Count(sg_probingattacks[n]) == 0 then
+			group = sg_probingattacks[n]
+			break
+		end
+	end
+	
+	if group ~= nil then
+		
+		-- pick a random route from a random entry point in the first half of the list
+		local rand = World_GetRand(1, math.floor(table.getn(data_probingattacks) / 2))
+		local line = data_probingattacks[rand]
+		local chosen = Table_GetRandomItem(line)
+		
+		-- move this line to the end, so it doesn't get chosen for a bit
+		table.remove(data_probingattacks, rand)
+		table.insert(data_probingattacks, line)
+		
+		-- fire off the smoke
+		if World_GetRand(1, 15) == 1 then
+			local marker = Table_GetRandomItem(Table_GetRandomItem(data_probingattacks)).marker
+			SmokeEntrance_Do(marker)
+			EventCue_Create(CUE.NORMAL, 1389163, 1389999, marker)
+		else
+			SmokeEntrance_Do(chosen.marker)
+			EventCue_Create(CUE.NORMAL, 1389163, 1389999, chosen.marker)
+		end
+		
+		data_probingattackcurrent = {sgroup = group, route = chosen}
+		
+		Rule_AddOneShot(ProbingAttacks_DoPartB, 5)
+		
+	end
+	
+end
+function ProbingAttacks_DoPartB()
+
+	local chosen = data_probingattackcurrent.route
+	local group = data_probingattackcurrent.sgroup
+	
+	-- create the units for this attack
+	local style = Table_GetRandomItem(data_probingattackstyles)
+	Util_CreateSquads(player2, group, style.unit, chosen.marker, nil, style.count)
+	
+	-- choose attack or attack move (attack move much more likely)
+	local attackmove = Table_GetRandomItem({true, true, true, true, true, false})
+	
+	-- send these units along a path to the victory point
+	if table.getn(chosen.route) == 1 then											-- direct route
+		
+		Cmd_SquadPath(group, chosen.route[1], false, false, true, 2, nil, attackmove)
+		Cmd_AttackMoveThenCapture(group, eg_victory, true)
+		
+	elseif table.getn(chosen.route) == 3 then										-- route via flag, with a slight chance that they'll go for the flag on the way
+		
+		Cmd_SquadPath(group, chosen.route[1], false, false, true, 2, nil, attackmove)
+		if World_GetRand(1, 4) == 1 then
+			Cmd_AttackMoveThenCapture(group, chosen.route[2], true)
+		end
+		Cmd_SquadPath(group, chosen.route[3], false, false, true, 2, nil, attackmove)
+		Cmd_AttackMoveThenCapture(group, eg_victory, true)
+		
+	end
+	
+	if Rule_Exists(ProbingAttacks_Do) then
+		if gamephase == 1 then
+			Rule_ChangeInterval(ProbingAttacks_Do, World_GetRand(30, 50) + style.delay)
+		elseif gamephase == 2 then
+			Rule_ChangeInterval(ProbingAttacks_Do, World_GetRand(10, 30) + style.delay)
+		else 
+			Rule_ChangeInterval(ProbingAttacks_Do, World_GetRand(50, 90) + style.delay)
+		end
+	end
+	
+end
+
+
+
+
+
+
+-------------------------------------------------------------------------
+-- Fireflys (Bonus System)
+-------------------------------------------------------------------------
+-- Spawn Fireflys for the player so long as they're in posession of at
+-- least one of the bridges
+-------------------------------------------------------------------------
+
+function Firefly_Init()
+
+	firefly_route = {}
+	
+	firefly_route[1] = {name = "Baron", sectors = {eg_flags_baron, eg_flags_baron_across}, bridge = eg_bridge_baron, spawn = mkr_edge_point6, dest = mkr_baron_fireflyrally, 
+		bridgestatus = true, securestatus = true, bridgeoutevent = EVENTS.Firefly_BridgeOut_Baron, notsecureevent = EVENTS.Firefly_RouteNotSecure_Baron, resecuredevent = EVENTS.Firefly_RouteOpen_Baron, notsecureeventcue = 1389167, resecuredeventcue = 1389172, bridge_marker = mkr_bridge_baron}
+	
+	firefly_route[2] = {name = "Tourmau", sectors = {eg_flags_tourmau, eg_flags_tourmau_across}, bridge = eg_bridge_tourmau, spawn = mkr_edge_point7, dest = mkr_tourmau_fireflyrally, 
+		bridgestatus = true, securestatus = true, bridgeoutevent = EVENTS.Firefly_BridgeOut_Tourmau, notsecureevent = EVENTS.Firefly_RouteNotSecure_Tourmau, resecuredevent = EVENTS.Firefly_RouteOpen_Tourmau, notsecureeventcue = 1389166, resecuredeventcue = 1389171, bridge_marker = mkr_bridge_tourmau}
+	
+	firefly_lasttrigger = 0
+
+	sg_fireflies = SGroup_CreateIfNotFound("sg_fireflies")
+	sg_newfirefly = SGroup_CreateIfNotFound("sg_newfirefly")
+end
+
+
+
+
+function Firefly_Start()
+	
+	if Rule_Exists(Firefly_Manager) == false then
+		Rule_AddInterval(Firefly_Manager, 5)
+	end
+	
+	Player_SetPopCapOverride(player1, 136)
+	
+end
+
+
+function Firefly_Stop()
+	
+	if Rule_Exists(Firefly_Manager) == true then
+		Rule_Remove(Firefly_Manager)
+	end
+	
+end
+
+
+function Firefly_Manager()
+
+	if Event_IsAnyRunning() == false then
+	
+		-- update the bridges status
+		Bridges_CheckStatus()
+		
+		-- work out which/how many routes are safe, and make a list of spawnpoints/destinations
+		local spawnpoints = {}
+		for n = 1, table.getn(firefly_route) do 
+			
+			local this = firefly_route[n]
+			
+			-- check the bridge is okay
+			if EGroup_ContainsBlueprints(this.bridge, {EBP.BRIDGE_25.NORMAL, EBP.BRIDGE_25.REBUILT}, ANY) then
+				
+				-- check that neither of the sectors are owned by the enemy
+				local flag = false
+				for f = 1, table.getn(this.sectors) do
+					if Player_OwnsEGroup(player2, this.sectors[f]) == true then
+						flag = true
+						break
+					end
+				end
+				if flag == false then
+					
+					-- we're okay to go...
+					table.insert(spawnpoints, {name = this.name, spawn = this.spawn, dest = this.dest})
+					
+					-- if this route being open is a new situation, mention it!
+					if this.bridgestatus == false or this.securestatus == false then
+						this.bridgestatus = true
+						this.securestatus = true
+						Util_StartIntel(this.resecuredevent)
+						EventCue_Create(CUE.NORMAL, this.resecuredeventcue, 1389999, this.bridge_marker)
+					end
+					
+				else
+					
+					-- route is not secure - if this is a new situation, mention it!
+					if this.securestatus == true then
+						this.securestatus = false
+						Util_StartIntel(this.notsecureevent)
+						EventCue_Create(CUE.NORMAL, this.notsecureeventcue, 1389999, this.bridge_marker)
+					end
+					
+				end
+				
+			else
+				
+				-- the bridge is out - if this is a new situation, mention it!
+				if this.bridgestatus == true then
+					this.bridgestatus = false
+					Util_StartIntel(this.bridgeoutevent)
+					EventCue_Create(CUE.NORMAL, this.notsecureeventcue, 1389999, this.bridge_marker)
+				end
+				
+			end
+			
+		end
+		
+		-- make sure the player doesn't have a stack of fireflies already
+		if SGroup_Count(sg_fireflies) < 3 then
+			
+			if table.getn(spawnpoints) == 1 then							-- player has just one bridge
+				
+				-- if it's four minutes since the last one
+				if (World_GetGameTime() - firefly_lasttrigger) > (60*4) then			
+					Firefly_Do(spawnpoints)
+				end
+				
+			elseif table.getn(spawnpoints) == 2 then						-- player has both bridges
+				
+				-- if it's three minutes since the last one
+				if (World_GetGameTime() - firefly_lasttrigger) > (60*3) then			
+					Firefly_Do(spawnpoints)
+				end
+				
+			else															-- player has no bridges
+				
+				if (World_GetGameTime() - firefly_lasttrigger) > (60*5) then			
+					Util_StartIntel(EVENTS.Firefly_CantBringAnyIn)
+					firefly_lasttrigger = World_GetGameTime()
+				end				
+				
+			end
+			
+		end
+		
+	end
+	
+end
+
+
+
+function Firefly_Do(spawnpoints)
+
+	local this = Table_GetRandomItem(spawnpoints)
+	
+	SGroup_Clear(sg_newfirefly)
+	Util_CreateSquads(player1, sg_newfirefly, SBP.CW.FIREFLY, this.spawn, this.dest)
+	SGroup_AddGroup(sg_fireflies, sg_newfirefly)
+	
+	if this.name == "Baron" then
+		Util_StartIntel(EVENTS.Firefly_ApproachingBaron)
+		if SGroup_IsEmpty(sg_glenn) and Rule_Exists(Rule_Glenn) == false then
+			if g_glenn == nil then
+				g_glenn = 1
+			else
+				Util_CreateSquadsAtMarker(player1, sg_glenn, SBP.JOEY.SP_GLENN, mkr_edge_point6, 1)
+				Cmd_Move(sg_glenn, mkr_baron_fireflyrally)
+				Util_ReinforceEvent(sg_glenn, 18500160, 18500160)
+				Rule_AddInterval(Rule_Glenn, 1)
+			end
+		end
+	elseif this.name == "Tourmau" then
+		Util_StartIntel(EVENTS.Firefly_ApproachingTourmau)
+		if SGroup_IsEmpty(sg_glenn) and Rule_Exists(Rule_Glenn) == false then
+			if g_glenn == nil then
+				g_glenn = 1
+			else
+				Util_CreateSquadsAtMarker(player1, sg_glenn, SBP.JOEY.SP_GLENN, mkr_edge_point7, 1)
+				Cmd_Move(sg_glenn, mkr_tourmau_fireflyrally)
+				Util_ReinforceEvent(sg_glenn, 18500160, 18500160)
+				Rule_AddInterval(Rule_Glenn, 1)
+			end
+		end
+	end
+	
+	EventCue_Create(CUE.NORMAL_REPEATING, 1389173, 1389999, sg_newfirefly)
+	
+	firefly_lasttrigger = World_GetGameTime()
+	
+end
+
+function Firefly_MedalCheck()
+
+	local result = true
+	
+	for k, this in pairs(firefly_route) do 
+		
+		if this.bridgestatus == true and this.securestatus == true then
+			result = false
+		end
+		
+	end
+	
+	if result == true then
+		Objective_Fail(OBJ_Medal_Bridge)
+		Rule_RemoveMe()
+	end
+
+end
+
+-------------------------------------------------------------------------
+-- Medal Opportunity - Protect the bridges!
+-------------------------------------------------------------------------
+-------------------------------------------------------------------------
+function Initialize_OBJ_Medal_Bridge()
+
+	OBJ_Medal_Bridge = {
+		
+		SetupUI = function() 
+			
+			
+		end,
+		
+		OnStart = function()
+			
+			-- win/lose check
+			Rule_AddInterval(Firefly_MedalCheck, 1) -- more like a lose check.  A win check will be called at the end of the mission.
+			
+			-- start related action
+
+			
+			-- EncounterName_Kickoff()
+			
+		end,
+		
+		OnComplete = function()
+			
+			-- tell the player they did good
+			
+		end,
+		
+		IsComplete = function()
+			return false
+		end,
+		
+		OnFail = function()
+			
+			-- tell the player they lost
+			
+		end,
+		
+		
+		Title = 1389103, 
+		Description = 1389112, -- placeholder
+		TitleEnd = 1389105, --placeholder
+		
+		Type = OT_Medal,
+		MedalID			= MEDALS.CXP1.HILL_112_DEFENSE,
+	}
+	
+	-- Register Objective
+	Objective_Register(OBJ_Medal_Bridge)
+	-- Initialize Data
+	--Commando_Action_Init()
+	
+end
+
+
+--------------------------------------------------------------------------------
+-- END MISSION
+--------------------------------------------------------------------------------
+
+function Rule_EndMission()
+	
+	if Objective_IsComplete(OBJ_Defend) then
+		
+		Rule_RemoveMe()
+		
+		Rule_AddDelayedInterval(Rule_EndMissionWinDelay, 5, 1)
+		
+	elseif Objective_IsFailed(OBJ_Defend) then
+		
+		Rule_RemoveMe()
+		
+		Util_StartIntel(EVENTS.Hill_MissionFailed)
+		
+		Rule_AddDelayedInterval(Rule_EndMissionLose, 5, 1)
+		
+	end
+	
+end
+
+
+function Rule_EndMissionWinDelay() -- for medal
+	if Event_IsAnyRunning() == false then
+		
+		
+		if Objective_IsFailed(OBJ_Medal_Bridge) == false then
+		
+			Objective_Complete(OBJ_Medal_Bridge)
+		
+		end
+		
+		
+		Rule_AddDelayedInterval(Rule_EndMissionWin, 5, 1)
+		Rule_RemoveMe()
+		
+	end
+end
+
+function Rule_EndMissionWin()
+	if Event_IsAnyRunning() == false then
+		Rule_RemoveIfExist(Rule_Glenn)
+		Game_EndSP(true)
+	end
+end
+
+
+
+function Rule_EndMissionLose()
+	if Event_IsAnyRunning() == false then
+		Game_EndSP(false)
+	end
+end
+
+
+
+
+
+
+--------------------------------------------------------------------------------
+-- UTILITY FUNCTIONS
+--------------------------------------------------------------------------------
+
+-- this function updates the variables that indicate if the bridges are intact (and puts bridges back into groups)
+function Bridges_CheckStatus()
+	
+	-- Baron Bridge
+	if EGroup_Count(eg_bridge_baron) == 0 then
+		World_GetNeutralEntitiesNearMarker(eg_bridge_baron, mkr_bridge_baron)
+		EGroup_Filter(eg_bridge_baron, {EBP.BRIDGE_25.NORMAL, EBP.BRIDGE_25.WRECKED, EBP.BRIDGE_25.REBUILT}, FILTER_KEEP)
+	end
+	
+	if EGroup_ContainsBlueprints(eg_bridge_baron, {EBP.BRIDGE_25.NORMAL, EBP.BRIDGE_25.REBUILT}, ANY) then
+		bridge_baron = true
+	else
+		bridge_baron = false
+	end
+	
+	
+	-- Tourmauville Bridge
+	if EGroup_Count(eg_bridge_tourmau) == 0 then
+		World_GetNeutralEntitiesNearMarker(eg_bridge_tourmau, mkr_bridge_tourmau)
+		EGroup_Filter(eg_bridge_tourmau, {EBP.BRIDGE_25.NORMAL, EBP.BRIDGE_25.WRECKED, EBP.BRIDGE_25.REBUILT}, FILTER_KEEP)
+	end
+	
+	if EGroup_ContainsBlueprints(eg_bridge_tourmau, {EBP.BRIDGE_25.NORMAL, EBP.BRIDGE_25.REBUILT}, ANY) then
+		bridge_tourmau = true
+	else
+		bridge_tourmau = false
+	end
+	
+	
+	-- Wooden Bailey Bridge
+	if EGroup_Count(eg_bridge_wooden) == 0 then
+		World_GetNeutralEntitiesNearMarker(eg_bridge_wooden, mkr_bridge_wooden)
+		EGroup_Filter(eg_bridge_wooden, {EBP.BRIDGE_BAILEY_25.NORMAL, EBP.BRIDGE_BAILEY_25.WRECKED}, FILTER_KEEP)
+	end
+	
+	if EGroup_ContainsBlueprints(eg_bridge_wooden, {EBP.BRIDGE_BAILEY_25.NORMAL}, ANY) then
+		bridge_wooden = true
+	else
+		bridge_wooden = false
+	end
+	
+	
+	-- Hidden Bailey Bridge
+	if EGroup_Count(eg_bridge_hidden) == 0 then
+		World_GetNeutralEntitiesNearMarker(eg_bridge_hidden, mkr_bridge_hidden)
+		EGroup_Filter(eg_bridge_hidden, {EBP.BRIDGE_BAILEY_25.NORMAL, EBP.BRIDGE_BAILEY_25.WRECKED}, FILTER_KEEP)
+	end
+	
+	if EGroup_ContainsBlueprints(eg_bridge_hidden, {EBP.BRIDGE_BAILEY_25.NORMAL}, ANY) then
+		bridge_hidden = true
+	else
+		bridge_hidden = false
+	end
+	
+end	
+
+
+
+-- this system ensures that when P2 captures an edge territory, they get supply from that area (and it disappears when P1 recaptures it)
+function FakeSupply_Init()
+
+	t_supplyterritories = {}
+	t_supplyterritories[1] = {player2owned = false, flag = eg_flags_baron}
+	t_supplyterritories[2] = {player2owned = false, flag = eg_flags_baron_across}
+	t_supplyterritories[3] = {player2owned = false, flag = eg_flags_tourmau}
+	t_supplyterritories[4] = {player2owned = false, flag = eg_flags_tourmau_across}
+	t_supplyterritories[5] = {player2owned = false, flag = eg_hill_flag1}
+	t_supplyterritories[6] = {player2owned = false, flag = eg_hill_flag2}
+	t_supplyterritories[7] = {player2owned = false, flag = eg_hill_flag4}
+	t_supplyterritories[8] = {player2owned = false, flag = eg_hill_flag5}
+	
+	Rule_Add(FakeSupply_Manager)
+	
+end
+
+
+function FakeSupply_Manager()
+	
+	for n = 1, table.getn(t_supplyterritories) do
+		
+		local this = t_supplyterritories[n]
+		
+		if this.player2owned == false and Player_OwnsEGroup(player2, this.flag) == true then
+			this.player2owned = true
+			World_SetDesignerSupply(EGroup_GetPosition(this.flag), true)
+		elseif this.player2owned == true and Player_OwnsEGroup(player2, this.flag) == false then
+			this.player2owned = false
+			World_SetDesignerSupply(EGroup_GetPosition(this.flag), false)
+		end
+		
+	end
+	
+end
+
+
+
+
+-- checks if the points to keep the Firefly routes open are taken by the enemy and adds hints, also checks if bridges are destroyed
+function Check_Bridge_Points()
+	
+	if Objective_IsComplete(OBJ_Medal_Bridge) or Objective_IsFailed(OBJ_Medal_Bridge) then -- Objective_IsComplete(OBJ_Defend)
+			Rule_RemoveMe()
+		
+	else
+	
+		Bridges_CheckStatus()
+	
+		-- put hintpoints on any points not captured by the player
+		if EGroup_IsCapturedByPlayer(eg_flags_baron, player1, ANY) == false and medal_ui_baron == false then --and hpid_baron == false then
+			--hpid_baron = HintPoint_Add(EGroup_GetPosition(eg_flags_baron), true, 1389122)
+			--pingid_baron = Objective_AddPing(OBJ_Defend, Util_GetPosition(eg_flags_baron), 1)
+			
+			medal_ui_baron = Objective_AddUIElements(OBJ_Medal_Bridge, eg_flags_baron, true, 1389122, true, 2.3)
+			
+			
+		elseif EGroup_IsCapturedByPlayer(eg_flags_baron, player1, ANY) and medal_ui_baron ~= false then --hpid_baron ~= false then
+			--HintPoint_Remove(hpid_baron)
+			--hpid_baron = false		
+			--Objective_RemovePing(OBJ_Defend, pingid_baron)
+			
+			Objective_RemoveUIElements(OBJ_Medal_Bridge, medal_ui_baron)
+			medal_ui_baron = false
+			
+		end
+		
+		if EGroup_IsCapturedByPlayer(eg_flags_baron_across, player1, ANY) == false and medal_ui_baron_across == false then --and hpid_baron_across == false then
+			--hpid_baron_across = HintPoint_Add(EGroup_GetPosition(eg_flags_baron_across), true, 1389122)
+			--pingid_baron_across = Objective_AddPing(OBJ_Defend, Util_GetPosition(eg_flags_baron_across), 1)
+			
+			medal_ui_baron_across = Objective_AddUIElements(OBJ_Medal_Bridge, eg_flags_baron_across, true, 1389122, true, 2.3)
+		
+		elseif EGroup_IsCapturedByPlayer(eg_flags_baron_across, player1, ANY) and medal_ui_baron_across ~= false then --and hpid_baron_across ~= false then
+			--HintPoint_Remove(hpid_baron_across)
+			--hpid_baron_across = false
+			--Objective_RemovePing(OBJ_Defend, pingid_baron_across)
+			
+			Objective_RemoveUIElements(OBJ_Medal_Bridge, medal_ui_baron_across)
+			medal_ui_baron_across = false
+			
+		end
+		
+		if bridge_baron == false and medal_ui_baron_bridge == false then --and hpid_baron_bridge == false then
+			
+			--hpid_baron_bridge = HintPoint_Add(Marker_GetPosition(mkr_bridge_baron), true, 1389124)
+			--pingid_baron_bridge = Objective_AddPing(OBJ_Defend, Util_GetPosition(mkr_bridge_baron), 1)
+			medal_ui_baron_bridge = Objective_AddUIElements(OBJ_Medal_Bridge, mkr_bridge_baron, true, 1389124, true)
+			
+		elseif bridge_baron == true and medal_ui_baron_bridge ~= false then--and hpid_baron_bridge ~= false then
+			
+			--HintPoint_Remove(hpid_baron_bridge)
+			--hpid_baron_bridge = false
+			--Objective_RemovePing(OBJ_Defend, pingid_baron_bridge)
+			
+			Objective_RemoveUIElements(OBJ_Medal_Bridge, medal_ui_baron_bridge)
+			medal_ui_baron_bridge = false
+			
+		end
+		
+		
+		if EGroup_IsCapturedByPlayer(eg_flags_tourmau, player1, ANY) == false and medal_ui_tourmau == false then --and hpid_tourmau == false then
+			--hpid_tourmau = HintPoint_Add(EGroup_GetPosition(eg_flags_tourmau), true, 1389123)
+			--pingid_tourmau = Objective_AddPing(OBJ_Defend, Util_GetPosition(eg_flags_tourmau), 1)
+			
+			medal_ui_tourmau = Objective_AddUIElements(OBJ_Medal_Bridge, eg_flags_tourmau, true, 1389123, true, 2.3)
+			
+		
+		elseif EGroup_IsCapturedByPlayer(eg_flags_tourmau, player1, ANY) and medal_ui_tourmau ~= false then--and hpid_tourmau ~= false then
+			--HintPoint_Remove(hpid_tourmau)
+			--hpid_tourmau = false
+			--Objective_RemovePing(OBJ_Defend, pingid_tourmau)
+			
+			Objective_RemoveUIElements(OBJ_Medal_Bridge, medal_ui_tourmau)
+			medal_ui_tourmau = false
+			
+		end
+		
+		if EGroup_IsCapturedByPlayer(eg_flags_tourmau_across, player1, ANY) == false and medal_ui_tourmau_across == false then -- and hpid_tourmau_across == false then
+			--hpid_tourmau_across = HintPoint_Add(EGroup_GetPosition(eg_flags_tourmau_across), true, 1389123)
+			--pingid_tourmau_across = Objective_AddPing(OBJ_Defend, Util_GetPosition(eg_flags_tourmau_across), 1)
+			
+			medal_ui_tourmau_across = Objective_AddUIElements(OBJ_Medal_Bridge, eg_flags_tourmau_across, true, 1389123, true, 2.3)
+		
+		elseif EGroup_IsCapturedByPlayer(eg_flags_tourmau_across, player1, ANY) and medal_ui_tourmau_across ~= false then --and hpid_tourmau_across ~= false then
+			--HintPoint_Remove(hpid_tourmau_across)
+			--hpid_tourmau_across = false
+			--Objective_RemovePing(OBJ_Defend, pingid_tourmau_across)
+			
+			Objective_RemoveUIElements(OBJ_Medal_Bridge, medal_ui_tourmau_across)
+			medal_ui_tourmau_across = false
+			
+		end
+		
+		
+		if bridge_tourmau == false and medal_ui_tourmau_bridge == false then --and hpid_tourmau_bridge == false then
+			
+			--hpid_tourmau_bridge = HintPoint_Add(Marker_GetPosition(mkr_bridge_tourmau), true, 1389125)
+			--pingid_tourmau_bridge = Objective_AddPing(OBJ_Defend, Util_GetPosition(mkr_bridge_tourmau), 1)
+			
+			medal_ui_tourmau_bridge = Objective_AddUIElements(OBJ_Medal_Bridge, mkr_bridge_tourmau, true, 1389125, true)
+			
+			
+		elseif bridge_tourmau == true and medal_ui_tourmau_bridge ~= false then --and hpid_tourmau_bridge ~= false then
+			
+			--HintPoint_Remove(hpid_tourmau_bridge)
+			--hpid_tourmau_bridge = false
+			--Objective_RemovePing(OBJ_Defend, pingid_tourmau_bridge)
+			
+			Objective_RemoveUIElements(OBJ_Medal_Bridge, medal_ui_tourmau_bridge)
+			medal_ui_tourmau_bridge = false
+			
+		end
+		
+		
+	end
+end
+
+
+
+-----------------------------------------------------------------------------------
+-- Tactical Event Speech
+-----------------------------------------------------------------------------------
+
+
+-- this function checks if the player is losing a point and plays speech if they are
+function Event_Losing_Point()
+	
+	if Objective_IsComplete(OBJ_Defend) then
+		Rule_RemoveMe()
+	else
+	
+		for k, this in pairs(t_points) do
+		
+			EGroup_IsCapturedByPlayer(this.egroup, player1, ANY)
+			
+			local current_owner = Util_GetPlayerOwner(this.egroup)
+			
+			-- if the point has been taken from the player, play the speech
+			if this.owner == player1 and current_owner ~= this.owner then
+				Util_StartIntel(EVENTS.Losing_Points)
+				this.owner = current_owner
+			
+			elseif this.owner ~= current_owner then
+				this.owner = current_owner
+			end
+		end
+	end
+end
+
+-- this function plays speech if the Axis are pushing up the left side of the hill
+function Event_Left_Flank()
+
+	if Objective_IsComplete(OBJ_Defend) then
+		Rule_RemoveMe()
+	else
+		
+		if (World_GetGameTime() - last_left_flank_warning) >= 90 then		-- check that at least 90 secs has passed since the last warning
+			
+			local flag = false
+			
+			SGroup_Clear(sg_temp)
+			Player_GetAllSquadsNearMarker(player2, sg_temp, sectorid_hill_1)
+			if SGroup_IsUnderAttack(sg_temp, ANY, 10) then
+				flag = true
+			end
+			
+			SGroup_Clear(sg_temp)
+			Player_GetAllSquadsNearMarker(player2, sg_temp, sectorid_hill_2)
+			if SGroup_IsUnderAttack(sg_temp, ANY, 10) then
+				flag = true
+			end
+			
+			if flag == true then
+				
+				last_left_flank_warning = World_GetGameTime()
+				Util_StartIntel(EVENTS.Left_Flank)
+				
+			end
+			
+		end
+		
+	end
+	
+end
+
+-- this function plays speech if the Axis are pushing up the front of the hill
+function Event_Middle()
+
+	if Objective_IsComplete(OBJ_Defend) then
+		Rule_RemoveMe()
+	else
+		
+		if (World_GetGameTime() - last_middle_warning) >= 90 then		-- check that at least 90 secs has passed since the last warning
+			
+			local flag = false
+			
+			SGroup_Clear(sg_temp)
+			Player_GetAllSquadsNearMarker(player2, sg_temp, sectorid_hill_3)
+			if SGroup_IsUnderAttack(sg_temp, ANY, 10) then
+				flag = true
+			end
+			
+			SGroup_Clear(sg_temp)
+			Player_GetAllSquadsNearMarker(player2, sg_temp, sectorid_hilltop)
+			if SGroup_IsUnderAttack(sg_temp, ANY, 10) then
+				flag = true
+			end
+			
+			if flag == true then
+				
+				last_middle_warning = World_GetGameTime()
+				Util_StartIntel(EVENTS.Middle)
+				
+			end
+			
+		end
+		
+	end
+
+end
+
+-- this function plays speech if the Axis are pushing up the right of the hill
+function Event_Right_Flank()
+
+	if Objective_IsComplete(OBJ_Defend) then
+		Rule_RemoveMe()
+	else
+		
+		if (World_GetGameTime() - last_right_flank_warning) >= 90 then		-- check that at least 90 secs has passed since the last warning
+			
+			local flag = false
+			
+			SGroup_Clear(sg_temp)
+			Player_GetAllSquadsNearMarker(player2, sg_temp, sectorid_hill_4)
+			if SGroup_IsUnderAttack(sg_temp, ANY, 10) then
+				flag = true
+			end
+			
+			SGroup_Clear(sg_temp)
+			Player_GetAllSquadsNearMarker(player2, sg_temp, sectorid_hill_5)
+			if SGroup_IsUnderAttack(sg_temp, ANY, 10) then
+				flag = true
+			end
+			
+			if flag == true then
+				
+				last_right_flank_warning = World_GetGameTime()
+				Util_StartIntel(EVENTS.Right_Flank)
+				
+			end
+			
+		end
+		
+	end
+	
+end
+
+
+
+-----------------------------------------------------------------------------------
+-- Ambient Event Speech
+-----------------------------------------------------------------------------------
+
+-- this function plays the ambient events for the first wave of phase 3
+function Ambient_First_Wave()
+	local min_time = 30	-- how much time has to pass before it will display another warning speech event
+	local current_time = World_GetGameTime()
+	local time_passed = current_time - last_ambient_first_wave 	-- how much time has passed since the last ambient event
+	
+	if wave == 2 then
+		Rule_RemoveMe()
+		
+	elseif wave == 1 and time_passed >= min_time then
+			
+		last_ambient_first_wave = World_GetGameTime()
+		Util_StartAmbient(EVENTS.Ambient_Phase3_First_Wave)
+		
+	end
+end
+
+-- this function plays the ambient events for the second wave of phase 3
+function Ambient_Second_Wave()
+	local min_time = 30	-- how much time has to pass before it will display another warning speech event
+	local current_time = World_GetGameTime()
+	local time_passed = current_time - last_ambient_second_wave 	-- how much time has passed since the last ambient event
+	
+	if wave == 3 then
+		Rule_RemoveMe()
+		
+	elseif wave == 2 and time_passed >= min_time then
+			
+		last_ambient_second_wave = World_GetGameTime()
+		Util_StartAmbient(EVENTS.Ambient_Phase3_Second_Wave)
+		
+	end
+end
+
+-- this function plays the ambient events for the third wave of phase 3
+function Ambient_Third_Wave()
+	local min_time = 30	-- how much time has to pass before it will display another warning speech event
+	local current_time = World_GetGameTime()
+	local time_passed = current_time - last_ambient_third_wave 	-- how much time has passed since the last ambient event
+	
+	if Objective_IsComplete(OBJ_Defend) then
+		Rule_RemoveMe()
+		
+	elseif wave == 3 and time_passed >= min_time then
+			
+		last_ambient_third_wave = World_GetGameTime()
+		Util_StartAmbient(EVENTS.Ambient_Phase3_Third_Wave)
+		
+	end
+end
+
+
+

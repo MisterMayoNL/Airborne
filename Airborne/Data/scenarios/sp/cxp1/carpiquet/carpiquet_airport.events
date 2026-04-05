@@ -1,0 +1,503 @@
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--
+-- NIS File for Carpiquet A
+--
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+
+function NIS_Init()
+
+	-- load NIS's
+	NIS01 = "sp/CXP1/Carpiquet/NIS/N03_01"
+	nis_load(NIS01)
+	NIS02 = "sp/CXP1/Carpiquet/NIS/N03_02"
+	nis_load(NIS02)
+	
+	nis_setintransitiontime(0)
+	nis_setouttransitiontime(0)
+
+end
+
+Scar_AddInit(NIS_Init)
+
+
+
+
+
+EVENTS = {}
+
+
+--------------------------------------------------------------------------------
+-- Opening Cinematic (NIS01)
+--------------------------------------------------------------------------------
+
+EVENTS.NIS01 = function()
+
+	Game_Letterbox(true, 0)
+	
+	CTRL.Scar_PlayNIS(NIS01)
+	CTRL.WAIT()
+	
+	nis_stop()
+	
+	Game_Letterbox(false, 2)
+	
+end
+
+EVENTS.GlennDead = function()
+	UI_EnableEventSkip(false)
+	CTRL.Event_Delay(1)
+	CTRL.WAIT()
+	Game_Letterbox(true, 0)
+	UI_EnableEventSkip(true)
+	Camera_MoveToPosition(cameraGlenn, true, SLOW_CAMERA_PANNING)
+	CTRL.Event_Delay(2.5)
+	CTRL.WAIT()
+end
+
+--------------------------------------------------------------------------------
+-- Closing Cinematic (NIS02)
+--------------------------------------------------------------------------------
+
+EVENTS.NIS02 = function()
+
+	CTRL.Game_Letterbox(true, 2)
+	CTRL.WAIT()
+	
+	CTRL.Scar_PlayNIS(NIS02)
+	CTRL.WAIT()
+	
+	nis_stop()
+	
+	--Game_FadeToBlack(FADE_IN, 0)
+	
+	--Game_Letterbox(false, 2)
+
+end
+
+--------------------------------------------------------------------------------
+-- In-game speech 
+---------------------------------------------------------------------------------
+--AXIS AMBIENT
+EVENTS.FIRST_ENCOUNTER_DETECTION = function()
+	
+	local choices = {}
+	choices[1] = {actor = ACTOR.CXP1.GenericAxis, line = 1330502} -- Did you hear something? Shit!! The Brits are coming! 
+	choices[2] = {actor = ACTOR.CXP1.GenericAxis, line = 1330503} -- Alarm!!
+	choices[3] = {actor = ACTOR.CXP1.GenericAxis, line = 1330504} -- Don't let them through men!! Hold your ground!
+	choices[4] = {actor = ACTOR.CXP1.GenericAxis, line = 1330505} -- Schultz, what are you doing out there?  Get back here at once!
+	
+	local rand = World_GetRand(1, table.getn(choices))
+	
+	CTRL.Event_Delay(0.5)
+	CTRL.WAIT()
+	
+	CTRL.Actor_PlaySpeechWithoutPortrait(choices[rand].actor, choices[rand].line)  --Actor_PlaySpeech
+	CTRL.WAIT()
+
+	
+end
+--AXIS AMBIENT
+EVENTS.BATTLE_CHATTER1 = function()
+	
+	local choices = {}
+	choices[1] = {actor = ACTOR.CXP1.GenericAxis, line = 1330520} -- For the fatherland comrades!
+	choices[2] = {actor = ACTOR.CXP1.GenericAxis, line = 1330521} -- Die you Brit bastards!
+	choices[3] = {actor = ACTOR.CXP1.GenericAxis, line = 1330522} -- I think we have company!?!
+	
+	
+	local rand = World_GetRand(1, table.getn(choices))
+	
+	CTRL.Event_Delay(0.5)
+	CTRL.WAIT()
+	
+	CTRL.Actor_PlaySpeechWithoutPortrait(choices[rand].actor, choices[rand].line)
+	CTRL.WAIT()
+
+	
+end
+--AXIS AMBIENT
+EVENTS.BATTLE_CHATTER2 = function()
+	
+	local choices = {}
+	choices[1] = {actor = ACTOR.CXP1.GenericAxis, line = 1330530} -- They keep coming!
+	choices[2] = {actor = ACTOR.CXP1.GenericAxis, line = 1330531} -- Keep them back!
+	choices[3] = {actor = ACTOR.CXP1.GenericAxis, line = 1330532} -- These are some sneaky bastards.
+
+	
+	
+	local rand = World_GetRand(1, table.getn(choices))
+	
+	CTRL.Event_Delay(0.5)
+	CTRL.WAIT()
+	
+	CTRL.Actor_PlaySpeechWithoutPortrait(choices[rand].actor, choices[rand].line)
+	CTRL.WAIT()
+
+	
+end
+
+-----------------------
+-- AMMO DUMP
+-----------------------
+-- AMBIENT
+EVENTS.GARRISON_BATTLE_CHATTER1 = function()
+	
+	local choices = {}
+	choices[1] = {actor = ACTOR.CXP1.GenericCommonwealth, line = 1331100} -- Keep on 'em Keegan.
+	choices[2] = {actor = ACTOR.CXP1.GenericCommonwealth, line = 1331110} -- Strong, quick and silent, lads!
+	choices[3] = {actor = ACTOR.CXP1.GenericCommonwealth, line = 1331120} -- Hand Jerry his fuckin' arse lads!
+	
+	choices[4] = {actor = ACTOR.CXP1.GenericCommonwealth, line = 1331130} -- Number 1 Commando is serving it up, you sorry saps!
+	choices[5] = {actor = ACTOR.CXP1.GenericCommonwealth, line = 1331140} -- Bend over and prepare to receive you fuckin' tossers!
+	choices[6] = {actor = ACTOR.CXP1.GenericCommonwealth, line = 1331150} -- I'll take the whole lot of you!
+	
+	
+	local rand = World_GetRand(1, table.getn(choices))
+	
+	CTRL.Event_Delay(0.5)
+	CTRL.WAIT()
+	
+	CTRL.Actor_PlaySpeechWithoutPortrait(choices[rand].actor, choices[rand].line)
+	CTRL.WAIT()
+
+	
+end
+
+
+---------------------
+--Fuel Supply Shed
+-----------------
+
+
+---------------
+-- Fuel Tanks
+--------------
+
+
+
+
+---------------
+-- Tetrarch
+---------------
+
+-- AMBIENT
+EVENTS.TETRARCH_LANDING_NAG = function()
+	
+	local choices = {}
+	choices[1] = {actor = ACTOR.CXP1.Hazard, line = 1330900	} -- Land the fuckin' Heavy Glider on the marked LZ!
+	choices[2] = {actor = ACTOR.CXP1.Hazard, line = 1330910	} -- Get that fuckin' light armor on the ground!
+	choices[3] = {actor = ACTOR.CXP1.Hazard, line = 1330920	} -- Heavy Glider LZ marked! Get that air dropped tank on the ground
+	local rand = World_GetRand(1, table.getn(choices))
+	
+	CTRL.Event_Delay(0.5)
+	CTRL.WAIT()
+	
+	CTRL.Actor_PlaySpeechWithoutPortrait(choices[rand].actor, choices[rand].line)
+	CTRL.WAIT()
+
+end
+
+
+-----------------
+-- CARPIQUET TOWN
+-----------------
+
+
+
+
+-------------------------
+-- MEDAL OBJECTIVE SPEECH
+-------------------------
+--AMBIENT
+EVENTS.MEDAL_OBJECTIVE_VANISH = function()
+	
+	local choices = {}
+	choices[1] = {actor = ACTOR.CXP1.Hazard, line = 1331464	} -- Right Commandos, we're bugging out.
+	choices[2] = {actor = ACTOR.CXP1.Hazard, line = 1331465	} -- Into that building. We must hold out until 3rd Bat can relieve us in the morning.
+	choices[3] = {actor = ACTOR.CXP1.Hazard, line = 1331466 } -- Move it. Garrison that building. We must hold until morning.
+	local rand = World_GetRand(1, table.getn(choices))
+	
+	CTRL.Event_Delay(0.5)
+	CTRL.WAIT()
+	
+	CTRL.Actor_PlaySpeechWithoutPortrait(choices[rand].actor, choices[rand].line)
+	CTRL.WAIT()
+
+end
+--AMBIENT
+EVENTS.MEDAL_OBJECTIVE_NPC = function()
+
+	local choices = {}
+	choices[1] = {actor = ACTOR.CXP1.Hazard, line = 1331461	} -- Right Commandos, we're bugging out until 3rd Battalion can link up with us.
+	choices[2] = {actor = ACTOR.CXP1.Hazard, line = 1331462	} -- Hope those 3rd Battalion chaps get here right quick in the morning.
+	choices[3] = {actor = ACTOR.CXP1.Hazard, line = 1331463 } -- Commandos, that's it for us. We're holding tight until 3rd Battalion can relieve us in the morning.
+
+	local rand = World_GetRand(1, table.getn(choices))
+	
+	CTRL.Event_Delay(0.5)
+	CTRL.WAIT()
+	
+	CTRL.Actor_PlaySpeechWithoutPortrait(choices[rand].actor, choices[rand].line)
+	CTRL.WAIT()
+
+
+end
+
+
+--AMBIENT
+EVENTS.MEDAL_OBJECTIVE_NPC_AMBIENT1 = function()
+
+	local choices = {}
+	choices[1] = {actor = ACTOR.CXP1.Hazard, line = 1333000	} -- Keep it together gents, we just need hold off 'til dawn, 3rd Battalion arrival.
+	choices[2] = {actor = ACTOR.CXP1.Hazard, line = 1333010	} -- Conserve Ammo, and keep yourselves stiched up tight! We don't want to loose anyone!
+	choices[3] = {actor = ACTOR.CXP1.Hazard, line = 1333020 } -- Major Blackmore won't forget us, lads, like I said, Battalion will be here at dawn!
+
+	local rand = World_GetRand(1, table.getn(choices))
+	
+	CTRL.Event_Delay(0.5)
+	CTRL.WAIT()
+	
+	CTRL.Actor_PlaySpeechWithoutPortrait(choices[rand].actor, choices[rand].line)
+	CTRL.WAIT()
+
+
+end
+-- AMBIENT 
+EVENTS.MEDAL_OBJECTIVE_NPC_AMBIENT2 = function()
+
+	local choices = {}
+	choices[1] = {actor = ACTOR.CXP1.Dillingham, line = 1333030	} -- Shite, I swear, It's game over man; and that's the gen-truth!
+	choices[2] = {actor = ACTOR.CXP1.Dillingham, line = 1333040	} -- Do you have sight of them? How many are there!
+	choices[3] = {actor = ACTOR.CXP1.Dillingham, line = 1333050 } -- We're running low on ammo! Sarge, when's sunrise?
+
+	local rand = World_GetRand(1, table.getn(choices))
+	
+	CTRL.Event_Delay(0.5)
+	CTRL.WAIT()
+	
+	CTRL.Actor_PlaySpeechWithoutPortrait(choices[rand].actor, choices[rand].line)
+	CTRL.WAIT()
+
+
+end
+-- AMBIENT 
+EVENTS.MEDAL_OBJECTIVE_NPC_AMBIENT3 = function() -- when under attack?
+
+	local choices = {}
+	choices[1] = {actor = ACTOR.CXP1.GenericCommonwealth, line = 1333060	} -- Panzers are fucking everywhere... What the hell mates. Where's 3rd Battalion.
+	choices[2] = {actor = ACTOR.CXP1.GenericCommonwealth, line = 1333070	} -- For fucksake how many are there?
+	choices[3] = {actor = ACTOR.CXP1.GenericCommonwealth, line = 1333080 } -- I don't know how much longer we got, ammo's running low here!
+	local rand = World_GetRand(1, table.getn(choices))
+	
+	CTRL.Event_Delay(0.5)
+	CTRL.WAIT()
+	
+	CTRL.Actor_PlaySpeechWithoutPortrait(choices[rand].actor, choices[rand].line)
+	CTRL.WAIT()
+
+
+end
+
+---------------
+-- Bunkers
+---------------
+--BUNKER AMBIENT
+EVENTS.BUNKER_CHATTER = function()
+	
+	local choices = {}
+	choices[1] = {actor = ACTOR.CXP1.Chubb, line = 1330810} -- Eat that you fucking Jerry cocksuckers!
+	choices[2] = {actor = ACTOR.CXP1.Chubb, line = 1330811} -- Yeah mother fucker!!! Die you fucking bastards!
+	choices[3] = {actor = ACTOR.CXP1.Chubb, line = 1330812} -- That ones for the old lady back home!
+	
+	
+	local rand = World_GetRand(1, table.getn(choices))
+	
+	CTRL.Event_Delay(0.5)
+	CTRL.WAIT()
+	
+	CTRL.Actor_PlaySpeechWithoutPortrait(choices[rand].actor, choices[rand].line)
+	CTRL.WAIT()
+
+	
+end
+
+
+---------------
+--ARTILLERY_WARNING
+------------------
+
+EVENTS.FF_ARTILLERY_WARNING = function() -- AMBIENT
+	
+	local choices = {}
+	choices[1] = {actor = ACTOR.CXP1.Hazard, line = 1330860} -- Turn the fuck back 'round INCOMING!
+	choices[2] = {actor = ACTOR.CXP1.Hazard, line = 1330861} -- Check fire! We're walking into registered artillery!
+	choices[3] = {actor = ACTOR.CXP1.Hazard, line = 1330862} -- Get the fuckin' lads back from that arty screen!
+	
+	local rand = World_GetRand(1, table.getn(choices))
+	
+	CTRL.Event_Delay(0.5)
+	CTRL.WAIT()
+	
+	CTRL.Actor_PlaySpeech(choices[rand].actor, choices[rand].line)
+	CTRL.WAIT()
+
+	
+end
+
+
+-----------------
+--CAPTURE POINTS NAG
+-------------------
+
+EVENTS.CAPTURE_POINTS_NAG = function() -- NOT AMBIENT
+	
+	local choices = {}
+	choices[1] = {actor = ACTOR.CXP1.Seville, line = 1330730} -- Go! Go! Give her boys!
+	choices[2] = {actor = ACTOR.CXP1.Seville, line = 1330731} -- Establish a defensive line!
+	choices[3] = {actor = ACTOR.CXP1.Seville, line = 1330732} -- Macdonald, you heard your orders, establish a defensive line!
+	
+	local rand = World_GetRand(1, table.getn(choices))
+	
+	CTRL.Event_Delay(0.5)
+	CTRL.WAIT()
+	
+	CTRL.Actor_PlaySpeech(choices[rand].actor, choices[rand].line)
+	CTRL.WAIT()
+
+	
+end
+
+EVENTS.CAPTURE_POINTS_RCR_ARRIVES = function() -- AMBIENT 
+	
+	local choices = {}
+	choices[1] = {actor = ACTOR.CXP1.GenericCommonwealth, line = 1330800} -- Chrisse de calisse du taburnack cave!
+	choices[2] = {actor = ACTOR.CXP1.GenericCommonwealth, line = 1331510} -- Jerry packs quite a bite, eh?!
+	choices[3] = {actor = ACTOR.CXP1.GenericCommonwealth, line = 1331520} -- Let's give 'em one for Canada boys!
+	choices[4] = {actor = ACTOR.CXP1.GenericCommonwealth, line = 1330802} -- Let's show the Brits whistle heads what we're made of boys!
+	choices[5] = {actor = ACTOR.CXP1.GenericCommonwealth, line = 1330803} -- The RCR will show 'em, eh?
+	choices[6] = {actor = ACTOR.CXP1.GenericCommonwealth, line = 1331530} -- Poor Jerry won't know what hit him!
+	
+	local rand = World_GetRand(1, table.getn(choices))
+	
+	CTRL.Event_Delay(0.5)
+	CTRL.WAIT()
+	
+	CTRL.Actor_PlaySpeechWithoutPortrait(choices[rand].actor, choices[rand].line)
+	CTRL.WAIT()
+
+	
+end
+
+EVENTS.CAPTURE_POINTS_CANADIAN_MOVEMENT = function() -- AMBIENT 
+	
+	local choices = {}
+	choices[1] = {actor = ACTOR.CXP1.GenericCommonwealth, line = 1330740} -- Coming up quick sir!
+	choices[2] = {actor = ACTOR.CXP1.GenericCommonwealth, line = 1330741} -- Keep her coming boys!
+	choices[3] = {actor = ACTOR.CXP1.GenericCommonwealth, line = 1330742} -- God damn Huns don't even know what's coming!
+	choices[4] = {actor = ACTOR.CXP1.GenericCommonwealth, line = 1330743} -- Doing her now sir. 
+	choices[5] = {actor = ACTOR.CXP1.GenericCommonwealth, line = 1330744} -- This place is thick with Jerry!
+	
+	local rand = World_GetRand(1, table.getn(choices))
+	
+	CTRL.Event_Delay(0.5)
+	CTRL.WAIT()
+	
+	CTRL.Actor_PlaySpeechWithoutPortrait(choices[rand].actor, choices[rand].line)
+	CTRL.WAIT()
+
+	
+end
+
+---------------
+-- Axis Taunts
+---------------
+--TAUNT AMBIENT 
+EVENTS.AXIS_TAUNTS1 = function()
+	
+	local choices = {}
+	choices[1] = {actor = ACTOR.CXP1.GenericAxis, line = 1330850} -- For the Fatherland!
+	choices[2] = {actor = ACTOR.CXP1.GenericAxis, line = 1330851} -- This is not your war Canadian filth!
+	choices[3] = {actor = ACTOR.CXP1.GenericAxis, line = 1330852} -- Return to your North American pastures!
+	
+	
+	local rand = World_GetRand(1, table.getn(choices))
+	
+	CTRL.Event_Delay(0.5)
+	CTRL.WAIT()
+	
+	CTRL.Actor_PlaySpeechWithoutPortrait(choices[rand].actor, choices[rand].line)
+	CTRL.WAIT()
+
+	
+end
+--AMBIENT TAUNT 
+EVENTS.AXIS_TAUNTS2 = function()
+	
+	local choices = {}
+	choices[1] = {actor = ACTOR.CXP1.GenericAxis, line = 1330880} -- Return to your mothers!
+	choices[2] = {actor = ACTOR.CXP1.GenericAxis, line = 1330881} -- Runs boys run! Hahahaha
+	choices[3] = {actor = ACTOR.CXP1.GenericAxis, line = 1330882} -- Today you will meet your maker Commonwealth slime!
+	
+	
+	local rand = World_GetRand(1, table.getn(choices))
+	
+	CTRL.Event_Delay(0.5)
+	CTRL.WAIT()
+	
+	CTRL.Actor_PlaySpeechWithoutPortrait(choices[rand].actor, choices[rand].line)
+	CTRL.WAIT()
+
+	
+end
+----------------------
+--Capture Carpiquet Ambient
+--------------------
+EVENTS.CAPTURE_CARPIQUET = function()
+	
+	local choices = {}
+	choices[1] = {actor = ACTOR.CXP1.GenericAxis, line = 1330840} -- Carpiquet is ours! Add another for Canada boys!
+	choices[2] = {actor = ACTOR.CXP1.Chubb, line = 1330841} -- Excellent job RCR, let's keep up the momentum!
+	choices[3] = {actor = ACTOR.CXP1.GenericAxis, line = 1330842} -- Ah hell. Darwin is down and he isn't moving!
+	
+	
+	local rand = World_GetRand(1, table.getn(choices))
+	
+	CTRL.Event_Delay(0.5)
+	CTRL.WAIT()
+	
+	CTRL.Actor_PlaySpeechWithoutPortrait(choices[rand].actor, choices[rand].line)
+	CTRL.WAIT()
+
+	
+end
+
+-------
+--DAWN Ambient
+-------
+
+EVENTS.DAWN = function()
+	
+	local choices = {}
+	choices[1] = {actor = ACTOR.CXP1.GenericCommonwealth, line = 1331550} --Reminds me of back home on the prairies.
+	choices[2] = {actor = ACTOR.CXP1.GenericCommonwealth, line = 1331560} --About time the sun came up, I was forgetting what it looked like.
+	choices[3] = {actor = ACTOR.CXP1.GenericCommonwealth, line = 1331570} --Another day... closer to home
+	choices[4] = {actor = ACTOR.CXP1.GenericCommonwealth, line = 1331580} --I can't wait to be back on the St. Lawrence.
+	choices[5] = {actor = ACTOR.CXP1.GenericCommonwealth, line = 1331590} --I wish Claire was here to see this with me.
+	choices[6] = {actor = ACTOR.CXP1.GenericCommonwealth, line = 1331600} --Bon matin?!?
+	
+	
+	local rand = World_GetRand(1, table.getn(choices))
+	
+	CTRL.Event_Delay(0.5)
+	CTRL.WAIT()
+	
+	CTRL.Actor_PlaySpeechWithoutPortrait(choices[rand].actor, choices[rand].line)
+	CTRL.WAIT()
+
+	
+end
+
+
+

@@ -1,0 +1,10 @@
+model =
+{
+	-- Weapons
+	"Weapons\\60mmMortar_sync",
+
+	-- Mesh
+	"Paratrooper_Base_NoBackpack.abp",
+	"Paratrooper\\RandomAcs",
+	"Base\\Rifleman",
+}

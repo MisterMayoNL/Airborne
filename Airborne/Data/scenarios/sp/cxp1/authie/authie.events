@@ -1,0 +1,458 @@
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--
+-- NIS File for Authie
+--
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+
+function NIS_Init()
+
+	-- load NIS's
+	NIS01 = "sp/CXP1/Authie/NIS/N01_01"
+	nis_load(NIS01)
+	
+	nis_setintransitiontime(0)
+	nis_setouttransitiontime(0)
+
+end
+
+Scar_AddInit(NIS_Init)
+
+
+
+
+EVENTS = {}
+
+
+--------------------------------------------------------------------------------
+-- Opening Cinematic (NIS01)
+--------------------------------------------------------------------------------
+
+EVENTS.NIS01 = function()
+
+	Game_Letterbox(true, 0)
+	
+	CTRL.Scar_PlayNIS(NIS01)
+	CTRL.WAIT()
+	
+	nis_stop()
+	
+	Game_Letterbox(false, 2)
+	
+end
+
+EVENTS.GlennDead = function()
+	UI_EnableEventSkip(false)
+	CTRL.Event_Delay(1)
+	CTRL.WAIT()
+	Game_Letterbox(true, 0)
+	UI_EnableEventSkip(true)
+	Camera_MoveToPosition(cameraGlenn, true, SLOW_CAMERA_PANNING)
+	CTRL.Event_Delay(2.5)
+	CTRL.WAIT()
+end
+
+--------------------------------------------------------------------------------
+-- Kill Panther
+--------------------------------------------------------------------------------
+
+-- Objective Event
+EVENTS.KillPanther_Ambush = function()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Degnan, 1310510)		-- Ambush!
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Degnan, 1310530)		-- Defensive Positions!
+	CTRL.WAIT()
+end
+
+
+-- Objective Event
+EVENTS.KillPanther_SelectCromwell = function()
+	CTRL.Event_Delay(2)
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Bailey, 1310531)		-- Get a group of Cromwell tanks in position!
+	CTRL.WAIT()
+end
+
+
+-- Objective Event
+EVENTS.KillPanther_AttackPanther = function()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Bailey, 1310532)		-- Hit that pile of steel with all we got mates!   
+	CTRL.WAIT()
+end
+
+
+-- Objective Event
+EVENTS.KillPanther_AttackPantherFromRear = function()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Bailey, 1310533)		-- Flank the bastard and attack his rear armor. 
+	CTRL.WAIT()
+end
+
+
+EVENTS.KillPanther_PantherKilled = function()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Bailey, 1310580)		-- Panther ain't much more than smoking scrap now.
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Bailey, 1310590)		-- Get a message up the chain...tell the Major he can have his tea now…
+	CTRL.WAIT()
+end
+
+
+
+--------------------------------------------------------------------------------
+-- Retreat and Set Up Base
+--------------------------------------------------------------------------------
+
+-- Objective Event
+EVENTS.SetUpBase_CromwellRetreatInstructions = function()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Bailey, 1310591)		-- The Major wants the Cromwells off the front and redeployed back to Buron.
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Bailey, 1310592)		-- Intel says we can expect more panzers any moment now.
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Bailey, 1310593)		-- We've got our orders, now move those tanks to saftey
+	CTRL.WAIT()
+end
+
+
+-- Tactical Event
+EVENTS.SetUpBase_CromwellsRetreating = function()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Degnan, 1310595)		-- <That's right, back to Buron. Get the tanks moving>
+	CTRL.WAIT()
+end
+
+
+-- Tactical Event
+EVENTS.SetUpBase_SelectTheRestOfTheCromwells = function()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Degnan, 1310594)		-- <Get those bloody tin cans moving, Jerry's on his way.>
+	CTRL.WAIT()
+end
+
+
+-- Tactical Event
+EVENTS.SetUpBase_TheRestOfTheCromwellsRetreating = function()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Bailey, 1310598)		-- Cromwells standing down until the Major says its safe
+	CTRL.WAIT()
+	CTRL.Event_Delay(4)
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Blackmore, 1310730)	-- That Panther did not belong to a reserve division, we're up against  more here than old men and conscripts.
+	CTRL.WAIT()
+end
+
+
+
+
+
+--------------------------------------------------------------------------------
+-- Defend Allies
+--------------------------------------------------------------------------------
+
+-- Objective Event
+EVENTS.SetUpBase_PreSitRep = function()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Blackmore, 1310720)	-- Captain Cutting, I need a Sit-Rep double quick!
+	CTRL.WAIT()
+end
+
+
+-- Objective Event
+EVENTS.SetUpBase_PostSitRep = function()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Cutting, 1310851)		-- Once Infantry CP is setup deploy reinforcements.
+	CTRL.WAIT()
+end
+
+
+-- Objective Event
+EVENTS.SetUpBase_BuildSappers = function()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Bailey, 1310922)		-- Corporal Degnan, have the Command Truck deploy Sappers
+	CTRL.WAIT()
+end
+
+
+-- Objective Event
+EVENTS.SetUpBase_BuildHowitzer = function()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Bailey, 1310940)		-- Sappers, Major Blackmore wants an artillery emplacement here.
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Bailey, 1310950)		-- Corporal DEGNAN get those Sappers moving!
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Degnan, 1310951)		-- You heard him lads, we've got a job to do!
+	CTRL.WAIT()
+end
+
+
+-- Ambient Event
+EVENTS.SetUpBase_HowitzerBuilding = function()
+	CTRL.Actor_PlaySpeechWithoutPortrait(ACTOR.CXP1.GenericAlly, 1310960)	-- Hang fire, Boudica's Boy's 'ill be raining brimstone on Jerry's dome in a flash.
+	CTRL.WAIT()
+end
+
+
+-- Ambient Event
+EVENTS.SetUpBase_HowitzerBuilt = function()
+	CTRL.Actor_PlaySpeechWithoutPortrait(ACTOR.CXP1.GenericAlly, 1310970)	-- We got the girth on this battlefield!
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeechWithoutPortrait(ACTOR.CXP1.GenericAlly, 1310980)	-- Poor bastards will go tits-up straight to hell on us. 
+	CTRL.WAIT()
+end
+
+
+
+
+
+
+
+
+--------------------------------------------------------------------------------
+-- Defend Left Flank
+--------------------------------------------------------------------------------
+
+
+EVENTS.LeftFlank_EnemyFirstSpotted = function()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Degnan, 1310990)	-- Contact!  They're fuckin' SS!
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Degnan, 1311000)	-- We NEED support!  Where's that artillery!
+	CTRL.WAIT()
+end
+
+
+EVENTS.LeftFlank_GetHowitzerFiring = function()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Bailey, 1311020)	-- Targets to the front, watch and fire.
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Bailey, 1311030)	-- Get those 25-pounders firing!
+	CTRL.WAIT()
+end
+
+
+EVENTS.LeftFlank_SetHowitzerTarget = function()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Bailey, 1311040)	-- Target my smoke and fire the howitzers.
+	CTRL.WAIT()
+end
+
+
+EVENTS.LeftFlank_HowitzerFiring = function()
+	CTRL.Event_Delay(6)
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeechWithoutPortrait(ACTOR.CXP1.Wallis, 1311050)	-- Keep your helmets on lads, those Howitzers pack a punch!
+	CTRL.WAIT()
+	CTRL.Event_Delay(4)
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeechWithoutPortrait(ACTOR.CXP1.Wallis, 1311060)	-- Ya! Send 'em bastards some our glory.
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeechWithoutPortrait(ACTOR.CXP1.Wallis, 1311070)	-- I love the smell of cordite in the morning!
+	CTRL.WAIT()
+end
+
+
+
+
+EVENTS.LeftFlank_FireHowitzerAgain = function()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Wallis, 1311046)	-- Last Round out, need new targets.
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Wallis, 1311047)	-- Howitzer awaiting orders.
+	CTRL.WAIT()
+end
+
+
+EVENTS.LeftFlank_SecondHowitzerReady = function()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Wallis, 1311077)	-- Howzitzer number two ready for action.
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Wallis, 1311076)	-- Get that Second Gun firing now! 
+	CTRL.WAIT()
+end
+
+
+EVENTS.LeftFlank_FirstAttackOver = function()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Bailey, 1311210)	-- Keep pouring it on those bastards gents!
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Bailey, 1311220)	-- We can expect the 12th SS to throw all it has against us, no break for us gents.
+	CTRL.WAIT()
+end
+
+
+EVENTS.LeftFlank_BuildATGun = function()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Bailey, 1311230)	-- Corporal DEGNAN, I want a Anti-Tank Emplacement here.
+	CTRL.WAIT()
+end
+
+
+EVENTS.LeftFlank_BuildATGunSetRotation = function()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Bailey, 1311235)	-- Make sure the gun is sighted down the road.
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Bailey, 1311236)	-- That's where we can expect Jerry to attack from.
+	CTRL.WAIT()
+end
+
+EVENTS.LeftFlank_ATGunBuilt = function()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Bailey, 1311240)	-- We'll be giving those HUN PANZERS a warm 3rd Battalion welcome!
+	CTRL.WAIT()
+end
+
+
+EVENTS.LeftFlank_AxisVehiclesAttack = function()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Bailey, 1311260)	-- Contact!  Enemy vehicles!  Go on!
+	CTRL.WAIT()
+end
+
+
+-- Ambient Event
+EVENTS.LeftFlank_AxisVehiclesAttackChatter1 = function()
+	CTRL.Actor_PlaySpeechWithoutPortrait(ACTOR.CXP1.Degnan, 1311320)	-- Fuckin' hell!  They've got armored vehicles!
+	CTRL.WAIT()
+end
+
+
+-- Ambient Event
+EVENTS.LeftFlank_AxisVehiclesAttackChatter2 = function()
+	CTRL.Actor_PlaySpeechWithoutPortrait(ACTOR.CXP1.Degnan, 1311350)	-- Light 'em up gents!  Tear 'em a new arse!
+	CTRL.WAIT()
+end
+
+
+-- Tactical Event
+EVENTS.LeftFlank_FinalAttackWaveStarts = function()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Bailey, 1311300)	-- A-T guns... FIRE Armor Piercing shells...
+	CTRL.WAIT()
+end
+
+
+-- Tactical Event
+EVENTS.LeftFlank_FinalAttackWave_UseArtillery = function()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Bailey, 1311310)	-- Dismounted infantry, hit them with arty!
+	CTRL.WAIT()
+end
+
+
+-- Tactical Event
+EVENTS.LeftFlank_FinalAttackWave_UseArtilleryReminder = function()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Bailey, 1311280)	-- Fire the 25-pounders! We need Arty support!
+	CTRL.WAIT()
+end
+
+
+-- Objective Event
+EVENTS.LeftFlank_VehicleAttackOver = function()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Bailey, 1311360)	-- Cease fire, cease fire!
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Bailey, 1311370)	-- The German counter-attack has been neutralized.
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Bailey, 1311380)	-- Looks like I'll owe Captain Cutting a pint or two. 
+	CTRL.WAIT()
+	CTRL.Event_Delay(2)
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Bailey, 1311390)	-- Corporal Degnan get a message up the chain to Captain Cutting, tell him we're in the clear. 
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Cutting, 1311400)	-- Lieutenant Bailey reports left flank is secure, Major.
+	CTRL.WAIT()
+end
+
+
+
+
+
+
+--------------------------------------------------------------------------------
+-- Defend Right Flank
+--------------------------------------------------------------------------------
+
+-- Objective Event
+EVENTS.RightFlank_Start = function()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Bailey, 1311460)	-- Cunningham, target all indicated positions!
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Bailey, 1311470)	-- C Coy will be moving to secure the Abbey.
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Bailey, 1311480)	-- Use the Howitzers to cover their advance.
+	CTRL.WAIT()
+end
+
+
+-- Ambient Event
+EVENTS.RightFlank_ArtilleryFiring = function()
+	CTRL.Actor_PlaySpeechWithoutPortrait(ACTOR.CXP1.Degnan, 1311490)	-- Kill those dank bastards!
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeechWithoutPortrait(ACTOR.CXP1.Degnan, 1311500)	-- There's going to be a lot of dirty knickers after that go!
+	CTRL.WAIT()
+end
+
+
+EVENTS.RightFlank_AbbeyClear = function()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Degnan, 1311550)	-- The Abbey's clear mate!
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Degnan, 1311560)	-- C Coy moving in!
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Degnan, 1311570)	-- Right oh, another one for Boudica's Boys, eh lads!
+	CTRL.WAIT()
+end
+
+
+EVENTS.RightFlank_AbbeySecure = function()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Bailey, 1311690)	-- Charlie Company has secured the Abbey and surrounding structures.
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Bailey, 1311700)	-- Waiting out for orders.
+	CTRL.WAIT()
+end
+
+
+
+
+--------------------------------------------------------------------------------
+-- Tank Ambush
+--------------------------------------------------------------------------------
+
+
+-- Tactical Event
+EVENTS.TankAmbush_Start = function()
+	CTRL.Actor_PlaySpeechWithoutPortrait(ACTOR.CXP1.Degnan, 1311830)	-- Kings armor coming up the road lads!
+	CTRL.WAIT()
+end
+
+
+-- Ambient Event
+EVENTS.TankAmbush_Spotted = function()
+	CTRL.Actor_PlaySpeechWithoutPortrait(ACTOR.CXP1.Degnan, 1311810)	-- We got some beuts hey gents!
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeechWithoutPortrait(ACTOR.CXP1.Degnan, 1311820)	-- Give them hell you shining steel bastards!
+	CTRL.WAIT()
+end
+
+
+-- Ambient Event
+EVENTS.TankAmbush_AmbushStarted = function()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Hazard, 1311840)	-- Taking effective fire!
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Hazard, 1311850)	-- Damn Hun A-T Guns! We need support!
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Hazard, 1311860)	-- Where is the bloody arty!
+	CTRL.WAIT()
+end
+
+
+-- Objective Event
+EVENTS.TankAmbush_CallInCreepingBarrage = function()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Bailey, 1311870)	-- Target all indicated enemy positions with CREEPING BARRAGE!
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Bailey, 1311880)	-- Crepping Barrage. Now. Call it in!
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Bailey, 1311890)	-- Creeping Barrage on my markers!
+	CTRL.WAIT()
+end
+
+
+-- Tactical Event
+EVENTS.TankAmbush_Done = function()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Degnan, 1311910)	-- The road to Authie is now open and ready for us boys!
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Degnan, 1311920)	-- God bless the blooming CREEPING BARRAGE! Poor Jerry!
+	CTRL.WAIT()
+end
+
+
+
+
+--------------------------------------------------------------------------------
+-- Capture Authie
+--------------------------------------------------------------------------------
+
+-- Objective Event
+EVENTS.CaptureAuthie_Start = function()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Bailey, 1311930)	-- Good Job, the road to Authie is clear!
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Bailey, 1311950)	-- Organize the men, move into Authie and Capture the Town Square.
+	CTRL.WAIT()
+end

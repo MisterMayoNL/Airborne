@@ -1,0 +1,843 @@
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--
+-- NIS File for Hill 112 Mission
+--
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+
+function NIS_Init()
+
+	-- load NIS's
+	NIS01 = "sp/CXP1/Hill_112/NIS/N02_01"
+	nis_load(NIS01)
+	
+	nis_setintransitiontime(0)
+	nis_setouttransitiontime(0)
+
+end
+
+Scar_AddInit(NIS_Init)
+
+
+
+
+
+EVENTS = {}
+
+
+--------------------------------------------------------------------------------
+-- Opening Cinematic (NIS01)
+--------------------------------------------------------------------------------
+
+EVENTS.NIS01 = function()
+
+	Game_Letterbox(true, 0)
+	
+	CTRL.Scar_PlayNIS(NIS01)
+	CTRL.WAIT()
+	
+	nis_stop()
+	
+--~ 	Game_Letterbox(false, 2)
+	
+end
+
+
+EVENTS.GlennDead = function()
+	UI_EnableEventSkip(false)
+	CTRL.Event_Delay(1)
+	CTRL.WAIT()
+	Game_Letterbox(true, 0)
+	UI_EnableEventSkip(true)
+	Camera_MoveToPosition(cameraGlenn, true, SLOW_CAMERA_PANNING)
+	CTRL.Event_Delay(2.5)
+	CTRL.WAIT()
+end
+
+--------------------------------------------------------------------------------
+-- CAPTURE TERRITORY (Objective)
+--------------------------------------------------------------------------------
+
+-- Objective Event
+EVENTS.Territory_PostSitRepChatter = function()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Cutting, 1320500)		-- Tennant, front and center.
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Cutting, 1320510)		-- Before 3rd Battalion deploys into the area we need to secure this strategic point.
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Cutting, 1320520)		-- You've pulled the short stick.  
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Cutting, 1320530)		-- Assemble your troops and recce the area.
+	CTRL.WAIT()
+end
+
+
+-- Objective Event
+EVENTS.Territory_FirstPointCaptured = function()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Bailey, 1320610)		-- Area has been secured.
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Bailey, 1320620)		-- <Ready to call in 3rd Batallion Mobile Command Post >
+	CTRL.WAIT()
+--~ 	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Bailey, 1320630)		-- Get it set up right bloody quick! 
+--~ 	CTRL.WAIT()
+--~ 	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Bailey, 1320640)		-- Poistion's marked, move now!
+--~ 	CTRL.WAIT()
+end
+
+
+-- Tactical Event
+EVENTS.Territory_HQDetails = function()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Cutting, 1320650)		-- <This is our HQ. Guard it with your life>
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Cutting, 1320660)		-- <From here we can call in infantry reinforcements, additional Lieutenants, and Bren Carriers>
+	CTRL.WAIT()
+end
+
+
+-- Tactical Event
+EVENTS.Territory_HQDetailsAfterSetUp = function()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Cutting, 1320680)		-- <The HQ also secures territory, so the enemy can't steal it>
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Cutting, 1320690)		-- <If needed, it can also be packed up and moved, but leave it here for now>
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Cutting, 1320700)		-- <>
+	CTRL.WAIT()
+end
+
+
+-- Objective Event
+EVENTS.Territory_SecureNextPoint = function()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Bailey, 1320710)		-- Corporal Degnan!
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Bailey, 1320720)		-- Sort the troops out and re'org' as needed. 
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Bailey, 1320730)		-- I want the adjacent sector cleared out and secured.
+	CTRL.WAIT()
+end
+
+
+-- Ambient Event
+EVENTS.Territory_SecureNextPointB = function()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Degnan, 1320740)		-- Any particular one?
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Bailey, 1320750)		-- Use your initiative Degnan.
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Bailey, 1320760)		-- You don't want to stay a Corporal the whole war, do you?
+	CTRL.WAIT()
+end
+
+
+-- Objective Event
+EVENTS.Territory_NextPointSecured = function()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Cutting, 1320770)		-- About bloody time Tennant.
+	CTRL.WAIT()
+end
+
+
+-- Objective Event
+EVENTS.Territory_BringInInfantryHQ = function()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Cutting, 1320780)		-- < Have the Mobile HQ order up an Infantry Command Post >
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Cutting, 1320790)		-- Once their Infantry CP is set up call in additional sections.  
+	CTRL.WAIT()
+end
+
+
+-- Tactical Event
+EVENTS.Territory_InfantryHQDetails = function()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Cutting, 1320810)		-- Get those lazy Service Battalion wankers to set up the command post.
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Cutting, 1320820)		-- As soon as they're in place we'll be able to call up Sappers and light armor.  
+	CTRL.WAIT()
+end
+
+
+-- Objective Event
+EVENTS.Territory_Complete = function()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Cutting, 1320880)		-- Major Blackmore, 3rd Battalion is in position.
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Cutting, 1320890)		-- Awaiting orders major...
+	CTRL.WAIT()
+end
+
+
+-- Ambient Event
+EVENTS.Territory_IdleChat1 = function()
+	CTRL.Actor_PlaySpeechWithoutPortrait(ACTOR.CXP1.Degnan, 1320830)		-- Right gents, cock and lock.
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeechWithoutPortrait(ACTOR.CXP1.Degnan, 1320840)		-- Sounds like a Recce mission.
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeechWithoutPortrait(ACTOR.CXP1.Degnan, 1320850)		-- Watch for Jerry snipers.
+	CTRL.WAIT()
+end
+
+
+-- Ambient Event
+EVENTS.Territory_IdleChat2 = function()
+	CTRL.Actor_PlaySpeechWithoutPortrait(ACTOR.CXP1.GenericCommonwealth, 1320860)		-- Making sure the area is nice and safe are we?
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeechWithoutPortrait(ACTOR.CXP1.GenericCommonwealth, 1320870)		-- Shut your gob before they give us shite duty.
+	CTRL.WAIT()
+end
+
+
+-- Ambient Event
+EVENTS.Territory_LinkLieutenants = function()
+	CTRL.Actor_PlaySpeechWithoutPortrait(ACTOR.CXP1.Bailey, 1320540)		-- 2nd Lieutenant's!
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeechWithoutPortrait(ACTOR.CXP1.Bailey, 1320550)		-- Muckle onto those sections and sort them out!
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeechWithoutPortrait(ACTOR.CXP1.Bailey, 1320560)		-- They'll dawdle unless they have officers with them.
+	CTRL.WAIT()
+end
+
+
+-- Ambient Event
+EVENTS.Territory_LieutenantsLinked = function()
+	CTRL.Actor_PlaySpeechWithoutPortrait(ACTOR.CXP1.Degnan, 1320570)		-- Steady up gents.
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeechWithoutPortrait(ACTOR.CXP1.Degnan, 1320580)		-- We've got whistle heads latching onto us.
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeechWithoutPortrait(ACTOR.CXP1.Degnan, 1320590)		-- Make sure you give it that extra effort.
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeechWithoutPortrait(ACTOR.CXP1.Degnan, 1320600)		-- Dillingham, square your lads away mate.
+	CTRL.WAIT()
+end
+
+
+
+--------------------------------------------------------------------------------
+-- VILLAGES (Objective)
+--------------------------------------------------------------------------------
+
+
+-- Objective Event
+EVENTS.Villages_Start = function()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Bailey, 1320900)		-- We need to recce the bridges.
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Bailey, 1320910)		-- Use the Staurt Tanks with infantry support.
+	CTRL.WAIT()
+end
+
+
+-- Ambient Event
+EVENTS.Villages_PanzerSpotted = function()
+	if g_difficulty == GD_NORMAL then
+		CTRL.Actor_PlaySpeechWithoutPortrait(ACTOR.CXP1.Degnan, 1321740)		-- Pumas! They've got armor support!
+		CTRL.WAIT()
+	else
+		CTRL.Actor_PlaySpeechWithoutPortrait(ACTOR.CXP1.Degnan, 1321760)		-- Contact!  Panzers!  We need armor support right fuckin' now!
+		CTRL.WAIT()
+	end
+end
+
+
+--------------------------------------------------------------------------------
+-- LEADING TO THE VILLAGES
+--------------------------------------------------------------------------------
+
+-- Tactical Event
+EVENTS.River_OnBridge = function()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Bailey, 1321390)		-- We've got a fuckin' heavy defensive line here!
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Bailey, 1321400)		-- Where the hell are Royal Scot's and their fuckin' Churchills!
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Dillingham, 1321410)		-- You'd think Tennant could light a fire under their arse!
+	CTRL.WAIT()
+end
+
+
+-- Tactical Event
+EVENTS.River_ChurchillArrived = function()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Wallis, 1321420)		-- Tennant! The Scot's here!
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Wallis, 1321430)		-- You've got your Churchills!
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Wallis, 1321440)		-- They have an AVRE with them!
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Bailey, 1321450)		-- Good timing sir! 
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Bailey, 1321460)		-- Degnan!
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Bailey, 1321470)		-- Link up with those Churchills and have them neutralise that blockade!
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Bailey, 1321480)		-- WE NEED TO CROSS the river at any cost.
+	CTRL.WAIT()
+end
+
+
+-- Tactical Event
+EVENTS.River_ATGunSpotted = function()
+	
+	local choices = {}
+	if flag_spottedfirstatgun == false then
+		choices[1] = {actor = ACTOR.CXP1.Degnan, line = 1321490}		-- Contact! AT Gun!
+	else
+		choices[1] = {actor = ACTOR.CXP1.Degnan, line = 1321490}		-- Contact! AT Gun!
+		choices[2] = {actor = ACTOR.CXP1.Degnan, line = 1321520}		-- There's another Pak 38!
+	end
+	
+	local rand = choices[World_GetRand(1, table.getn(choices))]
+	
+	CTRL.Actor_PlaySpeech(rand.actor, rand.line)
+	CTRL.WAIT()
+	
+	flag_spottedfirstatgun = true
+	
+end
+
+
+-- Tactical Event
+EVENTS.River_ATGunSpotted_Riverbank = function()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Degnan, 1321500)		-- AT Gun on the riverbank!
+	CTRL.WAIT()	
+	flag_spottedfirstatgun = true
+end
+
+
+-- Tactical Event
+EVENTS.River_ATGunSpotted_Bridge = function()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Degnan, 1321510)		-- AT Gun covering the bridge!
+	CTRL.WAIT()	
+	flag_spottedfirstatgun = true
+end
+
+
+-- Tactical Event
+EVENTS.River_MentionHiddenBridge = function()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.GenericCommonwealth, 1321350)		-- That bridge's repairable sir!
+	CTRL.WAIT()	
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Wallis, 1321360)		-- Then get your arse over there!
+	CTRL.WAIT()	
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Wallis, 1321370)		-- Where the bloody hell is Corpral Degnan?
+	CTRL.WAIT()	
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Wallis, 1321380)		-- We need covering fire for our lads!
+	CTRL.WAIT()	
+end
+
+
+
+--------------------------------------------------------------------------------
+-- NEBELWERFERS
+--------------------------------------------------------------------------------
+
+-- Ambient Event
+EVENTS.Nebelwerfer_Incoming = function()
+	
+	local choices = {}
+	choices[1] = {actor = ACTOR.CXP1.Degnan, line = 1321530}
+	choices[2] = {actor = ACTOR.CXP1.Degnan, line = 1321540}
+	choices[3] = {actor = ACTOR.CXP1.Bailey, line = 1321550}
+	choices[4] = {actor = ACTOR.CXP1.Bailey, line = 1321560}
+	choices[5] = {actor = ACTOR.CXP1.Bailey, line = 1321570}
+	
+	local rand = choices[World_GetRand(1, table.getn(choices))]
+	
+	CTRL.Event_Delay(1.5)
+	CTRL.WAIT()
+	
+	CTRL.Actor_PlaySpeechWithoutPortrait(rand.actor, rand.line)
+	CTRL.WAIT()
+	
+end
+
+
+-- Objective Event
+EVENTS.Nebelwerfer_SourceExplained = function()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Degnan, 1321580)			-- Nebelwerfers spotted on the far side of the river.
+	CTRL.WAIT()
+end
+
+
+-- Tactical Event 
+EVENTS.Nebelwerfer_SpottersExplained = function()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Bailey, 1321610)			-- Jerry's got the whole area zeroed.
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Bailey, 1321620)			-- Form assault parties.
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Bailey, 1321630)			-- Get them out there looking for the bastards.
+	CTRL.WAIT()
+end
+
+
+-- Objective Event
+EVENTS.Nebelwerfer_AnotherDestroyed = function()
+
+	if villagenebs_remaining == 2 then
+		
+		CTRL.Actor_PlaySpeech(ACTOR.CXP1.Degnan, 1321640)			-- That's one Nebelwerfer destroyed!
+		CTRL.WAIT()
+		
+	elseif villagenebs_remaining == 1 then
+		
+		CTRL.Actor_PlaySpeech(ACTOR.CXP1.Degnan, 1321650)			-- We've sent another Nebelwerfer tits up sir!
+		CTRL.WAIT()
+		CTRL.Actor_PlaySpeech(ACTOR.CXP1.Degnan, 1321660)			-- Bang on gents, just one one more left.
+		CTRL.WAIT()
+		
+	end
+
+end
+
+
+-- Objective Event
+EVENTS.Nebelwerfer_AllDestroyed = function()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Degnan, 1321670)			-- Last Nebelwerfer destroyed, Bravo Zulu.
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Blackmore, 1321680)		-- Bloody good work lads.
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Blackmore, 1321690)		-- That it for the Nebelwerfers arse ache.
+	CTRL.WAIT()
+end
+
+
+
+
+--------------------------------------------------------------------------------
+-- BRIDGES
+--------------------------------------------------------------------------------
+
+-- Tactical Event
+EVENTS.Bridge_BridgeIsWired = function()
+
+	CTRL.Event_Delay(2.5)
+	CTRL.WAIT()
+	
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Degnan, 1321030)			-- Bloody hell! The bridge is wired!
+	CTRL.WAIT()
+	if Prox_ArePlayerMembersNearMarker(player1, mkr_bridge_baron, ANY) or Prox_ArePlayerMembersNearMarker(player1, mkr_bridge_tourmau, ANY) then
+		CTRL.Actor_PlaySpeech(ACTOR.CXP1.Degnan, 1321040)		-- It's fuckin' wired!  Get off, move!
+		CTRL.WAIT()
+	else
+		CTRL.Actor_PlaySpeech(ACTOR.CXP1.Degnan, 1321050)		-- Get off the bridge, its wired! Move, move!
+		CTRL.WAIT()
+	end
+
+end
+
+
+-- Objective Event
+EVENTS.Bridge_Blown = function()
+
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.GenericCommonwealth, 1321140)		-- I guess the recce's finished here!
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.GenericCommonwealth, 1321150)		-- Fallback!  We need to make another crossing!
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.GenericCommonwealth, 1321160)		-- Let Battalion know the bridge is blown!
+	CTRL.WAIT()
+	
+end
+
+
+-- Ambient Event
+EVENTS.BridgeSiteVisited = function()
+
+	CTRL.Actor_PlaySpeechWithoutPortrait(ACTOR.CXP1.GenericCommonwealth, 1321170)		-- I think that fuckin' massive explosion gave it away!
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeechWithoutPortrait(ACTOR.CXP1.GenericCommonwealth, 1321180)		-- No fuckin' shit!
+	CTRL.WAIT()
+	
+	if bridge_blown_killedplayer == true then
+		CTRL.Actor_PlaySpeechWithoutPortrait(ACTOR.CXP1.GenericCommonwealth, 1321130)		-- Help the wounded!  We need to find another way across!
+		CTRL.WAIT()
+		CTRL.Actor_PlaySpeechWithoutPortrait(ACTOR.CXP1.GenericCommonwealth, 1321190)		-- I think Darwin was on the bridge!
+		CTRL.WAIT()
+	end
+	
+end
+
+
+-- Objective Event 
+EVENTS.Bridge_RecceSecondBridge = function()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Bailey, 1321240)			-- Get the bloody men onto that other crossing Degnan!
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Bailey, 1321250)			-- I don't care what you do but secure that remaining bridge!
+	CTRL.WAIT()
+end
+
+
+
+
+
+--------------------------------------------------------------------------------
+-- TOURMAUVILLE (Encounter)
+--------------------------------------------------------------------------------
+
+
+-- Objective Event 
+EVENTS.Tourmau_Secure = function()
+
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Bailey, 1321700)		-- Tourmauville is secure.
+	CTRL.WAIT()	
+	
+	if villages_baron_secure == false then
+		CTRL.Actor_PlaySpeech(ACTOR.CXP1.Bailey, 1321710)		-- CPL Degnan, get a runner back to HQ and inform them I've secured  a foothold across the river.
+		CTRL.WAIT()	
+	end
+	
+end
+
+
+
+--------------------------------------------------------------------------------
+-- BARON (Encounter)
+--------------------------------------------------------------------------------
+
+
+-- Objective Event 
+EVENTS.Baron_Secure = function()
+	
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Blackmore, 1321720)		-- Baron has been secured.
+	CTRL.WAIT()	
+	
+	if villages_tourmau_secure == false then
+		CTRL.Actor_PlaySpeech(ACTOR.CXP1.Bailey, 1321710)		-- CPL Degnan, get a runner back to HQ and inform them I've secured  a foothold across the river.
+		CTRL.WAIT()	
+	end
+	
+end
+
+
+
+
+--------------------------------------------------------------------------------
+-- MOVE HQ (Objective)
+--------------------------------------------------------------------------------
+
+
+-- Objective Event 
+EVENTS.MoveHQ_CaptureDestination = function()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Cutting, 1322750)		-- <First thing - secure the village sector in readiness for the HQ>
+	CTRL.WAIT()	
+end
+
+
+-- Objective Event 
+EVENTS.MoveHQ_GetDestinationInSupply = function()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Cutting, 1322760)		-- <The destination won't have supply lines to the resources>
+	CTRL.WAIT()	
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Cutting, 1322770)		-- <Capture all the in-between sectors>
+	CTRL.WAIT()	
+
+	if movehq_needsbridgerepaired == true then
+		CTRL.Actor_PlaySpeech(ACTOR.CXP1.Cutting, 1322780)		-- <That bridge will need to be repaired as well>
+		CTRL.WAIT()	
+	end
+	
+end
+
+
+-- Objective Event 
+EVENTS.MoveHQ_Start = function()
+
+	if movehq_destination_baron == true then
+		CTRL.Actor_PlaySpeech(ACTOR.CXP1.Cutting, 1321810)		-- Tennant, deploy the Mobile Command Post to Baron.
+		CTRL.WAIT()	
+	elseif movehq_destination_tourmau == true then
+		CTRL.Actor_PlaySpeech(ACTOR.CXP1.Cutting, 1321820)		-- Tennant, deploy the Mobile Command Post to Tourmauville.
+		CTRL.WAIT()	
+	end
+	
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Cutting, 1321830)		-- We need to move our command post across the river.
+	CTRL.WAIT()	
+	
+end
+
+
+-- Ambient Event 
+EVENTS.MoveHQ_PackUp = function()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Bailey, 1321840)		-- Degnan, get those Service Battalion slackers to move their vehicle across the river!
+	CTRL.WAIT()	
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Wallis, 1321850)		-- Corporal Dillingham.
+	CTRL.WAIT()	
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Wallis, 1321860)		-- Get the circus battalion gits to move their lorry
+	CTRL.WAIT()	
+	
+	flag_movehq_firststep = false
+	
+end
+
+
+-- Objective Event 
+EVENTS.MoveHQ_PackedUp = function()
+
+	if flag_movehq_firststep == true then
+		if movehq_destination_baron == true then
+			CTRL.Actor_PlaySpeech(ACTOR.CXP1.Wallis, 1321930)		-- What in the bloody hell are you waiting for?  Get that mobile command vehicle over to Baron.
+			CTRL.WAIT()	
+		elseif movehq_destination_tourmau == true then
+			CTRL.Actor_PlaySpeech(ACTOR.CXP1.Wallis, 1321920)		-- It's packed and good to go, get it over to Tourmauville.
+			CTRL.WAIT()	
+		end
+		flag_movehq_firststep = false
+	else
+		CTRL.Actor_PlaySpeech(ACTOR.CXP1.Wallis, 1321870)		-- That's right, get her moving!
+		CTRL.WAIT()	
+		if movehq_destination_baron == true then
+			CTRL.Actor_PlaySpeech(ACTOR.CXP1.Wallis, 1321900)		-- Get over to Baron and set up command area.
+			CTRL.WAIT()
+		elseif movehq_destination_tourmau == true then
+			CTRL.Actor_PlaySpeech(ACTOR.CXP1.Wallis, 1321890)		-- Set up command area over in Tourmauville.
+			CTRL.WAIT()
+		end
+	end
+
+end
+
+
+-- Tactical Event 
+EVENTS.MoveHQ_AtVillage = function()
+
+	if flag_movehq_firststep == true then
+		CTRL.Actor_PlaySpeech(ACTOR.CXP1.Wallis, 1321950)		-- Your HQ is already at the location, you just need to deploy it.
+		CTRL.WAIT()	
+		flag_movehq_firststep = false
+	else
+		CTRL.Actor_PlaySpeech(ACTOR.CXP1.Wallis, 1321940)		-- Unpack HQ here, so we can plan the next phase of the mission.
+		CTRL.WAIT()	
+	end
+
+end
+
+
+-- Objective Event 
+EVENTS.MoveHQ_Complete = function()
+
+	if flag_movehq_firststep == true then
+		CTRL.Actor_PlaySpeech(ACTOR.CXP1.Wallis, 1321970)		-- It's already there, Major.
+		CTRL.WAIT()	
+		flag_movehq_firststep = false
+	else
+		CTRL.Actor_PlaySpeech(ACTOR.CXP1.Wallis, 1321960)		-- HQ is operational Major.
+		CTRL.WAIT()	
+	end
+	
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Bailey, 1321980)		-- 3rd Battalion in position.
+	CTRL.WAIT()	
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Bailey, 1321990)		-- Awaiting orders.
+	CTRL.WAIT()	
+
+end
+
+
+
+
+--------------------------------------------------------------------------------
+-- HILL 112 (Objective)
+--------------------------------------------------------------------------------
+
+-- Objective Event 
+EVENTS.Hill_Start = function()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Bailey, 1322000)		-- Listen up lads, that bloody hill is our objective!
+	CTRL.WAIT()	
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Bailey, 1322010)		-- Use the walking barrage to support infantry on their way up. 
+	CTRL.WAIT()	
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Bailey, 1322020)		-- Keep a look out for enemy emplacments, this place is covered. 
+	CTRL.WAIT()	
+end
+
+
+-- Ambient Event 
+EVENTS.Hill_FirstArtillery = function()
+
+	CTRL.Event_Delay(3)
+	CTRL.WAIT()
+
+	CTRL.Actor_PlaySpeechWithoutPortrait(ACTOR.CXP1.Dillingham, 1322120)		-- Holy shit! What the fuck was that?!
+	CTRL.WAIT()	
+
+	CTRL.Event_Delay(6)
+	CTRL.WAIT()
+
+	CTRL.Actor_PlaySpeechWithoutPortrait(ACTOR.CXP1.Dillingham, 1322130)		-- Artillery incoming from the top of the hill!
+	CTRL.WAIT()	
+
+end
+
+
+-- Ambient Event 
+EVENTS.Hill_ArtilleryIncoming = function()
+
+	CTRL.Event_Delay(3)
+	CTRL.WAIT()
+	
+	local choices = {}
+	choices[1] = {actor = ACTOR.CXP1.Dillingham, line = 1322140}
+	choices[2] = {actor = ACTOR.CXP1.Dillingham, line = 1322150}
+	choices[3] = {actor = ACTOR.CXP1.Dillingham, line = 1322160}
+	choices[4] = {actor = ACTOR.CXP1.Dillingham, line = 1322170}
+	choices[5] = {actor = ACTOR.CXP1.Dillingham, line = 1322180}
+	
+	local rand = choices[World_GetRand(1, table.getn(choices))]
+	
+	CTRL.Actor_PlaySpeechWithoutPortrait(rand.actor, rand.line)
+	CTRL.WAIT()
+	
+end
+
+
+-- Tactical Event
+EVENTS.Hill_PanthersSpotted = function()
+
+	Player_GetAllSquadsNearMarker(player1, sg_temp, sectorid_hilltop)
+	SGroup_Filter(sg_temp, {SBP.CW.CHURCHILL, SBP.CW.CHURCHILL_AVRE, SBP.CW.CHURCHILL_CROC, SBP.CW.CROMWELL}, FILTER_KEEP)
+	
+	if SGroup_IsEmpty(sg_temp) then
+		CTRL.Actor_PlaySpeech(ACTOR.CXP1.Bailey, 1322670)		-- Armor support needed on the hill, Pathers spotted. Repeat, Panthers spotted!
+		CTRL.WAIT()	
+	else
+		CTRL.Actor_PlaySpeech(ACTOR.CXP1.Bailey, 1322660)		-- Panthers! They've got Panthers!
+		CTRL.WAIT()	
+	end
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Bailey, 1322680)		-- I'll say it again, Panthers on the hill!
+	CTRL.WAIT()	
+	
+end
+
+
+-- Tactical Event
+EVENTS.Hill_EnemiesRetreating = function()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Degnan, 1322690)		-- Look at 'em run!
+	CTRL.WAIT()	
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Degnan, 1322700)		-- Jerry fell down an broke his crown, and we came tumbling after!
+	CTRL.WAIT()	
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Degnan, 1322710)		-- Looks like Jerry's got no balls at all! 
+	CTRL.WAIT()	
+end
+
+
+-- Objective Event
+EVENTS.Hill_Complete = function()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Cutting, 1322720)		-- Hill 112 is finally ours, gentlemen, Bravo.
+	CTRL.WAIT()	
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Cutting, 1322730)		-- Too much Allied blood has been shed for this hill.
+	CTRL.WAIT()	
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Cutting, 1322740)		-- I get a message up the chain to the Major...
+	CTRL.WAIT()	
+end
+
+
+
+--------------------------------------------------------------------------------
+-- BODENTURM
+--------------------------------------------------------------------------------
+
+
+-- Tactical Event
+EVENTS.Bodenturm_FirstSpotted = function()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Bailey, 1322590)		-- CONTACT! Static A-T emplacement. 
+	CTRL.WAIT()	
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Bailey, 1322600)		-- For fucks sake keep the Cromwells out of its line of fire..
+	CTRL.WAIT()	
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Bailey, 1322610)		-- Degnan I want that turret in ruins... NOW!
+	CTRL.WAIT()		
+end
+
+
+-- Ambient Event 
+EVENTS.Bodenturm_Chatter1 = function()
+	CTRL.Actor_PlaySpeechWithoutPortrait(ACTOR.CXP1.Degnan, 1322620)		-- What the hell is that fucking behemouth!
+	CTRL.WAIT()	
+	CTRL.Actor_PlaySpeechWithoutPortrait(ACTOR.CXP1.Degnan, 1322630)		-- I sure would hate to wake up to that.
+	CTRL.WAIT()	
+end
+
+
+
+
+--------------------------------------------------------------------------------
+-- WALKING BARRAGE (System)
+--------------------------------------------------------------------------------
+
+-- Objective Event
+EVENTS.WalkingBarrage_Intro = function()
+
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Cutting, 1322260)			-- Arty Barrage is standing by, Major
+	CTRL.WAIT()	
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Cutting, 1322280)			-- The Walking Barrage will cover our advance as 3rd Batallion moves up the hill
+	CTRL.WAIT()	
+
+	if flag_walkingbarragetriggered ~= true then
+		
+		OBJ_Hill.BarragePingID = Objective_AddUIElements(OBJ_Hill, barrage_formupline, true, 1329202, true)
+		
+		if barrage_location == "Tourmau" then
+			CTRL.Actor_PlaySpeech(ACTOR.CXP1.Bailey, 1322290)		-- Form your units up in the area outside Tourmauville.
+			CTRL.WAIT()	
+		elseif barrage_location == "Baron" then
+			CTRL.Actor_PlaySpeech(ACTOR.CXP1.Bailey, 1322300)		-- Form your units up in the area outside Baron.
+			CTRL.WAIT()	
+		end
+		
+	end
+	
+end
+
+
+-- Objective Event
+EVENTS.WalkingBarrage_Reminder = function()
+	if barrage_location == "Tourmau" then
+		CTRL.Actor_PlaySpeech(ACTOR.CXP1.Bailey, 1322290)		-- Form your units up in the area outside Tourmauville.
+		CTRL.WAIT()	
+	elseif barrage_location == "Baron" then
+		CTRL.Actor_PlaySpeech(ACTOR.CXP1.Bailey, 1322300)		-- Form your units up in the area outside Baron.
+		CTRL.WAIT()	
+	end
+end
+
+
+-- Objective Event
+EVENTS.WalkingBarrage_Start = function()
+
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Bailey, 1322310)		-- Okay, get ready. The barrage should begin any minute now.
+	CTRL.WAIT()	
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Bailey, 1322320)		-- Wait for the signal. 
+	CTRL.WAIT()	
+	
+end
+
+
+
+-- Tactical Event 
+EVENTS.WalkingBarrage_WarningSmoke = function()
+
+	local choices = {}
+	choices[1] = {actor = ACTOR.CXP1.Wallis, line = 1322390}
+	choices[2] = {actor = ACTOR.CXP1.Wallis, line = 1322400}
+
+	local rand = World_GetRand(1, table.getn(choices))
+	
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Dillingham, 1322370)
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(choices[rand].actor, choices[rand].line)
+	CTRL.WAIT()
+	
+end
+
+
+-- Tactical Event 
+EVENTS.WalkingBarrage_Incoming = function()
+
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Wallis, 1322410)
+	CTRL.WAIT()
+	
+end
+
+
+-- Tactical Event 
+EVENTS.WalkingBarrage_Smoke = function()
+	
+	local choices = {}
+	choices[1] = {actor = ACTOR.CXP1.Wallis, line = 1322330}
+	choices[2] = {actor = ACTOR.CXP1.Wallis, line = 1322340}
+	choices[3] = {actor = ACTOR.CXP1.Wallis, line = 1322350}
+	choices[4] = {actor = ACTOR.CXP1.Wallis, line = 1322360}
+
+	local rand = World_GetRand(1, table.getn(choices))
+	
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Dillingham, 1322380)
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(choices[rand].actor, choices[rand].line)
+	CTRL.WAIT()
+	
+end

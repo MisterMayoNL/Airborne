@@ -1,0 +1,16 @@
+model =
+{
+	"..\\..\\Common\\CompleteMotionTree.abp",
+	"..\\..\\Common\\CommonMeshes.abp",
+
+	"Weapons\\MP40",
+	"Weapons\\Stielgranate",
+	"Weapons\\Luger",
+
+	-- Mesh
+	"Rolevariations\\RandomRV_tc",
+	"Vehiclecrew\\Tank_Commander",
+	"Vehiclecrew\\Random_Skins",
+        "Vehiclecrew\\tiger_crew",
+        "equipment\\equipment3",
+}

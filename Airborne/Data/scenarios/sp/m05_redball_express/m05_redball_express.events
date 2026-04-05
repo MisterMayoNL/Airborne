@@ -1,0 +1,446 @@
+-------------------------------------------------------------------------
+-------------------------------------------------------------------------
+--
+-- NIS File for Mission 5 - REDBALL EXPRESS
+--
+-------------------------------------------------------------------------
+-------------------------------------------------------------------------
+
+function NIS_Init()
+
+	-- load NIS's
+	NIS01 = "SP/M05_Redball_Express/NIS/N05_01"
+	nis_load(NIS01)
+	NIS02 = "SP/M05_Redball_Express/NIS/N05_02"
+	nis_load(NIS02)
+	NIS03 = "SP/M05_Redball_Express/NIS/N05_03"
+	nis_load(NIS03)
+	
+	nis_setintransitiontime(0)
+	nis_setouttransitiontime(0)
+
+end
+
+Scar_AddInit(NIS_Init)
+
+
+
+
+
+EVENTS = {}
+
+
+--------------------------------------------------------------------------------
+-- NIS EVENTS
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+-- NIS01: RESCUE DOG COMPANY
+--------------------------------------------------------------------------------
+
+EVENTS.NIS01 = function()
+	-- set speech and sfx volume groups to 0 so we don't hear any audio in between NIS and Sit Rep.  Sit Rep transition out will re-set volume groups.
+	Sound_SetVolume("Speech", 0.0, 0)
+	Sound_SetVolume("SFXmaster", 0.0, 0)
+
+	CTRL.Game_Letterbox(true, 1)
+		Game_FadeToBlack(FADE_IN, 1)
+		FOW_Enable(false)
+	CTRL.WAIT()
+	
+	CTRL.Scar_PlayNIS(NIS01)
+	CTRL.WAIT()
+
+	nis_stop()
+	
+--	CTRL.Game_Letterbox(false, 1)
+--	Game_SetMode(UI_Fullscreen)
+--	Game_FadeToBlack(FADE_OUT, 1.5)
+	CTRL.WAIT()
+	CTRL.Event_Delay(1)
+	CTRL.WAIT()
+	FOW_Enable(true)
+	CTRL.WAIT()
+	
+end
+
+
+
+
+--------------------------------------------------------------------------------
+-- NIS02: PANZERS ARRIVE
+--------------------------------------------------------------------------------
+
+EVENTS.NIS02 = function()
+
+	CTRL.Game_Letterbox(true, 1)
+		FOW_Enable(false)
+		g_NISpanzCam = Camera_GetTargetPos()
+	CTRL.WAIT()
+	
+	CTRL.Scar_PlayNIS(NIS02)
+	CTRL.WAIT()
+
+	nis_stop()
+	
+	CTRL.Game_Letterbox(false, 1)
+		FOW_Enable(true)
+		local pos = Marker_GetPosition(mkr_panzer_trigger)
+		FOW_RevealArea(pos, 40, 60)
+	CTRL.WAIT()
+	
+end
+
+
+
+
+
+
+--------------------------------------------------------------------------------
+-- NIS03: ON TO CHERBOURG
+--------------------------------------------------------------------------------
+
+EVENTS.NIS03 = function()
+
+	CTRL.Game_Letterbox(true, 1)
+	CTRL.WAIT()
+	Game_FadeToBlack(FADE_OUT, 2)
+	Sound_SetVolume("Speech", 0.0, 1.5)
+	Sound_SetVolume("SFXmaster", 0.0, 1.5)
+	CTRL.Event_Delay(2)
+	CTRL.WAIT()
+	FOW_Enable(false)
+	
+	CTRL.Event_Delay(1)
+	CTRL.WAIT()
+
+	Game_FadeToBlack(FADE_IN, 1)
+	
+	Util_ClearWrecksFromMarker(Marker_LeftJunction)
+	World_ClearCasualties()
+	CTRL.Scar_PlayNIS(NIS03)
+	CTRL.WAIT()
+	
+	nis_stop()
+	
+--	CTRL.Game_Letterbox(false, 1)
+		FOW_Enable(true)
+	CTRL.WAIT()
+
+	--[[ set view ]]
+	Camera_ResetToDefault()
+	Camera_FocusOnTargetPos(Marker_GetPosition(mkr_player1_start1))
+	
+end
+
+
+
+--------------------------------------------------------------------------------
+
+-- OBJECTIVES
+
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+-- OBJ: Rescue Dog Company
+--------------------------------------------------------------------------------
+
+EVENTS.RescueDog_Start = function()
+	CTRL.Actor_PlaySpeech(ACTOR.McKay, 250141)
+	CTRL.WAIT()	
+end
+
+EVENTS.RescueDog_Complete = function()
+	CTRL.Actor_PlaySpeech(ACTOR.McKay, 250222)
+	CTRL.WAIT()	
+	CTRL.Actor_PlaySpeech(ACTOR.Rafal, 250230)
+	CTRL.WAIT()	
+	CTRL.Actor_PlaySpeech(ACTOR.McKay, 250250)
+	CTRL.WAIT()	
+end
+
+EVENTS.RescueDog_Complete_NewHQ = function()
+
+	CTRL.Game_Letterbox(true, 1)
+		FOW_Enable(false)
+		g_NIShqCam = Camera_GetTargetPos()
+	CTRL.WAIT()
+	
+	if SGroup_IsEmpty(sg_recapturehq_axis[2]) == false then
+		Cmd_Retreat(sg_recapturehq_axis[2], Marker_GetPosition(mkr_axis_offmap2))
+	end
+	
+	Camera_ResetToDefault()
+	Camera_ResetToDefault()
+	Camera_MoveToPosition(Marker_GetPosition(mkr_recapturehq_axis1), true, SLOW_CAMERA_PANNING)
+	CTRL.Actor_PlaySpeech(ACTOR.McKay, 250281)
+	CTRL.WAIT()	
+	CTRL.Actor_PlaySpeech(ACTOR.McKay, 250282)
+	CTRL.WAIT()	
+	
+--	CTRL.Game_Letterbox(false, 1)
+		--[[ set view
+		Camera_MoveToPosition(g_NIShqCam, true, SLOW_CAMERA_PANNING)]]
+		FOW_Enable(true)
+	CTRL.WAIT()
+
+	
+end
+
+EVENTS.RescueDog_Fail = function()
+	CTRL.Actor_PlaySpeech(ACTOR.McKay, 250270)
+	CTRL.WAIT()	
+	CTRL.Actor_PlaySpeech(ACTOR.McKay, 250280)
+	CTRL.WAIT()	
+end
+
+--niels_dead = {272190, 272200, 273100, 273200, 273300, 273400}
+niels_deadJ = {272190, 272200}
+niels_deadJ2 = {272180, 272210, 272220, 272230}
+niels_deadL = {273100, 273200, 273300, 273400}
+niels_deadL2 = {273410, 273420}
+EVENTS.NielsDead = function()
+    UI_EnableEventSkip(false)
+    CTRL.Event_Delay(1)
+    CTRL.WAIT()
+    Game_Letterbox(true, 0)
+    UI_EnableEventSkip(true)
+    Camera_MoveToPosition(cameraNiels, true, SLOW_CAMERA_PANNING)
+    CTRL.Event_Delay(0.65)
+    CTRL.WAIT()
+    local text = World_GetRand(1, 2)
+        if text == 1 then
+            local textJ = niels_deadJ[World_GetRand(1, table.getn(niels_deadJ))]
+            CTRL.Actor_PlaySpeech(ACTOR.Joey, textJ)
+            CTRL.WAIT()
+            if textJ == 272190 then
+                local textJ2 = niels_deadJ2[World_GetRand(1, table.getn(niels_deadJ2))]
+                CTRL.Actor_PlaySpeech(ACTOR.Joey, textJ2)
+                CTRL.WAIT()
+            end
+        elseif text == 2 then
+            local textL = niels_deadL[World_GetRand(1, table.getn(niels_deadL))]
+            CTRL.Actor_PlaySpeech(ACTOR.Carota, textL)
+            CTRL.WAIT()
+            if textL == 273400 then
+                local textL2 = niels_deadL2[World_GetRand(1, table.getn(niels_deadL2))]
+                CTRL.Actor_PlaySpeech(ACTOR.Carota, textL2)
+                CTRL.WAIT()
+            else
+                local textL2 = textL + 10
+                CTRL.Actor_PlaySpeech(ACTOR.Carota, textL2)
+                CTRL.WAIT()
+            end
+        end
+    CTRL.Event_Delay(0.25)
+    CTRL.WAIT()
+end
+
+EVENTS.JoeyDead = function()
+	UI_EnableEventSkip(false)
+	CTRL.Event_Delay(1)
+	CTRL.WAIT()
+	Game_Letterbox(true, 0)
+	UI_EnableEventSkip(true)
+	Camera_MoveToPosition(cameraJoey, true, SLOW_CAMERA_PANNING)
+	CTRL.Event_Delay(2.5)
+	CTRL.WAIT()
+end
+
+--------------------------------------------------------------------------------
+-- GENERIC LOSS EVENT
+--------------------------------------------------------------------------------
+
+EVENTS.GenericLoss = function()
+	Game_Letterbox(true, 0)
+	Camera_MoveToPosition(cameraStartN, true, SLOW_CAMERA_PANNING)
+	--Camera_MoveToEGroup(eg_rescuedog1)
+	CTRL.Event_Delay(0.75)
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.McKay, 250280)
+	CTRL.WAIT()	
+end
+
+EVENTS.GenericLoss2 = function()
+	Game_Letterbox(true, 0)
+	Camera_MoveToPosition(cameraStartJ, true, SLOW_CAMERA_PANNING)
+	--Camera_MoveToEGroup(eg_rescuedog2)
+	CTRL.Event_Delay(0.75)
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.McKay, 250280)
+	CTRL.WAIT()	
+end
+
+
+EVENTS.RedballLoss = function()
+	CTRL.Actor_PlaySpeech(ACTOR.McKay, 250353)
+	CTRL.WAIT()	
+end
+
+
+--------------------------------------------------------------------------------
+-- LANDMINES
+--------------------------------------------------------------------------------
+
+EVENTS.Landmines = function()
+
+	CTRL.Game_Letterbox(true, 1)
+		FOW_Enable(false)
+		g_NISmineCam = Camera_GetTargetPos()
+	CTRL.WAIT()
+	
+	Camera_ResetToDefault()
+	Camera_ResetToDefault()
+	if g_landmines_south then
+		Camera_MoveToPosition(Marker_GetPosition(mkr_mines_south), true, SLOW_CAMERA_PANNING)
+	else
+		Camera_MoveToPosition(Marker_GetPosition(mkr_mines_north), true, SLOW_CAMERA_PANNING)
+	end
+	CTRL.Event_Delay(1)
+	CTRL.WAIT()
+	
+	CTRL.Actor_PlaySpeech(ACTOR.GenericAlly, 200912)
+	CTRL.WAIT()	
+	if g_landmines_south then
+		EGroup_Kill(eg_mines_south)
+	else
+		EGroup_Kill(eg_mines_north)
+	end
+	CTRL.Actor_PlaySpeech(ACTOR.GenericAlly, 200914)
+	CTRL.WAIT()	
+	CTRL.Actor_PlaySpeech(ACTOR.GenericAlly, 200915)
+	CTRL.WAIT()	
+	
+	CTRL.Game_Letterbox(false, 1)
+		--[[ set view]]
+		Camera_MoveToPosition(g_NISmineCam, true, SLOW_CAMERA_PANNING)
+		FOW_Enable(true)
+	CTRL.WAIT()
+
+end
+
+
+
+
+
+
+
+--------------------------------------------------------------------------------
+-- OBJ: Secure the Road
+--------------------------------------------------------------------------------
+
+EVENTS.SecureRoad_Start = function()
+	CTRL.Actor_PlaySpeech(ACTOR.Conti, 250325)
+	CTRL.WAIT()	
+end
+
+EVENTS.SecureRoad_Update = function()
+	CTRL.Actor_PlaySpeech(ACTOR.Conti, 250326)
+	CTRL.WAIT()	
+	CTRL.Actor_PlaySpeech(ACTOR.Conti, 250327)
+	CTRL.WAIT()	
+end
+
+EVENTS.SecureRoad_Complete = function()
+	CTRL.Actor_PlaySpeech(ACTOR.McKay, 250441)
+	CTRL.WAIT()	
+	CTRL.Actor_PlaySpeech(ACTOR.McKay, 250442)
+	CTRL.WAIT()	
+	CTRL.Actor_PlaySpeech(ACTOR.Lewis, 251005)
+	CTRL.WAIT()	
+end
+
+
+EVENTS.SecureRoad_Fail = function()
+
+end
+
+
+--------------------------------------------------------------------------------
+-- OBJ: Redball Express
+--------------------------------------------------------------------------------
+
+EVENTS.Redball_OnItsWay1 = function()
+	CTRL.Actor_PlaySpeech(ACTOR.McKay, 250331)
+	CTRL.WAIT()	
+	CTRL.Actor_PlaySpeech(ACTOR.McKay, 250332)
+	CTRL.WAIT()	
+	CTRL.Actor_PlaySpeech(ACTOR.McKay, 250333)
+	CTRL.WAIT()	
+	
+	Util_StartIntel(EVENTS.Redball_OnItsWay2)
+end
+
+
+EVENTS.Redball_OnItsWay2 = function()
+	CTRL.Actor_PlaySpeech(ACTOR.Conti, 250334)
+	CTRL.WAIT()	
+end
+
+
+
+EVENTS.Redball_ItsHere1 = function()
+	CTRL.Actor_PlaySpeech(ACTOR.Conti, 250335)
+	CTRL.WAIT()	
+end
+
+
+EVENTS.Redball_ItsHere2 = function()
+	CTRL.Actor_PlaySpeech(ACTOR.Conti, 250335)
+	CTRL.WAIT()	
+	CTRL.Actor_PlaySpeech(ACTOR.Lewis, 250338)
+	CTRL.WAIT()	
+end
+
+
+EVENTS.Redball_Complete = function()
+	CTRL.Actor_PlaySpeech(ACTOR.Conti, 250336)
+	CTRL.WAIT()	
+	CTRL.Actor_PlaySpeech(ACTOR.Lewis, 250337)
+	CTRL.WAIT()	
+	CTRL.Actor_PlaySpeech(ACTOR.Lewis, 250338)
+	CTRL.WAIT()	
+end
+
+
+---------------------------------------------------------------
+--[[ Warnings ]]
+EVENTS.Redball_Flanking = function()
+	CTRL.Actor_PlaySpeech(ACTOR.Conti, 250341)
+	CTRL.WAIT()	
+	CTRL.Actor_PlaySpeech(ACTOR.Conti, 250343)
+	CTRL.WAIT()	
+end
+
+EVENTS.Redball_UnderFire = function()
+	CTRL.Actor_PlaySpeech(ACTOR.Lewis, 250346)
+	CTRL.WAIT()	
+end
+
+
+EVENTS.Redball_NeedSupport = function()
+	CTRL.Actor_PlaySpeech(ACTOR.Lewis, 250347)
+	CTRL.WAIT()	
+end
+
+
+EVENTS.Redball_SittingDucks = function()
+	CTRL.Actor_PlaySpeech(ACTOR.Conti, 250344)
+	CTRL.WAIT()	
+end
+
+
+EVENTS.Redball_Desparate = function()
+	CTRL.Actor_PlaySpeech(ACTOR.McKay, 250353)
+	CTRL.WAIT()	
+end
+
+
+---------------------------------------------------------------
+--[[ Panzers ]]
+EVENTS.Panzers_Incoming = function()
+	CTRL.Actor_PlaySpeech(ACTOR.Conti, 250180)
+	CTRL.WAIT()	
+end
+

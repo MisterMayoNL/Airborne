@@ -1,0 +1,111 @@
+--
+-- NIS File for Mission 14 - Mortain
+--
+-------------------------------------------------------------------------
+-------------------------------------------------------------------------
+
+
+function NIS_Init()
+	-- load NIS's 
+ 	NIS14_01 = "SP/M14_Mortain_Counterattack/NIS/N14_01"
+ 	nis_load(NIS14_01)
+	
+--	NIS14_02 = "SP/M14_Mortain_Counterattack/NIS/N14_02"
+-- 	nis_load(NIS14_02)
+	
+	nis_setintransitiontime(0)
+	nis_setouttransitiontime(0)
+
+end
+
+Scar_AddInit(NIS_Init)
+
+
+
+EVENTS = {}
+
+--------------------------------------------------------------------------------
+-- NIS14_01: 
+--------------------------------------------------------------------------------
+
+EVENTS.NIS14_01 = function()
+	
+	-- set speech and sfx volume groups to 0 so we don't hear any audio in between NIS and Sit Rep.  Sit Rep transition out will re-set volume groups.
+	Sound_SetVolume("Speech", 0.0, 0)
+	Sound_SetVolume("SFXmaster", 0.0, 0)
+	Game_FadeToBlack(FADE_IN, 0.25)
+	CTRL.Game_Letterbox(true, 1)
+	CTRL.WAIT()
+	
+	FOW_Enable(false)
+	
+	Util_HidePlayerForNIS(player1, true)
+	--Util_HidePlayerForNIS(player2, true)
+	Util_HidePlayerForNIS(player3, true)	
+	CTRL.Scar_PlayNIS(NIS14_01)
+	
+	CTRL.WAIT()
+
+	nis_stop()
+
+	Util_HidePlayerForNIS(player1, false)
+	--Util_HidePlayerForNIS(player2, false)
+	Util_HidePlayerForNIS(player3, false)
+	FOW_Enable(true)
+	
+--	Game_Letterbox(false, 1)
+
+	Camera_ResetToDefault()
+	Camera_ResetToDefault()
+--	Game_FadeToBlack(FADE_OUT, 0)
+	
+end
+
+-------------SHIT TALKING CONVO
+EVENTS.SHIT_TALK =  function()
+	CTRL.Event_Delay( 2 )
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech( ACTOR.GenericAlly, 340600 ) --Able this is Dog Company. How was the R and R? You guys all reasted up?
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech( ACTOR.GenericAlly, 340603 ) -- I'll bet you loved it up on that hill huh? 
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech( ACTOR.Conti, 340604 ) -- Dog, just get that fucking armor into position. Those krauts aren't gonna wait for you.
+	CTRL.WAIT()
+end
+
+EVENTS.FriendsDead = function()
+	UI_EnableEventSkip(false)
+	CTRL.Event_Delay(1)
+	CTRL.WAIT()
+	Game_Letterbox(true, 0)
+	UI_EnableEventSkip(true)
+	Camera_MoveToPosition(cameraFriends, true, SLOW_CAMERA_PANNING)
+	CTRL.Event_Delay(2.5)
+	CTRL.WAIT()
+end
+
+------------------------------------------------------------------------mines---------------------
+EVENTS.MINE_SPEECH1 = function()
+	Actor_PlaySpeech(ACTOR.Joey, 340450)--	Enemy minefield. Can we get this cleared? 
+	Actor_PlaySpeech(ACTOR.Carota, 340400)--	Gotta minefield here!  Get a Sherman crab to clear this up.
+end
+EVENTS.MINE_SPEECH2 = function()
+	Actor_PlaySpeech(ACTOR.Joey, 340440)--	Enemy minefield. Can we get this cleared? 
+	Actor_PlaySpeech(ACTOR.Carota, 340410)	--We stumbled on a minefield. Where's our Sherman crab? 
+end
+EVENTS.MINE_SPEECH3 = function()
+	Actor_PlaySpeech(ACTOR.Joey, 340430)--	Enemy minefield. Can we get this cleared? 
+	Actor_PlaySpeech(ACTOR.Carota, 340420)--	Enemy minefield. Can we get this cleared? 
+end
+EVENTS.ABBEY_SPEECH = function()
+	Actor_PlaySpeech(ACTOR.Conti, 340700)--	Krauts are probing 'round the Abbey. Let's lock it down.
+end
+EVENTS.HILL_SPEECH = function()
+	Actor_PlaySpeech(ACTOR.Conti, 340720)--	Fritz is trying to take our hill. Let's push them back. 
+end
+EVENTS.FARMHOUSE_SPEECH = function()
+	Actor_PlaySpeech(ACTOR.Conti, 340740)--	Enemy action at the farmhouse. Farmhouse is under attack. 
+end
+
+
+

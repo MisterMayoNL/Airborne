@@ -1,0 +1,15 @@
+model =
+{
+	"..\\..\\Common\\CompleteMotionTree.abp",
+
+	-- Weapons in Use
+	"..\\..\\amer\\Soldiers\\Weapons\\M4\\M4",
+
+	-- Accessories
+	"Weapons\\Mk2 Pineapple Grenade",
+
+	-- Main Mesh
+	"Joey\\Lewis",
+	"Joey\\Paratrooper",
+}
+

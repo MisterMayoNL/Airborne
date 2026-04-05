@@ -1,0 +1,184 @@
+--
+-- NIS File for Mission 16 - Mortain
+--
+-------------------------------------------------------------------------
+-------------------------------------------------------------------------
+
+
+function NIS_Init()
+
+	-- load NIS's -- waiting for NIS to be finished.
+ 	NIS16_01 = "SP/M16_Chambois/NIS/16_01"
+ 	nis_load(NIS16_01)
+	
+	NIS16_02 = "SP/M16_Chambois/NIS/N16_02"
+ 	nis_load(NIS16_02)
+	
+	nis_setintransitiontime(0)
+	nis_setouttransitiontime(0)
+
+end
+
+Scar_AddInit(NIS_Init)
+
+EVENTS = {}
+
+
+--------------------------------------------------------------------------------
+-- NIS16_01: Strafe Run
+--------------------------------------------------------------------------------
+
+EVENTS.NIS16_01 = function()
+	-- set speech and sfx volume groups to 0 so we don't hear any audio in between NIS and Sit Rep.  Sit Rep transition out will re-set volume groups.
+	Sound_SetVolume("Speech", 0.0, 0)
+	Sound_SetVolume("SFXmaster", 0.0, 0)
+	
+	
+	Game_FadeToBlack(FADE_IN, 0.25)
+	CTRL.Game_Letterbox(true, 1)
+	CTRL.WAIT()
+	
+	FOW_Enable(false)
+	
+	CTRL.Scar_PlayNIS(NIS16_01)
+	CTRL.WAIT()
+
+	nis_stop()
+	
+	FOW_Enable(true)
+
+	
+--~ 	Game_Letterbox(false, 1)
+
+	Camera_ResetToDefault()
+	Camera_FocusOnPosition(Marker_GetPosition(MRK_center), false)
+--~ 	Game_FadeToBlack(FADE_IN, 1)
+	
+end
+
+--------------------------------------------------------------------------------
+-- NIS16_02: end game
+--------------------------------------------------------------------------------
+
+
+
+EVENTS.NIS16_02 = function()
+	
+--	Game_FadeToBlack(FADE_IN, 0.25)
+	CTRL.Game_Letterbox(true, 1)
+	CTRL.WAIT()
+	Game_FadeToBlack(FADE_OUT, 2)
+	Sound_SetVolume("Speech", 0.0, 1.5)
+	Sound_SetVolume("SFXmaster", 0.0, 1.5)
+	Sound_SetVolume("Music", 0.0, 1.5)
+	CTRL.Event_Delay(3)
+	CTRL.WAIT()
+	
+	FOW_Enable(false)
+	Game_FadeToBlack(FADE_IN, 1.5)
+	CTRL.Scar_PlayNIS(NIS16_02)
+	CTRL.WAIT()
+	nis_stop()
+	
+	-- show endgame text
+	Game_BlockTextClear()
+	Game_BlockTextAdd( 60980 )
+	Game_BlockTextAdd( 60981 )
+	Game_BlockTextAdd( 60982 )
+	Game_BlockTextAdd( 0 )
+	Game_BlockTextAdd( 60983 )
+--	Game_BlockTextAdd( 0 )
+--	Game_BlockTextAdd( 60984 )
+--	Game_BlockTextAdd( 60985 )
+	CTRL.Game_BlockTextFade( 2, 10, 1 )
+	CTRL.WAIT()
+	
+	Game_BlockTextClear()
+	Game_BlockTextAdd( 18501000 )
+	Game_BlockTextAdd( 18501002 )
+	Game_BlockTextAdd( 0 )
+	Game_BlockTextAdd( 18501010 )
+	Game_BlockTextAdd( 18501012 )
+	CTRL.Game_BlockTextFade( 1, 10, 1 )
+	CTRL.WAIT()
+	
+	Game_BlockTextClear()
+	Game_BlockTextAdd( 18501020 )
+	CTRL.Game_BlockTextFade( 1, 8, 2 )
+	CTRL.WAIT()
+	
+--	Game_Letterbox(false, 1)
+	Sound_SetVolume("NIS", 0.0, 2)
+	CTRL.Event_Delay(2)
+	CTRL.WAIT()
+	
+	Camera_ResetToDefault()
+	Camera_ResetToDefault()
+--	Game_FadeToBlack(FADE_IN, 1)
+	
+end
+
+EVENTS.FriendsDead = function()
+	UI_EnableEventSkip(false)
+	CTRL.Event_Delay(1)
+	CTRL.WAIT()
+	Game_Letterbox(true, 0)
+	UI_EnableEventSkip(true)
+	Camera_MoveToPosition(cameraFriends, true, SLOW_CAMERA_PANNING)
+	CTRL.Event_Delay(2.5)
+	CTRL.WAIT()
+end
+
+EVENTS.ROCKET_RUN = function()
+	local rand = World_GetRand(1,3)
+			if rand == 1 then 
+				Actor_PlaySpeech(ACTOR.GenericAxis, 360202 ) --Air Strike!  Take Cover!
+			elseif rand == 2 then
+				Actor_PlaySpeech(ACTOR.GenericAxis, 362202 ) --Air Strike!  Take Cover!
+			elseif rand == 3 then
+				Actor_PlaySpeech(ACTOR.GenericAxis, 363202 ) --Air Strike!  Take Cover!
+			end
+end
+EVENTS.STRAFE_RUN = function()
+	local rand = World_GetRand(1,3)
+		if rand == 1 then 
+			Actor_PlaySpeech(ACTOR.GenericAxis, 360203 ) --Air Strike!  Where is the Luftwaffe?!
+		elseif rand == 2 then
+			Actor_PlaySpeech(ACTOR.GenericAxis, 362203 ) --Air Strike!  Where is the Luftwaffe?!
+		elseif rand == 3 then
+			Actor_PlaySpeech(ACTOR.GenericAxis, 363203 ) --Air Strike!  Where is the Luftwaffe?!
+		end
+end
+EVENTS.ROADS_OPEN1 = function()
+	Actor_PlaySpeech(ACTOR.GenericAxis, 362206)--	We must keep the roads open!
+end
+EVENTS.ROADS_OPEN2 = function()
+	Actor_PlaySpeech(ACTOR.GenericAxis, 363206) --We must keep the roads open!	
+end
+EVENTS.ROADS_OPEN3 = function()
+	Actor_PlaySpeech(ACTOR.GenericAxis, 360206)--	We must keep the roads open!
+end
+EVENTS.ATTACKING_BRIDGES1 = function()
+	Actor_PlaySpeech(ACTOR.GenericAxis, 363201)--	They're attacking the bridges!
+end
+EVENTS.ATTACKING_BRIDGES2 = function()
+	Actor_PlaySpeech(ACTOR.GenericAxis, 362201)--	They're attacking the bridges!
+end
+EVENTS.ATTACKING_BRIDGES3 = function()
+	Actor_PlaySpeech(ACTOR.GenericAxis, 360201)--	They're attacking the bridges!
+end
+EVENTS.TOO_MANY = function()
+	Actor_PlaySpeech(ACTOR.Conti, 360130 )--Too many German convoys are escaping, we need to link up with our allies NOW!
+end			
+EVENTS.CLOSE_GAP = function()
+	Actor_PlaySpeech(ACTOR.Conti, 360140 )--We gotta close the gap NOW - too many krauts are slipping through. 
+end
+EVENTS.SECURE_BRIDGES = function()
+	Actor_PlaySpeech( ACTOR.Conti, 360190)   --	Secure and hold those bridges.  That'll slow down the Axis retreat.
+end
+EVENTS.LINKED = function()
+	Actor_PlaySpeech(ACTOR.Conti, 360071)	--Territories linked.
+end
+EVENTS.BRIDGES_SECURED = function()
+	Actor_PlaySpeech( ACTOR.Conti, 360180 )	--We've secured all the bridges. The krauts are cut off. 
+end

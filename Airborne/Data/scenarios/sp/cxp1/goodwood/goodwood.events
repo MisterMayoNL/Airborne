@@ -1,0 +1,217 @@
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--
+-- NIS File for Goodwood
+--
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+
+function NIS_Init()
+
+	-- load NIS's
+	NIS01 = "sp/CXP1/Goodwood/NIS/N09_01"
+	nis_load(NIS01)
+	NIS02 = "sp/CXP1/Goodwood/NIS/N09_02"
+	nis_load(NIS02)
+	
+	nis_setintransitiontime(0)
+	nis_setouttransitiontime(0)
+
+end
+
+Scar_AddInit(NIS_Init)
+
+
+
+
+
+EVENTS = {}
+
+
+--------------------------------------------------------------------------------
+-- Opening Cinematic (NIS01)
+--------------------------------------------------------------------------------
+
+EVENTS.NIS01 = function()
+
+	Game_Letterbox(true, 0)
+	FOW_Enable(false)
+	
+	CTRL.Scar_PlayNIS(NIS01)
+	CTRL.WAIT()
+	
+	nis_stop()
+	
+	print("Test")
+	
+	FOW_Enable(true)
+	--[[Game_Letterbox(false, 2)
+	Game_FadeToBlack(false, 2)
+	]]
+end
+
+EVENTS.GlennDead = function()
+	UI_EnableEventSkip(false)
+	CTRL.Event_Delay(1)
+	CTRL.WAIT()
+	Game_Letterbox(true, 0)
+	UI_EnableEventSkip(true)
+	Camera_MoveToPosition(cameraGlenn, true, SLOW_CAMERA_PANNING)
+	CTRL.Event_Delay(2.5)
+	CTRL.WAIT()
+end
+
+--------------------------------------------------------------------------------
+-- Closing Cinematic (NIS02)
+--------------------------------------------------------------------------------
+
+EVENTS.NIS02 = function()
+
+	CTRL.Game_Letterbox(true, 2)
+	CTRL.WAIT()
+	
+	CTRL.Scar_PlayNIS(NIS02)
+	CTRL.WAIT()
+	
+	nis_stop()
+	
+	Sound_SetVolume("Speech", 0.0, 0)
+	Sound_SetVolume("SFXmaster", 0.0, 0)
+	Sound_SetVolume("Music", 0.0, 0)
+	
+	Game_BlockTextClear()
+	Game_BlockTextAdd(1309180)
+	Game_BlockTextAdd(1309181)
+	CTRL.Game_BlockTextFade( 2, 8, 1 )
+	CTRL.WAIT()
+	
+	Game_BlockTextClear()
+	Game_BlockTextAdd(1309182)
+	Game_BlockTextAdd(1309183)
+	CTRL.Game_BlockTextFade( 1, 10, 1 )
+	CTRL.WAIT()
+	
+	Game_BlockTextClear()
+	Game_BlockTextAdd(18501030)
+	Game_BlockTextAdd(18501040)
+	CTRL.Game_BlockTextFade( 1, 10, 1 )
+	CTRL.WAIT()
+	
+	CTRL.Event_Delay(2)
+	CTRL.WAIT()
+
+end
+
+
+--------------------------------------------------------------------------------
+-- INTEL INVENTS
+--------------------------------------------------------------------------------
+	
+EVENTS.Opening = function() 
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Bailey, 1390670) CTRL.WAIT() 
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Bailey, 1390680) CTRL.WAIT() 
+	CTRL.Event_Delay(0.1) CTRL.WAIT() 
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Wallis, 1390510) CTRL.WAIT() 
+	CTRL.Event_Delay(0.5) CTRL.WAIT() 
+	CTRL.Actor_PlaySpeechWithoutPortrait(ACTOR.CXP1.Wallis, 1390710) CTRL.WAIT() 
+end
+	
+EVENTS.AmbientSolier = {}
+EVENTS.AmbientSolier[1] = function() CTRL.Actor_PlaySpeechWithoutPortrait(ACTOR.CXP1.Hazard, 1390730) CTRL.WAIT() end
+EVENTS.AmbientSolier[2] = function() CTRL.Actor_PlaySpeechWithoutPortrait(ACTOR.CXP1.Hazard, 1390740) CTRL.WAIT() end
+EVENTS.AmbientSolier[3] = function() CTRL.Actor_PlaySpeechWithoutPortrait(ACTOR.CXP1.Hazard, 1390750) CTRL.WAIT() end
+EVENTS.AmbientSolier[4] = function() CTRL.Actor_PlaySpeechWithoutPortrait(ACTOR.CXP1.Chubb, 1390760) CTRL.WAIT() end
+EVENTS.AmbientSolier[5] = function() CTRL.Actor_PlaySpeechWithoutPortrait(ACTOR.CXP1.Chubb, 1390770) CTRL.WAIT() end
+EVENTS.AmbientSolier[6] = function() CTRL.Actor_PlaySpeechWithoutPortrait(ACTOR.CXP1.Chubb, 1390780) CTRL.WAIT() end
+
+	
+EVENTS.TownsClear = function() 
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Bailey, 1390790) CTRL.WAIT() 
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Bailey, 1390800) CTRL.WAIT() 
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Bailey, 1390810) CTRL.WAIT() 
+end                                                   
+
+
+--------------------------------------------------------------------------------
+-- 88s
+
+	
+EVENTS.Clear88s1 = function() 
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Bailey, 1391000) CTRL.WAIT() 
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Bailey, 1391010) CTRL.WAIT() 
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Bailey, 1391020) CTRL.WAIT() 
+end                                                         
+	
+	
+EVENTS.AmbientClear88s1 = function() 
+	CTRL.Actor_PlaySpeechWithoutPortrait(ACTOR.CXP1.Seville, 1391030) CTRL.WAIT() 
+	CTRL.Actor_PlaySpeechWithoutPortrait(ACTOR.CXP1.Seville, 1391050) CTRL.WAIT() 
+end                                                         
+
+
+--------------------------------------------------------------------------------
+-- Endgame
+
+	
+EVENTS.PanzerDivCrippled = function() 
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Blackmore, 1391210) CTRL.WAIT() 
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Blackmore, 1391220) CTRL.WAIT() 
+end
+	
+
+EVENTS.CaptureBourg = function() 
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Blackmore, 1391230) CTRL.WAIT() 
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Bailey, 1391240) CTRL.WAIT() 
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Bailey, 1391250) CTRL.WAIT() 
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Bailey, 1391260) CTRL.WAIT() 
+end
+
+EVENTS.BourgAmbient = {}
+EVENTS.BourgAmbient[1] = function() CTRL.Actor_PlaySpeechWithoutPortrait(ACTOR.CXP1.Wallis, 1391270) CTRL.WAIT() end
+EVENTS.BourgAmbient[2] = function() CTRL.Actor_PlaySpeechWithoutPortrait(ACTOR.CXP1.Wallis, 1391280) CTRL.WAIT() end
+EVENTS.BourgAmbient[3] = function() CTRL.Actor_PlaySpeechWithoutPortrait(ACTOR.CXP1.Wallis, 1391290) CTRL.WAIT() end
+EVENTS.BourgAmbient[4] = function() CTRL.Actor_PlaySpeechWithoutPortrait(ACTOR.CXP1.Jones, 1391300) CTRL.WAIT() end
+EVENTS.BourgAmbient[5] = function() CTRL.Actor_PlaySpeechWithoutPortrait(ACTOR.CXP1.Jones, 1391310) CTRL.WAIT() end
+EVENTS.BourgAmbient[6] = function() CTRL.Actor_PlaySpeechWithoutPortrait(ACTOR.CXP1.Jones, 1391320) CTRL.WAIT() end
+EVENTS.BourgAmbient[7] = function() CTRL.Actor_PlaySpeechWithoutPortrait(ACTOR.CXP1.Dillingham, 1391330) CTRL.WAIT() end
+EVENTS.BourgAmbient[8] = function() CTRL.Actor_PlaySpeechWithoutPortrait(ACTOR.CXP1.Dillingham, 1391340) CTRL.WAIT() end
+EVENTS.BourgAmbient[9] = function() CTRL.Actor_PlaySpeechWithoutPortrait(ACTOR.CXP1.Dillingham, 1391350) CTRL.WAIT() end
+EVENTS.BourgAmbient[10] = function() CTRL.Actor_PlaySpeechWithoutPortrait(ACTOR.CXP1.Dillingham, 1391360) CTRL.WAIT() end
+
+	
+EVENTS.GameOver1 = function() 
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Bailey, 1391370) CTRL.WAIT() 
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Bailey, 1391380) CTRL.WAIT() 
+end
+EVENTS.GameOver2 = function() 
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Cutting, 1391390) CTRL.WAIT() 
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Blackmore, 1391400) CTRL.WAIT() 
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Blackmore, 1391420) CTRL.WAIT() 
+	--CTRL.Actor_PlaySpeech(ACTOR.CXP1.Cutting, 1391430) CTRL.WAIT() 
+	--CTRL.Actor_PlaySpeech(ACTOR.CXP1.Blackmore, 1391440) CTRL.WAIT() 
+end
+
+--------------------------------------------------------------------------------
+-- Combat Ambient
+
+EVENTS.CombatAmbient = {}
+EVENTS.CombatAmbient[1] = function() CTRL.Actor_PlaySpeechWithoutPortrait(ACTOR.CXP1.Bailey, 1390820) CTRL.WAIT() end
+EVENTS.CombatAmbient[2] = function() CTRL.Actor_PlaySpeechWithoutPortrait(ACTOR.CXP1.Bailey, 1390830) CTRL.WAIT() end
+EVENTS.CombatAmbient[3] = function() CTRL.Actor_PlaySpeechWithoutPortrait(ACTOR.CXP1.Bailey, 1390840) CTRL.WAIT() end
+EVENTS.CombatAmbient[4] = function() CTRL.Actor_PlaySpeechWithoutPortrait(ACTOR.CXP1.Bailey, 1390850) CTRL.WAIT() end
+EVENTS.CombatAmbient[5] = function() CTRL.Actor_PlaySpeechWithoutPortrait(ACTOR.CXP1.Hazard, 1390860) CTRL.WAIT() end
+EVENTS.CombatAmbient[6] = function() CTRL.Actor_PlaySpeechWithoutPortrait(ACTOR.CXP1.Hazard, 1390880) CTRL.WAIT() end
+EVENTS.CombatAmbient[7] = function() CTRL.Actor_PlaySpeechWithoutPortrait(ACTOR.CXP1.Hazard, 1390890) CTRL.WAIT() end
+EVENTS.CombatAmbient[8] = function() CTRL.Actor_PlaySpeechWithoutPortrait(ACTOR.CXP1.Hazard, 1390900) CTRL.WAIT() end
+EVENTS.CombatAmbient[9] = function() CTRL.Actor_PlaySpeechWithoutPortrait(ACTOR.CXP1.Hazard, 1390910) CTRL.WAIT() end
+EVENTS.CombatAmbient[10] = function() CTRL.Actor_PlaySpeechWithoutPortrait(ACTOR.CXP1.Hazard, 1390920) CTRL.WAIT() end
+EVENTS.CombatAmbient[11] = function() CTRL.Actor_PlaySpeechWithoutPortrait(ACTOR.CXP1.Wallis, 1390930) CTRL.WAIT() end
+EVENTS.CombatAmbient[12] = function() CTRL.Actor_PlaySpeechWithoutPortrait(ACTOR.CXP1.Wallis, 1390950) CTRL.WAIT() end
+EVENTS.CombatAmbient[13] = function() CTRL.Actor_PlaySpeechWithoutPortrait(ACTOR.CXP1.Seville, 1390960) CTRL.WAIT() end
+EVENTS.CombatAmbient[14] = function() CTRL.Actor_PlaySpeechWithoutPortrait(ACTOR.CXP1.Seville, 1390980) CTRL.WAIT() end
+EVENTS.CombatAmbient[15] = function() CTRL.Actor_PlaySpeechWithoutPortrait(ACTOR.CXP1.GenericCommonwealth, 1391150) CTRL.WAIT() end
+EVENTS.CombatAmbient[16] = function() CTRL.Actor_PlaySpeechWithoutPortrait(ACTOR.CXP1.GenericCommonwealth, 1391160) CTRL.WAIT() end
+EVENTS.CombatAmbient[17] = function() CTRL.Actor_PlaySpeechWithoutPortrait(ACTOR.CXP1.GenericCommonwealth, 1391170) CTRL.WAIT() end
+EVENTS.CombatAmbient[18] = function() CTRL.Actor_PlaySpeechWithoutPortrait(ACTOR.CXP1.Jones, 1391180) CTRL.WAIT() end
+EVENTS.CombatAmbient[19] = function() CTRL.Actor_PlaySpeechWithoutPortrait(ACTOR.CXP1.Jones, 1391190) CTRL.WAIT() end
+EVENTS.CombatAmbient[20] = function() CTRL.Actor_PlaySpeechWithoutPortrait(ACTOR.CXP1.Jones, 1391200) CTRL.WAIT() end

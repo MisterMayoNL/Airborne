@@ -1,0 +1,147 @@
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--
+-- NIS File for Carpiquet A
+--
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+
+function NIS_Init()
+
+	-- load NIS's
+	--NIS01 = "sp/CXP1/Carpiquet/NIS/N03_01_animatic"
+	--nis_load(NIS01)
+	
+	NIS02 = "sp/CXP1/Carpiquet/NIS/N04_01"
+	nis_load(NIS02)
+	
+	nis_setintransitiontime(0)
+	nis_setouttransitiontime(0)
+
+end
+
+Scar_AddInit(NIS_Init)
+
+
+
+
+
+EVENTS = {}
+
+
+--------------------------------------------------------------------------------
+-- Opening Cinematic (NIS01)
+--------------------------------------------------------------------------------
+--[[
+EVENTS.NIS01 = function()
+
+	Game_Letterbox(true, 0)
+	
+	CTRL.Scar_PlayNIS(NIS01)
+	CTRL.WAIT()
+	
+	nis_stop()
+	
+	Game_Letterbox(false, 2)
+	
+end
+]]
+
+EVENTS.GlennDead = function()
+	UI_EnableEventSkip(false)
+	CTRL.Event_Delay(1)
+	CTRL.WAIT()
+	Game_Letterbox(true, 0)
+	UI_EnableEventSkip(true)
+	Camera_MoveToPosition(cameraGlenn, true, SLOW_CAMERA_PANNING)
+	CTRL.Event_Delay(2.5)
+	CTRL.WAIT()
+end
+
+--------------------------------------------------------------------------------
+-- Closing Cinematic (NIS02)
+--------------------------------------------------------------------------------
+
+EVENTS.NIS02 = function()
+
+	CTRL.Game_Letterbox(true, 2)
+	CTRL.WAIT()
+	
+	CTRL.Scar_PlayNIS(NIS02)
+	CTRL.WAIT()
+	
+	nis_stop()
+	
+	--Game_Letterbox(false, 2)
+
+end
+
+
+-------------------------------------
+--Moveout
+-------------------------------------
+
+EVENTS.MOVEOUT = function()
+	
+	local choices = {}
+	choices[1] = {actor = ACTOR.CXP1.GenericCommonwealth, line = 1341190} -- Hear that boys, we got them on the run! Time for some RCR roulette!
+	choices[2] = {actor = ACTOR.CXP1.GenericCommonwealth, line = 1341200} -- Jerry's pissing himself, didn't know Canadians packed such a punch!
+	choices[3] = {actor = ACTOR.CXP1.GenericCommonwealth, line = 1341210} -- Damn Huns, need to learn what is means to be Commonwealth Soldiers!
+	choices[4] = {actor = ACTOR.CXP1.GenericCommonwealth, line = 1341220} -- Take that fucking Airfield for the King!
+		
+	local rand = World_GetRand(1, table.getn(choices))
+	
+	CTRL.Event_Delay(0.5)
+	CTRL.WAIT()
+	
+	CTRL.Actor_PlaySpeechWithoutPortrait(choices[rand].actor, choices[rand].line)
+	CTRL.WAIT()
+
+	
+end
+
+
+-------------------------------------
+--Clear Hangars Nag
+-------------------------------------
+
+EVENTS.HANGARS_NAG = function()
+	
+	local choices = {}
+	choices[1] = {actor = ACTOR.CXP1.Seville, line = 1341310} -- Come on, step it up lads! There are still Axis soldiers in those hangars and we'd better take them out if we're to control this airfield.
+	choices[2] = {actor = ACTOR.CXP1.Seville, line = 1341320} -- Get to it men?! Clear those hangars, now!
+	
+		
+	local rand = World_GetRand(1, table.getn(choices))
+	
+	CTRL.Event_Delay(0.5)
+	CTRL.WAIT()
+	
+	CTRL.Actor_PlaySpeech(choices[rand].actor, choices[rand].line)
+	CTRL.WAIT()
+
+	
+end
+
+
+-------------------------------------
+--Clear Towers Nag
+-------------------------------------
+
+EVENTS.TOWER_NAG = function()
+	
+	local choices = {}
+	choices[1] = {actor = ACTOR.CXP1.Degnan, line = 1341390} -- The Control Tower is still occupied by the bloody Huns!
+	choices[2] = {actor = ACTOR.CXP1.Degnan, line = 1341400} -- We should flush 'ol Jerry out as soon as fucking possible!
+	choices[3] = {actor = ACTOR.CXP1.Degnan, line = 1341410} -- Best believe it, that’s the Gen.
+		
+	local rand = World_GetRand(1, table.getn(choices))
+	
+	CTRL.Event_Delay(0.5)
+	CTRL.WAIT()
+	
+	CTRL.Actor_PlaySpeech(choices[rand].actor, choices[rand].line)
+	CTRL.WAIT()
+
+	
+end

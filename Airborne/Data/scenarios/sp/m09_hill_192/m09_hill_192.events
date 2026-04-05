@@ -1,0 +1,188 @@
+function NIS_Init()
+	NIS01 = "sp/M09_Hill_192/NIS/N09_01"
+	nis_load(NIS01)
+
+	nis_setintransitiontime(0)
+	nis_setouttransitiontime(0)
+end
+
+Scar_AddInit(NIS_Init)
+
+EVENTS = {}
+	
+EVENTS.NIS01 = function()
+	-- set speech and sfx volume groups to 0 so we don't hear any audio in between NIS and Sit Rep.  Sit Rep transition out will re-set volume groups.
+	Sound_SetVolume("Speech", 0.0, 0)
+	Sound_SetVolume("SFXmaster", 0.0, 0)
+
+	Game_Letterbox(true, 0)
+	Game_FadeToBlack(FADE_IN, 2)
+	FOW_Enable(false)
+	
+	CTRL.Scar_PlayNIS(NIS01)
+	CTRL.WAIT()
+	nis_stop()
+	--CTRL.Util_MissionTitle(299910)									--- Objective: Capture Hill 192
+	--CTRL.WAIT()
+
+	
+	FOW_Enable(true)
+--~ 	Game_Letterbox(false, 0.75)
+--~ 	Game_FadeToBlack(false, 0.75)
+--~ 	Game_FadeToBlack(FADE_IN, 2)
+	Camera_ResetToDefault()
+	Camera_FocusOnPosition(Marker_GetPosition(Marker_AbleStart1), false)
+	--Scar_Autosave(299050) 
+	
+end
+
+
+EVENTS.DozerUpgrade = function()
+	 --Game_Letterbox(true, 0.75)
+	--Camera_FocusOnTargetPos(SGroup_GetPosition_EVEN_IF_EMPTY(AbleCompanyBeta1))
+	EventCue_Create(CUE.NORMAL, 299941, 299941, SGroup_GetPosition_EVEN_IF_EMPTY( AbleCompanyBeta1))
+	CTRL.Actor_PlaySpeech(ACTOR.McKay, 290090)  -- Dam Shermans, it's about time! 
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.McKay, 290100)  -- What the hell is that contraption on the Sherman.
+	CTRL.WAIT()
+	Util_MissionTitle(299105)									--- Sherman Dozer upgrade available. 
+	CTRL.WAIT()
+	--Game_Letterbox(false, 0.75)
+	--Camera_MoveToPosition(cameraposdozer, true, 1)
+end
+
+EVENTS.FriendsDead = function()
+	UI_EnableEventSkip(false)
+	CTRL.Event_Delay(1)
+	CTRL.WAIT()
+	Game_Letterbox(true, 0)
+	UI_EnableEventSkip(true)
+	Camera_MoveToPosition(cameraFriends, true, SLOW_CAMERA_PANNING)
+	CTRL.Event_Delay(2.5)
+	CTRL.WAIT()
+end
+
+EVENTS.ArtilleryTowerStart = function()
+	CTRL.Game_Letterbox(true, 1)
+	CTRL.WAIT()
+	Camera_ResetToDefault()
+	Camera_ResetToDefault()
+	Camera_MoveToPosition(EGroup_GetPosition_EVEN_IF_EMPTY(Blg_ArtilleryTower), true, SLOW_CAMERA_PANNING)
+	CTRL.Event_Delay(1)
+	CTRL.WAIT()
+	--Camera_MoveToPosition(SGroup_GetPosition_EVEN_IF_EMPTY(NebelwerferAlpha1), true, 5)
+	--Camera_FocusOnTargetPos(SGroup_GetPosition_EVEN_IF_EMPTY(AbleCompanyBeta1))
+	FOW_RevealEGroup(Blg_ArtilleryTower, 10)
+	CTRL.Actor_PlaySpeech( ACTOR.McKay, 290150)  -- 'The Germans are using a tower and are spotting our positions.  Take it out.  
+	CTRL.Event_Delay(0.5)
+	CTRL.WAIT()
+	Camera_MoveToPosition(camerapostower, true, SLOW_CAMERA_PANNING)
+	CTRL.Event_Delay(1)
+	CTRL.WAIT()
+	CTRL.Game_Letterbox(false, 1)
+	CTRL.WAIT()
+end
+EVENTS.MGFiring = function()
+	CTRL.Actor_PlaySpeech( ACTOR.Joey, 293020)  -- Lookout! HMG Firing all over the place.
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech( ACTOR.Conti, 293005)  -- Lookout! HMG Firing all over the place.
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech( ACTOR.Conti, 293006)  -- Down and fast, taking fire from the hedgerows
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech( ACTOR.Conti, 293007)  -- 'Damn Krauts are hiding in the bushes. Get down!
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech( ACTOR.Conti, 293008)  -- Get a bulldozer and breach that hedgerow... We have to flank the Krauts!
+	CTRL.WAIT()
+end
+EVENTS.GoliathIncoming1 = function()
+	CTRL.Actor_PlaySpeech( ACTOR.Conti, 290190)  -- Goliath Incoming!
+	CTRL.WAIT()
+end
+EVENTS.GoliathIncoming2 = function()
+	CTRL.Actor_PlaySpeech( ACTOR.Joey, 293030)  -- They're hitting us with Goliaths here!
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech( ACTOR.Conti, 290200)  -- They're hitting us with Goliaths here!
+	CTRL.WAIT()
+end
+EVENTS.GoliathIncoming3 = function()
+	CTRL.Actor_PlaySpeech( ACTOR.Conti, 290210)  -- Goliath! Watch out! 
+	CTRL.WAIT()
+end
+EVENTS.ArtilleryTowerFinish = function()
+	CTRL.Actor_PlaySpeech( ACTOR.Conti, 299101)  -- We have concealed our positions from the Nebelwerfers now
+	CTRL.WAIT()
+end
+EVENTS.SpeechDozer = function()
+	CTRL.Actor_PlaySpeech( ACTOR.Conti, 290330)  -- Without those dozers on our Shermans we're not going anywhere.
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech( ACTOR.Conti, 290340)  -- Crush the hedgerows to avoid chokepoints
+	CTRL.WAIT()
+end
+
+EVENTS.LeftTown = function()
+
+	CTRL.Actor_PlaySpeech( ACTOR.Conti, 290220)  -- The Germans are reinforcing the hedges on this left side from here.
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech( ACTOR.Conti, 290230)  -- We should reinforce every point from here on.
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech( ACTOR.Conti, 290240)  -- We can't have Jerry coming in and cutting off our advance. 
+	CTRL.WAIT()
+end
+
+EVENTS.RightTown = function()
+
+	CTRL.Actor_PlaySpeech( ACTOR.Conti, 290250)  -- This is where Charlie Company got ambushed.
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech( ACTOR.Conti, 290260)  -- We should secure this town to protect our right flank. 
+	CTRL.WAIT()
+end
+EVENTS.Flank = function()
+	CTRL.Actor_PlaySpeech( ACTOR.McKay, 290280)  -- The Germans are using the hedgerows to flank our main line of advance.
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech( ACTOR.McKay, 290290)  -- Defend our flanks by deploying MGs and mortar squads along the hedgerows.
+	CTRL.WAIT()
+end
+
+-- disabled - deg
+EVENTS.FINISH = function()
+	CTRL.Game_Letterbox(true, 1)
+	CTRL.WAIT()
+--~ 	Camera_MoveToPosition(Marker_NebelwerferSpawn, true, SLOW_CAMERA_PANNING)
+--~ 	CTRL.Event_Delay(0.75)
+--~ 	CTRL.WAIT()
+--~ 	Camera_AutoRotate(Marker_GetPosition(Marker_NebelwerferSpawn), 35, 43, 1)
+--~ 	CTRL.WAIT()
+--	Game_FadeToBlack(true, 2)
+end
+
+EVENTS.Flak88a = function()
+	CTRL.Actor_PlaySpeech(ACTOR.Lewis, 293040)  -- Taking fire! They got an 88!
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.Conti, 290161)  -- Taking fire! They got an 88!
+	CTRL.WAIT()
+end
+EVENTS.Flak88b = function()
+	--Game_Letterbox(true, 0.75)
+	--FOW_RevealSGroup(flakID, 5)
+	--Camera_MoveToPosition(SGroup_GetPosition_EVEN_IF_EMPTY(flakID), true, 3)
+	EventCue_Create(CUE.NORMAL, 299943, 299943, SGroup_GetPosition_EVEN_IF_EMPTY(flakID))
+	CTRL.Actor_PlaySpeech(ACTOR.Conti, 290160)  -- The flak88 is watching the roads.
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.Conti, 290170)  -- Stay off the road and find a way to flank it.
+	CTRL.WAIT()
+	--Game_Letterbox(false, 0.75)
+	--Camera_MoveToPosition(cameraposflak, true, 3)
+end
+
+EVENTS.PanzerAttack = function()
+	CTRL.Actor_PlaySpeech(ACTOR.Conti, 290120)  -- Panzer!
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.Conti, 290130)  -- 'Jerry's got armor here!
+	CTRL.WAIT()
+end
+EVENTS.MedalObjective = function()
+--~ 	CTRL.Actor_PlaySpeech(ACTOR.Conti, 290180)  -- Shit! Pincer Attack. 
+--~ 	CTRL.WAIT()
+end
+--------------------------------------------------------------------------------------------------
+

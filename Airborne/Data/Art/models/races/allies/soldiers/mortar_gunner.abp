@@ -1,0 +1,11 @@
+model =
+{
+	"..\\..\\Common\\CompleteMotionTree.abp",
+
+	-- Weapons
+	"Weapons\\60mmMortar_sync",
+	"Weapons\\New_Carbine",
+
+	-- Mesh
+	"Rifleman\\Rifleman",
+}

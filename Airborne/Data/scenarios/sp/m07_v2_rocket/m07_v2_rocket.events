@@ -1,0 +1,438 @@
+-------------------------------------------------------------------------
+-------------------------------------------------------------------------
+--
+-- Events: MISSION 7 - V2 Rocket
+--
+-------------------------------------------------------------------------
+-------------------------------------------------------------------------
+function NIS_Init()
+
+	-- load NIS's
+	NIS01 = "sp/M07_V2_Rocket/NIS/N07_01"
+	nis_load(NIS01)
+	NIS02 = "sp/M07_V2_Rocket/NIS/N07_02"
+	nis_load(NIS02)
+	NIS_V2_Launch = "sp/M07_V2_Rocket/NIS/N07_V2_launch"
+	nis_load(NIS_V2_Launch)
+	
+	nis_setintransitiontime(0)
+	nis_setouttransitiontime(0)
+
+end
+
+Scar_AddInit(NIS_Init)
+
+
+EVENTS = {}
+EVENTS.strongholds_left = 0
+
+--------------------------------------------------------------------------------
+-- OPENING CINEMATIC
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+-- FIRST ENCOUNTER
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+-- SITREP EVENTS
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+--******************************************************************************
+--	OBJECTIVES
+--******************************************************************************
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+-- OBJECTIVE: DESTROY V2 ROCKET ASSEMBLY
+--------------------------------------------------------------------------------
+
+
+EVENTS.OBJ_DV2_START = function()
+	-- reveal fog of war around rocket	
+	FOW_RevealMarker(Marker_V2Rocket, -1)											
+	CTRL.Actor_PlaySpeech(ACTOR.Carota, 272100)
+	CTRL.WAIT()
+end
+
+EVENTS.OBJ_DV2_RocketWired = function()
+	CTRL.Actor_PlaySpeech(ACTOR.Carota, 272130)
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.Carota, 272140)
+	CTRL.WAIT()
+end
+
+t_dv2_under_attack = {272150, 272160, 272170}
+EVENTS.OBJ_DV2_SnipersAttacking = function()
+	local text = t_dv2_under_attack[World_GetRand(1, table.getn(t_dv2_under_attack))]
+		--if text >= 272150 and text <= 272170 then
+			CTRL.Actor_PlaySpeech(ACTOR.Carota, text)
+			CTRL.WAIT()
+		--else
+			--CTRL.Actor_PlaySpeech(ACTOR.Joey, text)
+			--CTRL.WAIT()
+		--end
+end
+
+joey_dead = {212037, 212040, 212053, 212065}
+EVENTS.JoeyDead = function()
+	UI_EnableEventSkip(false)
+	CTRL.Event_Delay(1)
+	CTRL.WAIT()
+	Game_Letterbox(true, 0)
+	UI_EnableEventSkip(true)
+	Camera_MoveToPosition(cameraJoey, true, SLOW_CAMERA_PANNING)
+	CTRL.Event_Delay(0.65)
+	CTRL.WAIT()
+	local text = joey_dead[World_GetRand(1, table.getn(joey_dead))]
+	CTRL.Actor_PlaySpeech(ACTOR.Lewis, text)
+	CTRL.WAIT()
+	CTRL.Event_Delay(0.25)
+	CTRL.WAIT()
+end
+
+--niels_dead = {272190, 272200, 273100, 273200, 273300, 273400}
+niels_deadJ = {272190, 272200}
+niels_deadJ2 = {272180, 272210, 272220, 272230}
+niels_deadL = {273100, 273200, 273300, 273400}
+niels_deadL2 = {273410, 273420}
+EVENTS.NielsDead = function()
+    UI_EnableEventSkip(false)
+    CTRL.Event_Delay(1)
+    CTRL.WAIT()
+    Game_Letterbox(true, 0)
+    UI_EnableEventSkip(true)
+    Camera_MoveToPosition(cameraNiels, true, SLOW_CAMERA_PANNING)
+    CTRL.Event_Delay(0.65)
+    CTRL.WAIT()
+    local text = World_GetRand(1, 2)
+        if text == 1 then
+            local textJ = niels_deadJ[World_GetRand(1, table.getn(niels_deadJ))]
+            CTRL.Actor_PlaySpeech(ACTOR.Joey, textJ)
+            CTRL.WAIT()
+            if textJ == 272190 then
+                local textJ2 = niels_deadJ2[World_GetRand(1, table.getn(niels_deadJ2))]
+                CTRL.Actor_PlaySpeech(ACTOR.Joey, textJ2)
+                CTRL.WAIT()
+            end
+        elseif text == 2 then
+            local textL = niels_deadL[World_GetRand(1, table.getn(niels_deadL))]
+            CTRL.Actor_PlaySpeech(ACTOR.Carota, textL)
+            CTRL.WAIT()
+            if textL == 273400 then
+                local textL2 = niels_deadL2[World_GetRand(1, table.getn(niels_deadL2))]
+                CTRL.Actor_PlaySpeech(ACTOR.Carota, textL2)
+                CTRL.WAIT()
+            else
+                local textL2 = textL + 10
+                CTRL.Actor_PlaySpeech(ACTOR.Carota, textL2)
+                CTRL.WAIT()
+            end
+        end
+    CTRL.Event_Delay(0.25)
+    CTRL.WAIT()
+end
+--------------------------------------------------------------------------------
+-- OBJECTIVE: ENTRANCE DISTRACTION
+--------------------------------------------------------------------------------
+
+EVENTS.OBJ_ED_Start = function()
+	CTRL.Actor_PlaySpeech(ACTOR.Thompson, 270710)
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.Thompson, 270720)
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.Thompson, 270730)
+	CTRL.WAIT()
+end
+
+EVENTS.OBJ_ED_AttackAA = function()
+	CTRL.Actor_PlaySpeech(ACTOR.Carota, 271160)
+	CTRL.WAIT()
+end
+
+EVENTS.OBJ_ED_AttackGuardTowers = function()
+	CTRL.Actor_PlaySpeech(ACTOR.Carota, 271100)
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.Carota, 271110)
+	CTRL.WAIT()
+	if g_WALL_BREACHED == false then
+		CTRL.Actor_PlaySpeech(ACTOR.Carota, 271120)
+		CTRL.WAIT()
+	end
+end
+
+EVENTS.OBJ_ED_WallBreached = function()
+	CTRL.Actor_PlaySpeech(ACTOR.Carota, 271130)
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.Carota, 271140)
+	CTRL.WAIT()	
+end
+
+EVENTS.OBJ_ED_Complete = function()
+	CTRL.Actor_PlaySpeech(ACTOR.Thompson, 271142)
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.Thompson, 271144)
+	CTRL.WAIT()
+end
+
+--------------------------------------------------------------------------------
+-- OBJECTIVE: DESTROY LIQUID OXYGEN TANKS
+--------------------------------------------------------------------------------
+
+EVENTS.OBJ_DOT_Start = function()
+	CTRL.Actor_PlaySpeech(ACTOR.Thompson, 271030)
+	CTRL.WAIT()
+end
+
+--------------------------------------------------------------------------------
+-- BARRACKS/STRONGHOLD/GUARD TOWERS GAMEPLAY
+--------------------------------------------------------------------------------
+t_barracks_destroyed = {271420, 271430, 271440}
+EVENTS.OBJ_STHD_BarracksDestroyed = function()
+	local text = t_barracks_destroyed[World_GetRand(1, table.getn(t_barracks_destroyed))]
+	CTRL.Actor_PlaySpeech(ACTOR.Carota, text)
+	CTRL.WAIT()
+end
+
+t_gt_destroyed = {271700, 271710, 271720, 271730, 271740}
+EVENTS.OBJ_STHD_GuardTowerDestroyed = function()
+	local text = t_gt_destroyed[World_GetRand(1, table.getn(t_gt_destroyed))]
+	CTRL.Actor_PlaySpeech(ACTOR.Lewis, text)
+	CTRL.WAIT()
+end
+
+t_gt_cleared = {271700, 271730, 271740}
+EVENTS.OBJ_STHD_GuardTowerCleared = function()
+	local text = t_gt_cleared[World_GetRand(1, table.getn(t_gt_cleared))]
+	CTRL.Actor_PlaySpeech(ACTOR.Lewis, text)
+	CTRL.WAIT()
+end
+
+EVENTS.OBJ_STHD_GuardTowerSpotted = function()
+	CTRL.Actor_PlaySpeech(ACTOR.Carota, 271630)
+	CTRL.WAIT()
+	if World_GetRand(1, 2) == 1 then
+		CTRL.Actor_PlaySpeech(ACTOR.Carota, 271640)
+		CTRL.WAIT()
+	else
+		CTRL.Actor_PlaySpeech(ACTOR.Carota, 271650)
+		CTRL.WAIT()
+	end
+end
+
+EVENTS.OBJ_STHD_GuardTowerFirstSpotted = function()
+	CTRL.Actor_PlaySpeech(ACTOR.Carota, 271400)
+	CTRL.WAIT()
+	if World_GetRand(1, 2) == 1 then
+		CTRL.Actor_PlaySpeech(ACTOR.Carota, 271640)
+		CTRL.WAIT()
+	else
+		CTRL.Actor_PlaySpeech(ACTOR.Carota, 271650)
+		CTRL.WAIT()
+	end
+end
+
+t_barracks_alerted = {271540, 271550}
+EVENTS.OBJ_STHD_BarracksAlerted = function()
+	local text = t_barracks_alerted[World_GetRand(1, table.getn(t_barracks_alerted))]
+	Actor_PlaySpeechWithoutPortrait(ACTOR.Carota, text)
+end
+
+--------------------------------------------------------------------------------
+-- MEDAL OPPORTUNITY: KILL BASE COMMANDER
+--------------------------------------------------------------------------------
+
+EVENTS.OBJ_KBC_Start = function()
+	CTRL.Actor_PlaySpeech(ACTOR.Thompson, 271900)
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.Thompson, 271910)
+	CTRL.WAIT()
+end
+
+EVENTS.OBJ_KBC_Complete = function()
+	CTRL.Actor_PlaySpeech(ACTOR.Thompson, 271960)
+	CTRL.WAIT()
+end
+
+--------------------------------------------------------------------------------
+-- BASE DEFENSES
+--------------------------------------------------------------------------------
+t_sector_text = {}
+t_sector_text[1] = 271685		-- SUPPLY YARD
+t_sector_text[2] = 271665		-- SOUTHERN BARRACKS
+t_sector_text[3] = 271690		-- CONSTRUCTION YARD
+t_sector_text[4] = 271675		-- NORTHERN BARRACKS
+t_sector_text[5] = 271670		-- RAILYARD
+t_sector_text[6] = 271660		-- OXYGEN TANKS
+t_sector_text[7] = 271680		-- LAUNCH FACILITY
+t_sector_text[8] = 271695		-- HQ ON ROOF
+t_sector_text[9] = 271698		-- ENTRANCE
+
+g_ACTIVE_SECTOR = 1
+t_roof_reactions = {271750, 271760, 271770, 271695}
+EVENTS.M07_BD_NearSector = function()
+	if g_ACTIVE_SECTOR == 8 then
+		local text = t_roof_reactions[World_GetRand(1, table.getn(t_roof_reactions))]
+		CTRL.Actor_PlaySpeech(ACTOR.GenericAxis, text)
+		CTRL.WAIT()
+	else
+		CTRL.Actor_PlaySpeech(ACTOR.GenericAxis, t_sector_text[g_ACTIVE_SECTOR])
+		CTRL.WAIT()
+	end
+end
+
+t_panzers_spotted = {280620, 281810}
+EVENTS.PanzersSpotted = function()
+	local text = t_panzers_spotted[World_GetRand(1, table.getn(t_panzers_spotted))]
+	CTRL.Actor_PlaySpeech(ACTOR.GenericAlly, text)
+	CTRL.WAIT()
+end
+
+--------------------------------------------------------------------------------
+-- OBJECTIVE: DESTROY ANTI-AIRCRAFT GUNS
+--------------------------------------------------------------------------------
+
+t_aa_destroyed = {203059, 203060, 203061, 203062}
+EVENTS.OBJ_AA_Destroyed = function ()
+	local text = t_aa_destroyed[World_GetRand(1, table.getn(t_aa_destroyed))]
+	CTRL.Actor_PlaySpeech(ACTOR.Thompson, text)
+	CTRL.WAIT()
+end
+
+--------------------------------------------------------------------------------
+-- OBJECTIVE: HOLD MAIN ENTRANCE
+--------------------------------------------------------------------------------
+
+EVENTS.OBJ_HME_FirstReinforce = function()
+	CTRL.Game_Letterbox(true, 1)
+	CTRL.WAIT()
+	Camera_ResetToDefault()
+	Camera_ResetToDefault()
+	Camera_MoveToPosition(mkr_obj_hme_move, true, SLOW_CAMERA_PANNING)
+	CTRL.Actor_PlaySpeech(ACTOR.Conti, 271230)
+	CTRL.WAIT()
+	Camera_MoveToPosition(t_obj_hme_mgr.camera_pos, true, SLOW_CAMERA_PANNING)
+	CTRL.Game_Letterbox(false, 1)
+	CTRL.WAIT()
+end
+
+EVENTS.OBJ_HME_Start = function()
+	CTRL.Actor_PlaySpeech(ACTOR.Thompson, 271200)
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.Thompson, 271205)
+	CTRL.WAIT()	
+	CTRL.Actor_PlaySpeech(ACTOR.Thompson, 271210)
+	CTRL.WAIT()
+end
+
+EVENTS.OBJ_HME_ReinforcementsArrived = function()
+	CTRL.Actor_PlaySpeech(ACTOR.Conti, 271230)
+	CTRL.WAIT()
+end
+
+EVENTS.OBJ_HME_OneSquad = function()
+	CTRL.Actor_PlaySpeech(ACTOR.Carota, 271250)
+	CTRL.WAIT()
+end
+
+EVENTS.OBJ_HME_NoSquads = function()
+	CTRL.Actor_PlaySpeech(ACTOR.Carota, 271260)
+	CTRL.WAIT()
+end
+
+EVENTS.OBJ_HME_RecaptureAAGun = function()
+	CTRL.Actor_PlaySpeech(ACTOR.Carota, 271270)
+	CTRL.WAIT()
+end
+
+EVENTS.OBJ_HME_LostPoint = function()
+	CTRL.Actor_PlaySpeech(ACTOR.Carota, 271232)
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.Carota, 271233)
+	CTRL.WAIT()
+end
+
+EVENTS.OBJ_HME_RecapturedPoint = function()
+	CTRL.Actor_PlaySpeech(ACTOR.Carota, 271234)
+	CTRL.WAIT()
+end
+
+EVENTS.OBJ_HME_Complete = function()
+	CTRL.Actor_PlaySpeech(ACTOR.Conti, 271280)
+	CTRL.WAIT()
+end
+
+
+--------------------------------------------------------------------------------
+--******************************************************************************
+--	NIS
+--******************************************************************************
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+-- NIS 01: V2 ROCKET LAUNCH
+--------------------------------------------------------------------------------
+EVENTS.NIS01 = function ()
+	-- set speech and sfx volume groups to 0 so we don't hear any audio in between NIS and Sit Rep.  Sit Rep transition out will re-set volume groups.
+	Sound_SetVolume("Speech", 0.0, 0)
+	Sound_SetVolume("SFXmaster", 0.0, 0)
+
+	nis_usegamecamera(false)
+	CTRL.Game_Letterbox(true, 1)
+		Game_FadeToBlack(FADE_IN, 1)
+		FOW_Enable(false)
+	CTRL.WAIT()
+
+	CTRL.Scar_PlayNIS(NIS01)
+		CTRL.WAIT()
+
+	nis_stop()
+	
+--~ 	CTRL.Game_Letterbox(false, 1)
+		EGroup_Hide(LAYER_GameplayLayer, false)
+		FOW_Enable(true)
+	
+	CTRL.WAIT()
+
+end
+
+--------------------------------------------------------------------------------
+-- NIS 02: V2 ROCKET DESTRUCTION
+--------------------------------------------------------------------------------
+
+EVENTS.NIS02 = function ()
+
+	nis_stop()
+	nis_usegamecamera(false)
+	CTRL.Game_Letterbox(true, 0)
+	Sound_SetVolume("Speech", 0.0, 1.5)
+	Sound_SetVolume("SFXmaster", 0.0, 1.5)
+	CTRL.WAIT()
+	Util_ClearWrecksFromMarker(mkr_barracks7_spawn3)
+	Util_ClearWrecksFromMarker(mkr_barracks7_spawn2)
+	Util_ClearWrecksFromMarker(mkr_barracks5_spawn1)
+	FOW_Enable(false)
+	World_ClearCasualties()
+	CTRL.Scar_PlayNIS(NIS02)
+	CTRL.WAIT()
+	nis_stop()
+	FOW_Enable(true)
+	CTRL.WAIT()
+	Game_EndSP(true)
+
+end
+
+
+--------------------------------------------------------------------------------
+-- NIS V2 ROCKET LAUNCH DURING MISSION
+--------------------------------------------------------------------------------
+EVENTS.NIS_V2_LAUNCH = function ()
+
+	nis_usegamecamera(true)
+	nis_playambient(NIS_V2_Launch)
+
+end

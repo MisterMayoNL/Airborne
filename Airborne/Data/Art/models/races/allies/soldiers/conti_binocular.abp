@@ -1,0 +1,18 @@
+model =
+{
+	"..\\..\\Common\\CompleteMotionTree.abp",
+	"..\\..\\Common\\CommonMeshes.abp",
+	"..\\..\\..\\Environment\\Art_Ambient\\Objects\\NIS_Objects\\NIS_N05_03_Binocular",
+
+	-- Weapons in Use
+	"Weapons\\M1_RIFLE",
+	"Weapons\\New_Carbine",
+
+	-- Accessories
+	"Weapons\\Mk2 Pineapple Grenade",
+	"Weapons\\Sticky_Bomb",
+
+	-- Main Mesh
+        "riflepack\\riflepack",
+	"Niels\\Rifleman",
+}

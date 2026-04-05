@@ -1,0 +1,6 @@
+model =
+{
+	"Paratrooper_Base_NoBackpack.abp",
+	"Paratrooper\\RandomAcs",
+	"Base\\Rifleman",
+}

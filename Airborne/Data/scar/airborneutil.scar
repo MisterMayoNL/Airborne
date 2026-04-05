@@ -1,0 +1,52 @@
+--Will help with the AI stopping in the middle of the game (taken from EF)
+function Refresh_AI()
+	print("attempting AI refresh")
+	for i = 1, World_GetPlayerCount() do
+		local player = World_GetPlayerAt( i )
+		local teamId = Player_GetTeam( player ) + 1 -- returns zero-based index
+		
+		if (Player_IsHuman(player) == False) then
+			AI_ClearAllBudgetTotals(player)
+			AI_ClearAllBudgetWeight(player)
+			AI_ClearBudgetTotal(player)
+			AI_ClearBuildDemand(player)
+			AI_ClearClassPreference(player) 
+			AI_ClearTargetPlayer(player)
+			AI_UpdateStatics(player)	
+		end
+	end
+end
+
+--Prevents Hero units being roadkilled (gotta refine this someday)
+function Crush_Check()
+	for i=1, World_GetPlayerCount() do
+		local player = World_GetPlayerAt( i )
+		local race = Player_GetRaceName
+	
+		if (race(player) == TRACE_ALLIES) then
+			Player_GetAll(player, sg_temp)
+			SGroup_Filter(sg_temp, {SBP.JOEY.FRIENDS, SBP.JOEY.MATT, SBP.JOEY.ABLE, SBP.JOEY.BAKER, SBP.JOEY.FUTURE, SBP.JOEY.FRIENDS_NIELS, SBP.JOEY.FRIENDS_REINFORCEMENTS, SBP.JOEY.FRIENDS_NIELS_REINFORCEMENTS, SBP.JOEY.SNIPER_ELITE_US}, FILTER_KEEP)
+			if SGroup_IsEmpty(sg_temp) == false then
+				SGroup_SetCrushable(sg_temp, false)
+			end
+		elseif (race(player) == TRACE_AXIS) then
+			Player_GetAll(player, sg_temp)
+			SGroup_Filter(sg_temp, {SBP.JOEY.PIM, SBP.JOEY.SAM, SBP.JOEY.RODNY, SBP.JOEY.WURST, SBP.JOEY.CREW_ACE, SBP.JOEY.PIM_REINFORCEMENTS, SBP.JOEY.SAM_REINFORCEMENTS, SBP.JOEY.RODNY_REINFORCEMENTS, SBP.JOEY.SNIPER_ELITE_WEHR}, FILTER_KEEP)
+			if SGroup_IsEmpty(sg_temp) == false then
+				SGroup_SetCrushable(sg_temp, false)
+			end
+		elseif (race(player) == TRACE_ALLIES_COMMONWEALTH) then
+			Player_GetAll(player, sg_temp)
+			SGroup_Filter(sg_temp, {SBP.JOEY.GLENN, SBP.JOEY.GLENN_REINFORCEMENTS, SBP.JOEY.DOGE_COMMANDOS, SBP.JOEY.SNIPER_ELITE_CW}, FILTER_KEEP)
+			if SGroup_IsEmpty(sg_temp) == false then
+				SGroup_SetCrushable(sg_temp, false)
+			end
+		elseif (race(player) == TRACE_AXIS_PANZER_ELITE) then
+			Player_GetAll(player, sg_temp)
+			SGroup_Filter(sg_temp, {SBP.JOEY.HLL_CREW, SBP.JOEY.SNIPER_ELITE_PE}, FILTER_KEEP)
+			if SGroup_IsEmpty(sg_temp) == false then
+				SGroup_SetCrushable(sg_temp, false)
+			end
+		end
+	end
+end

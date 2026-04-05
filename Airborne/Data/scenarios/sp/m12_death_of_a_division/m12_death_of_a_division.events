@@ -1,0 +1,248 @@
+-------------------------------------------------------------------------
+-------------------------------------------------------------------------
+--
+-- Events: MISSION 2 - DEATH OF A DIVISION
+--
+-------------------------------------------------------------------------
+-------------------------------------------------------------------------
+
+function NIS_Init()
+
+	-- load NIS's
+	NIS01 = "sp/M12_Death_Of_A_Division/NIS/N12_01"
+	nis_load(NIS01)
+	NIS02 = "sp/M12_Death_Of_A_Division/NIS/N12_02"
+	nis_load(NIS02)
+	
+	nis_setintransitiontime(0)
+	nis_setouttransitiontime(0)
+
+end
+
+Scar_AddInit(NIS_Init)
+
+
+
+
+EVENTS = {}
+EVENTS.panthers_left = nil
+
+--------------------------------------------------------------------------------
+-- OPENING CINEMATIC
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+-- FIRST ENCOUNTER
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+-- SITREP EVENTS
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+--******************************************************************************
+--	OBJECTIVES
+--******************************************************************************
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+-- DESTROY PANTHERS OBJECTIVE
+--------------------------------------------------------------------------------
+
+-- *** TODO?? THIS IS NOT CURRENTLY IN USE
+EVENTS.OBJ_DP_Start =  function()
+	CTRL.Actor_PlaySpeech(ACTOR.McKay, 320100)
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.McKay, 320110)
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.McKay, 320120)
+	CTRL.WAIT()
+end
+
+t_dp_kill = {320700, 320710, 320720, 320730, 320740, 320750}
+EVENTS.OBJ_DP_PnthrDestroyed = function()
+	local text = t_dp_kill[World_GetRand(1, table.getn(t_dp_kill))]
+	CTRL.Actor_PlaySpeech(ACTOR.GenericAlly, text)
+	CTRL.WAIT()
+end
+
+EVENTS.FriendsDead = function()
+	UI_EnableEventSkip(false)
+	CTRL.Event_Delay(1)
+	CTRL.WAIT()
+	Game_Letterbox(true, 0)
+	UI_EnableEventSkip(true)
+	Camera_MoveToPosition(cameraFriends, true, SLOW_CAMERA_PANNING)
+	CTRL.Event_Delay(2.5)
+	CTRL.WAIT()
+end
+
+t_dp_kill_veh = {320400, 320410, 320420, 320430, 320441, 320451, 320461, 320466}
+EVENTS.OBJ_DP_PnthrDestroyedVeh = function()
+	local rand = World_GetRand(1, table.getn(t_dp_kill_veh))
+	local text = t_dp_kill_veh[rand]
+	table.remove(t_dp_kill_veh, rand)
+	CTRL.Actor_PlaySpeech(ACTOR.Carota, text)
+	CTRL.WAIT()
+end
+
+
+t_dp_veh_attack = {320300, 320310, 320320, 320330, 320340}
+EVENTS.OBJ_DP_PnthrAttackVeh = function ()
+	local text = t_dp_veh_attack[World_GetRand(1, table.getn(t_dp_veh_attack))]
+	CTRL.Actor_PlaySpeech(ACTOR.Lewis, text)
+	CTRL.WAIT()	
+end
+
+t_dp_inf_attack = {320350, 320360, 320370, 320380}
+EVENTS.OBJ_DP_PnthrAttackInf = function ()
+	local text = t_dp_inf_attack[World_GetRand(1, table.getn(t_dp_inf_attack))]
+	CTRL.Actor_PlaySpeech(ACTOR.GenericAlly, text)
+	CTRL.WAIT()	
+end
+
+
+g_OBJ_DP_Tactics = 1
+t_dp_tactics = {320550, 320560, 320570, 320580}
+EVENTS.OBJ_DP_PantherTactics = function()
+	if g_OBJ_DP_Tactics < table.getn(t_dp_tactics) then
+		local text = t_dp_tactics[g_OBJ_DP_Tactics]
+		CTRL.Actor_PlaySpeech(ACTOR.Conti, text)
+		CTRL.WAIT()
+		g_OBJ_DP_Tactics = g_OBJ_DP_Tactics + 1
+	end
+end
+
+EVENTS.OBJ_DP_EncounterPnthr4 = function()
+	CTRL.Actor_PlaySpeech(ACTOR.Lewis, 320590)
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.Conti, 320610)
+	CTRL.WAIT()
+end
+
+EVENTS.OBJ_DP_EncounterPnthr2 = function()
+	CTRL.Actor_PlaySpeech(ACTOR.Conti, 320620)
+	CTRL.WAIT()
+end
+
+EVENTS.OBJ_DP_EncounterPnthr5 = function()
+	CTRL.Actor_PlaySpeech(ACTOR.Conti, 320600)
+	CTRL.WAIT()
+end
+
+EVENTS.OBJ_DP_EncounterTwoPnthrs = function()
+	CTRL.Actor_PlaySpeech(ACTOR.Conti, 320630)
+	CTRL.WAIT()	
+end
+
+t_obj_attack_general = {320470, 320475, 320480, 320485, 320490}
+EVENTS.OBJ_DP_PnthrAttackGeneral = function ()
+	local text = t_obj_attack_general[World_GetRand(1, table.getn(t_obj_attack_general))]
+	CTRL.Actor_PlaySpeech(ACTOR.Carota, text)
+	CTRL.WAIT()	
+end
+
+EVENTS.OBJ_DP_LostInFOW = function()
+	CTRL.Actor_PlaySpeech(ACTOR.McKay, 320650)
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.McKay, 320660)
+	CTRL.WAIT()	
+end
+
+
+--------------------------------------------------------------------------------
+-- GAMEPLAY ADVICE AND HINTS
+--------------------------------------------------------------------------------
+EVENTS.M10_TankDestroyer_Select = function ()
+	CTRL.Actor_PlaySpeech(ACTOR.Conti, 321060)
+	CTRL.WAIT()	
+end
+
+t_build_m10 = {320520, 320530, 320540}
+EVENTS.M10_TankDestroyer_Build = function ()
+	local text = t_build_m10[World_GetRand(1, table.getn(t_build_m10))]
+	CTRL.Actor_PlaySpeech(ACTOR.Conti, text)
+	CTRL.WAIT()	
+end
+--------------------------------------------------------------------------------
+
+
+
+
+--******************************************************************************
+--	NIS
+--******************************************************************************
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+-- NIS 01
+--------------------------------------------------------------------------------
+EVENTS.NIS01 = function ()
+	-- set speech and sfx volume groups to 0 so we don't hear any audio in between NIS and Sit Rep.  Sit Rep transition out will re-set volume groups.
+	Sound_SetVolume("Speech", 0.0, 0)
+	Sound_SetVolume("SFXmaster", 0.0, 0)
+
+	
+	CTRL.Game_Letterbox(true, 1)
+		Game_FadeToBlack(FADE_IN, 1)
+		FOW_Enable(false)
+	CTRL.WAIT()
+	
+	CTRL.Scar_PlayNIS(NIS01)
+	CTRL.WAIT()
+
+	nis_stop()
+	
+--	CTRL.Game_Letterbox(false, 1)
+		
+		-- temp fix for the NIS scripts
+		EGroup_Hide(LAYER_N12_01_Unwanted_WO, false)
+		Game_FadeToBlack(true, 1)
+		FOW_Enable(true)
+	CTRL.WAIT()
+		
+	-- set view
+	Camera_MoveToPosition(mkr_player_start2)
+	Camera_ResetToDefault()
+
+end
+
+--------------------------------------------------------------------------------
+-- NIS 02
+--------------------------------------------------------------------------------
+EVENTS.MISSION_COMPLETE = function ()
+
+	CTRL.Game_Letterbox(true, 1)
+	CTRL.WAIT()
+	Game_FadeToBlack(FADE_OUT, 1.5)
+	Sound_SetVolume("Speech", 0.0, 1.5)
+	Sound_SetVolume("SFXmaster", 0.0, 1.5)
+	CTRL.Event_Delay(2)
+	
+	CTRL.WAIT()
+	CTRL.Event_Delay(1.5)
+	Util_ClearWrecksFromMarker(mkr_nis02area)
+	Util_ClearWrecksFromMarker(mkr_pnthr2_prox_lg)
+	Util_HidePlayerForNIS(player1, true)
+	Util_HidePlayerForNIS(player2, true)
+	FOW_Enable(false)
+
+	CTRL.WAIT()
+	Game_FadeToBlack(FADE_IN, 1)
+	
+	World_ClearCasualties()
+	CTRL.Scar_PlayNIS(NIS02)
+	CTRL.WAIT()
+
+	nis_stop()
+	
+	FOW_Enable(true)
+	Util_HidePlayerForNIS(player1, false)
+	Util_HidePlayerForNIS(player2, false)
+	CTRL.WAIT()
+	
+	-- set view
+	Game_EndSP(true)
+end

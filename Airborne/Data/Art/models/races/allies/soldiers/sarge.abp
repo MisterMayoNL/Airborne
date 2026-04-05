@@ -1,0 +1,15 @@
+model =
+{
+	"..\\..\\Common\\CompleteMotionTree.abp",
+	"..\\..\\Common\\CommonMeshes.abp",
+	"CommonItems.abp",
+
+	"Weapons\\Mk2 Pineapple Grenade",
+
+	"Sarge\\DLC2_Paratroop",
+	
+	"Paratrooper\\RandomAcs",
+	
+	--"Thompson\\Thompson",
+	--"Thompson\\ThompsonNoShadow",
+}

@@ -1,0 +1,130 @@
+
+function NIS_Init()
+	NIS01 = "sp/M15_Cornered_Tiger/NIS/N15_01"
+	nis_load(NIS01)	
+	NIS02 = "sp/M15_Cornered_Tiger/NIS/N15_02"
+	nis_load(NIS02)	
+	
+	nis_setintransitiontime(0)
+	nis_setouttransitiontime(0)
+end
+Scar_AddInit(NIS_Init)
+
+
+
+
+EVENTS = {}
+
+EVENTS.Objective1 = function()
+	-- set speech and sfx volume groups to 0 so we don't hear any audio in between NIS and Sit Rep.  Sit Rep transition out will re-set volume groups.
+	Sound_SetVolume("Speech", 0.0, 0)
+	Sound_SetVolume("SFXmaster", 0.0, 0)
+	
+	Game_Letterbox(true, 0)
+	Game_FadeToBlack(FADE_IN, 2)
+	
+	FOW_Enable(false)
+	
+	SGroup_Hide(TigerAce, true)
+	
+	CTRL.Scar_PlayNIS(NIS01)
+	CTRL.WAIT()
+	
+	nis_stop()
+	FOW_Enable(true)
+	
+	SGroup_Hide(TigerAce, false)
+	EGroup_Hide(LAYER_NIS15_01_Show, true)
+	
+--~ 	Game_Letterbox(false, 0.75)
+--~ 	Game_FadeToBlack(false, 0.75)
+	Camera_SetDefault()
+	Camera_SetDefault()
+	
+end
+
+
+
+EVENTS.Objective1Complete = function()
+
+	Game_Letterbox(true, 1)
+
+	FOW_Enable(false)
+
+	Sound_SetVolume("Speech", 0.0, 5)
+	Sound_SetVolume("SFXmaster", 0.0, 5)
+
+	Camera_ResetToDefault()
+	Camera_MoveToPosition(cameraAce, true, SLOW_CAMERA_PANNING)
+	CTRL.Event_Delay(0.3)
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.Joey, 350120)
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.Lewis, 350130)
+	CTRL.WAIT()
+
+	Game_FadeToBlack(FADE_OUT, 8)
+	Sound_SetVolume("Speech", 0.0, 1.5)
+	Sound_SetVolume("SFXmaster", 0.0, 1.5)
+
+	CTRL.Actor_PlaySpeech(ACTOR.Joey, 350140)
+	CTRL.WAIT()
+	CTRL.Event_Delay(1.25)
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeechWithoutPortrait(ACTOR.Joey, 350110)
+	CTRL.WAIT()
+	CTRL.Event_Delay(1)
+	CTRL.WAIT()
+
+	Player_GetAll(player1)
+	SGroup_DestroyAllSquads(sg_allsquads)
+	Player_GetAll(player2)
+	SGroup_DestroyAllSquads(sg_allsquads)
+	
+	Util_ClearWrecksFromMarker(mkr_closing_nis)
+	Util_ClearWrecksFromMarker(mkr_TigerAce5)
+	Util_ClearWrecksFromMarker(mkr_TigerAce4)
+	
+	CTRL.Event_Delay(0.1)
+	CTRL.WAIT()
+
+	Game_FadeToBlack(FADE_IN, 2)
+	FOW_Enable(false)
+	World_ClearCasualties()
+	CTRL.Scar_PlayNIS(NIS02)
+	CTRL.WAIT()
+
+	nis_stop()
+--	Game_Letterbox(false, 0.75)
+--	Game_FadeToBlack(false, 0.75)
+	
+end
+
+EVENTS.FriendsDead = function()
+	UI_EnableEventSkip(false)
+	CTRL.Event_Delay(1)
+	CTRL.WAIT()
+	Game_Letterbox(true, 0)
+	UI_EnableEventSkip(true)
+	Camera_MoveToPosition(cameraFriends, true, SLOW_CAMERA_PANNING)
+	CTRL.Event_Delay(2.5)
+	CTRL.WAIT()
+end
+
+EVENTS.TigerAceSpotted = function()
+
+	local rand = World_GetRand(1, 2)
+	
+	if rand == 1 then
+		CTRL.Actor_PlaySpeech(ACTOR.Joey, 350100)  -- Tiger! Take cover!
+		CTRL.WAIT()
+		CTRL.Actor_PlaySpeech(ACTOR.Conti, 350050)  -- Tiger! Take cover!
+		CTRL.WAIT()
+	elseif rand == 2 then
+		CTRL.Actor_PlaySpeech(ACTOR.Conti, 353008)  -- Tiiiger!
+		CTRL.WAIT()
+		CTRL.Actor_PlaySpeech(ACTOR.Conti, 350070)  -- We gotta flank him!
+		CTRL.WAIT()
+	end
+	
+end

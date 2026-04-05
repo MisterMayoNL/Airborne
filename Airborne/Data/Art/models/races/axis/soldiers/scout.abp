@@ -1,0 +1,12 @@
+model =
+{
+	"..\\..\\Common\\CompleteMotionTree.abp",
+	"..\\..\\Common\\CommonMeshes.abp",
+	"..\\..\\..\\Environment\\Art_Ambient\\Objects\\NIS_Objects\\NIS_N05_03_Binocular",
+	
+	"Weapons\\Luger",	
+	
+	"Weapons\\Kar98",
+	"Panzergrenadier_Vanilla\\Panzergrenadier",
+}
+

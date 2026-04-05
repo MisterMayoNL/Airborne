@@ -1,0 +1,522 @@
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--
+-- NIS File for Caen Counter Mission
+--
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+
+function NIS_Init()
+
+	-- load NIS's
+	NIS01 = "sp/CXP1/Caen/NIS/N08_01"
+	nis_load(NIS01)
+	NIS02 = "sp/CXP1/Caen/NIS/N08_02"
+	nis_load(NIS02)
+	
+	nis_setintransitiontime(0)
+	nis_setouttransitiontime(0)
+
+end
+
+Scar_AddInit(NIS_Init)
+
+
+
+
+
+EVENTS = {}
+
+
+--------------------------------------------------------------------------------
+-- Opening Cinematic (NIS01)
+--------------------------------------------------------------------------------
+
+EVENTS.NIS01 = function()
+
+	Game_Letterbox(true, 2)
+	
+	
+	CTRL.Scar_PlayNIS(NIS01)
+	CTRL.WAIT()
+	
+	nis_stop()
+	
+	Game_FadeToBlack(false, 2)
+	Game_Letterbox(false, 2)
+	FOW_Enable(true)
+	
+end
+
+EVENTS.GlennDead = function()
+	UI_EnableEventSkip(false)
+	CTRL.Event_Delay(1)
+	CTRL.WAIT()
+	Game_Letterbox(true, 0)
+	UI_EnableEventSkip(true)
+	Camera_MoveToPosition(cameraGlenn, true, SLOW_CAMERA_PANNING)
+	CTRL.Event_Delay(2.5)
+	CTRL.WAIT()
+end
+
+
+--------------------------------------------------------------------------------
+-- Closing Cinematic (NIS02)
+--------------------------------------------------------------------------------
+
+EVENTS.NIS02 = function()
+
+	CTRL.Game_Letterbox(true, 2)
+	CTRL.WAIT()
+	
+	CTRL.Scar_PlayNIS(NIS02)
+	CTRL.WAIT()
+	
+	nis_stop()
+	
+end
+
+
+
+
+--------------------------------------------------------------------------------
+-- Mission Start
+--------------------------------------------------------------------------------
+
+-- Played at mission start
+EVENTS.OBJ_AllIsQuiet = function()
+
+	CTRL.Actor_PlaySpeech (ACTOR.CXP1.Bailey, 1370530)	-- Right. The major wants the Battalion to shake out and reorg before pulling out in the morning.
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech (ACTOR.CXP1.Bailey, 1370540)	-- Get the Command Posts into position and establish a defensive perimeter around the Cathedral.
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech (ACTOR.CXP1.Bailey, 1370550)	-- Rain or shine we've got a bloody job to do.
+	CTRL.WAIT()
+
+end
+
+-- Quiet moment to reflect on Caen
+EVENTS.AMBI_BloodyRain = function()
+
+	CTRL.Actor_PlaySpeechWithoutPortrait(ACTOR.CXP1.GenericCommonwealth, 1370560)	-- Leave it to the officers to have us waiting around in the fucking rain.
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeechWithoutPortrait(ACTOR.CXP1.Dillingham, 1370570)	-- Shut your gob.
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeechWithoutPortrait(ACTOR.CXP1.Dillingham, 1370580)	-- Blackmore's never done anything to cock us over.
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeechWithoutPortrait(ACTOR.CXP1.Dillingham, 1370590)	-- He's got a plan.
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeechWithoutPortrait(ACTOR.CXP1.Dillingham, 1370600)	-- We just have to hold tight, that's all.
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeechWithoutPortrait(ACTOR.CXP1.GenericCommonwealth, 1370610)	-- Tell that to Degnan as his grave fills with water.
+	CTRL.WAIT()
+end 
+
+EVENTS.AMBI_ItsWet = function()
+
+	local choices = {}
+	choices[1] = {actor = ACTOR.CXP1.GenericCommonwealth, line = 1370620} -- All my fuckin' kit's wet.  You got an extra pair of socks mate?
+	choices[2] = {actor = ACTOR.CXP1.GenericCommonwealth, line = 1370630} -- Fuckin' me.  This cold's getting' right to the bone.  
+	choices[3] = {actor = ACTOR.CXP1.GenericCommonwealth, line = 1370640} -- Some fuckin' wanker stole my umbrella.
+	choices[4] = {actor = ACTOR.CXP1.GenericCommonwealth, line = 1370650} -- Oy, I think them Canadian's have rain gear.  They're never complaining' about shite.
+	choices[5] = {actor = ACTOR.CXP1.GenericCommonwealth, line = 1370660} -- Steady up lads.  It's just a bit of rain.  
+	choices[6] = {actor = ACTOR.CXP1.GenericCommonwealth, line = 1370670} -- Mother natures taken a piss of us lads.  (beat)  Literally.
+	choices[7] = {actor = ACTOR.CXP1.GenericCommonwealth, line = 1370680} -- I betcha Gladstone's kilt is soak right through to his arse!
+	choices[8] = {actor = ACTOR.CXP1.GenericCommonwealth, line = 1370690} -- Reminds me of my walk-about back in the highlands.  
+	choices[9] = {actor = ACTOR.CXP1.GenericCommonwealth, line = 1370700} -- This rain cut's right to the bone eh' Keegan?
+	choices[10] = {actor = ACTOR.CXP1.GenericCommonwealth, line = 1370710} -- Soldier on you fuckin' wanker.  It's only a wee Scottish mist.
+	choices[11] = {actor = ACTOR.CXP1.GenericCommonwealth, line = 1370720} -- This ain't rain!  Rain cuts through your skin and peels the meat off your bones.  Now that's real rain you puffer.
+	choices[12] = {actor = ACTOR.CXP1.GenericCommonwealth, line = 1370730} -- Quit being such a wee little school girl.  Look at them Canadian's…not a fuckin' word about the rain.
+	
+	choices[13] = {actor = ACTOR.CXP1.GenericCommonwealth, line = 1370740} -- Just like fuckin' rainy Vancouver eh' troops?
+	choices[14] = {actor = ACTOR.CXP1.GenericCommonwealth, line = 1370750} -- At least Smithy won't fuckin' smell so bad!
+	choices[15] = {actor = ACTOR.CXP1.GenericCommonwealth, line = 1370760} -- Look at what I stole from one of the Brits!  A fuckin' umbrella!
+	choices[16] = {actor = ACTOR.CXP1.GenericCommonwealth, line = 1370770} -- No wonder your wet.  Use your shelter half as a cover you dumb fuck.
+	choices[17] = {actor = ACTOR.CXP1.GenericCommonwealth, line = 1370780} -- I betcha Jerry's sitting' cozy in some dry fuckin' bunker eating wieners and sauerkraut!
+	choices[18] = {actor = ACTOR.CXP1.GenericCommonwealth, line = 1370790} -- Use your ground sheet to keep your kit dry boys.
+	
+	local rand = World_GetRand(1, table.getn(choices))
+	
+	CTRL.Event_Delay(0.5)
+	
+	CTRL.Actor_PlaySpeechWithoutPortrait(choices[rand].actor, choices[rand].line)
+	
+	CTRL.WAIT()
+
+end
+
+--------------------------------------------------------------------------------
+-- First movement noticed
+--------------------------------------------------------------------------------
+
+EVENTS.TAC_Movement = function()
+	
+	local choices = {}
+	choices[1] = {actor = ACTOR.CXP1.Bailey, line = 1370960} -- We've got movement.  Steady up lads.
+	choices[2] = {actor = ACTOR.CXP1.Bailey, line = 1370970} -- Stand to.  We have Jerry on the move. 
+	
+	local rand = World_GetRand(1, table.getn(choices))
+	
+	CTRL.Event_Delay(0.5)
+	
+	CTRL.Actor_PlaySpeech(choices[rand].actor, choices[rand].line)
+	
+	CTRL.WAIT()	
+	
+end
+
+
+--------------------------------------------------------------------------------
+-- Recon force engagement
+--------------------------------------------------------------------------------
+
+-- The player first is confronted by a smal force before the main counterattack, but it contains a Tiger Tank!
+EVENTS.OBJ_TigerEngaged = function()
+
+	local choices = {}
+	choices[1] = {actor = ACTOR.CXP1.Bailey, line = 1370800} -- Stand To!  Germans on the line!
+	choices[2] = {actor = ACTOR.CXP1.Bailey, line = 1370810} -- Cover off on your posts!  Jerry's tryin' to push in! 
+	choices[3] = {actor = ACTOR.CXP1.Bailey, line = 1370820} -- Man your posts!  They've mustered a counter attack!
+	
+	local rand = World_GetRand(1, table.getn(choices))
+	
+	CTRL.Event_Delay(0.5)
+	
+	CTRL.Actor_PlaySpeech(choices[rand].actor, choices[rand].line)
+	
+	CTRL.WAIT()
+	
+end
+
+
+
+--------------------------------------------------------------------------------
+-- Main Counterattack
+--------------------------------------------------------------------------------
+
+-- Blackmore's post-sitrep speech
+EVENTS.OBJ_PostSitRep = function()
+	
+	CTRL.Actor_PlaySpeech (ACTOR.CXP1.Blackmore, 1370910)	-- Get this out at section level.  Make sure they know its coming directly from me.
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech (ACTOR.CXP1.Blackmore, 1370920)	-- Defend Caen... At all costs.
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech (ACTOR.CXP1.Blackmore, 1370930)	-- Show the Hun's what you're made of.
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech (ACTOR.CXP1.Blackmore, 1370940)	-- Our motto is "Doubt not" for good reason.
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech (ACTOR.CXP1.Blackmore, 1370950)	-- Let's hand Jerry his arse.
+	CTRL.WAIT()
+end
+
+-- Infantry hits
+EVENTS.TAC_InfantryWaves = function()
+	
+	local choices = {}
+	choices[1] = {actor = ACTOR.CXP1.Bailey, line = 1370980} -- Contact! Enemy Infantry!  Platoon level assault!
+	choices[2] = {actor = ACTOR.CXP1.Bailey, line = 1370990} -- Get me some MG emplacements!
+	choices[3] = {actor = ACTOR.CXP1.Bailey, line = 1371000} -- Pour it on gents!  Let 'em have it!
+	
+	local rand = World_GetRand(1, table.getn(choices))
+	
+	CTRL.Event_Delay(0.5)
+	
+	CTRL.Actor_PlaySpeech(choices[rand].actor, choices[rand].line)
+	
+	CTRL.WAIT()	
+	
+end
+
+-- Light Vehicles spotted
+EVENTS.TAC_LightVehicleWaves = function()
+	
+	local choices = {}
+	choices[1] = {actor = ACTOR.CXP1.Bailey, line = 1371010} -- Soft skinned vehicles!  Tear 'em up gents!
+	choices[2] = {actor = ACTOR.CXP1.Bailey, line = 1371020} -- Break out the AT and fuckin' rip 'em open!
+	choices[3] = {actor = ACTOR.CXP1.Bailey, line = 1371030} -- Recce vehicles!  Let 'em have it gents!
+	
+	local rand = World_GetRand(1, table.getn(choices))
+	
+	CTRL.Event_Delay(0.5)
+	
+	CTRL.Actor_PlaySpeech(choices[rand].actor, choices[rand].line)
+	
+	CTRL.WAIT()	
+	
+end
+
+-- Tanks incoming
+EVENTS.TAC_TankWaves = function()
+	
+	local choices = {}
+	choices[1] = {actor = ACTOR.CXP1.Bailey, line = 1371040} -- Panzers!
+	choices[2] = {actor = ACTOR.CXP1.Bailey, line = 1371050} -- German armour!
+	choices[3] = {actor = ACTOR.CXP1.Bailey, line = 1371060} -- Contact! Panzers!
+	
+	local rand = World_GetRand(1, table.getn(choices))
+	
+	CTRL.Event_Delay(0.5)
+	
+	CTRL.Actor_PlaySpeech(choices[rand].actor, choices[rand].line)
+	
+	CTRL.WAIT()	
+	
+end
+
+-- Tigers
+EVENTS.TAC_TigerWaves = function()
+	
+	local choices = {}
+	choices[1] = {actor = ACTOR.CXP1.Bailey, line = 1371070} -- Bloody hell!  We've got a Tiger Tanks over here!
+	choices[2] = {actor = ACTOR.CXP1.Bailey, line = 1371080} -- Christ!  They've got Tigers!
+	choices[3] = {actor = ACTOR.CXP1.Bailey, line = 1371090} -- Tigers!  Jerry's got troops of Tiger tanks!
+	
+	local rand = World_GetRand(1, table.getn(choices))
+	
+	CTRL.Event_Delay(0.5)
+	
+	CTRL.Actor_PlaySpeech(choices[rand].actor, choices[rand].line)
+	
+	CTRL.WAIT()	
+	
+end
+
+-- Artiller strikes
+EVENTS.TAC_ArtyWaves = function()
+	
+	local choices = {}
+	choices[1] = {actor = ACTOR.CXP1.Bailey, line = 1371100} -- Incoming!
+	choices[2] = {actor = ACTOR.CXP1.Bailey, line = 1371110} -- Find some cover gents!
+	choices[3] = {actor = ACTOR.CXP1.Bailey, line = 1371120} -- That's German artillery!  Find cover!
+	
+	local rand = World_GetRand(1, table.getn(choices))
+	
+	CTRL.Event_Delay(0.5)
+	
+	CTRL.Actor_PlaySpeech(choices[rand].actor, choices[rand].line)
+	
+	CTRL.WAIT()	
+	
+end
+
+-- Panicked Soldier 1
+EVENTS.AMBI_Panick1 = function()
+	if fg_darwin_dead == false then
+		fg_darwin_dead = true
+		CTRL.Actor_PlaySpeech (ACTOR.CXP1.GenericCommonwealth, 1371140)	-- Let's hand Jerry his arse.
+		CTRL.WAIT()
+	else
+
+		local choices = {}
+		choices[1] = {actor = ACTOR.CXP1.GenericCommonwealth, line = 1371130} -- Fuckin' hell!  There's too many of 'em!
+		choices[2] = {actor = ACTOR.CXP1.GenericCommonwealth, line = 1371150} -- Where the fuck are all these Jerry's coming' from!?
+		choices[3] = {actor = ACTOR.CXP1.GenericCommonwealth, line = 1371160} -- We've got to pull back!
+		choices[4] = {actor = ACTOR.CXP1.GenericCommonwealth, line = 1371170} -- Steady mate!  Just keep bloody firing!
+		choices[5] = {actor = ACTOR.CXP1.GenericCommonwealth, line = 1371180} -- Covering fire!  I need covering fire over here!
+		choices[6] = {actor = ACTOR.CXP1.GenericCommonwealth, line = 1371190} -- Someone go for help!
+		
+		local rand = World_GetRand(1, table.getn(choices))
+		
+		CTRL.Event_Delay(0.5)
+		
+		CTRL.Actor_PlaySpeechWithoutPortrait(choices[rand].actor, choices[rand].line)
+		CTRL.WAIT()	
+	end
+end
+
+-- Panicked Soldier 2
+EVENTS.AMBI_Panick2 = function()
+	
+	local choices = {}
+	choices[1] = {actor = ACTOR.CXP1.GenericCommonwealth, line = 1371170} -- Steady mate!  Just keep bloody firing!
+	choices[2] = {actor = ACTOR.CXP1.GenericCommonwealth, line = 1371180} -- Covering fire!  I need covering fire over here!
+	choices[3] = {actor = ACTOR.CXP1.GenericCommonwealth, line = 1371190} -- Someone go for help!
+	
+	local rand = World_GetRand(1, table.getn(choices))
+	
+	CTRL.Event_Delay(0.5)
+	
+	CTRL.Actor_PlaySpeechWithoutPortrait(choices[rand].actor, choices[rand].line)
+	
+	CTRL.WAIT()	
+	
+end 
+
+
+
+
+--------------------------------------------------------------------------------
+-- Status Events
+--------------------------------------------------------------------------------
+
+-- Areas under attack
+EVENTS.OBJ_HoldGround = function()
+	
+	local choices = {}
+	choices[1] = {actor = ACTOR.CXP1.Chubb, line = 1371200} -- Hold your ground!  Do not fall back!
+	choices[2] = {actor = ACTOR.CXP1.Chubb, line = 1371210} -- Stand fast men!  Don't let them through!
+	choices[3] = {actor = ACTOR.CXP1.Chubb, line = 1371220} -- Get fire on those assholes!  Come on!  Let 'em have it!
+	
+	choices[4] = {actor = ACTOR.CXP1.GenericCommonwealth, line = 1371230} -- There's too many of 'em!
+	choices[5] = {actor = ACTOR.CXP1.GenericCommonwealth, line = 1371240} -- We're gonna get over run!
+	choices[6] = {actor = ACTOR.CXP1.GenericCommonwealth, line = 1371250} -- Where the fuck is our support!?
+	
+	local rand = World_GetRand(1, table.getn(choices))
+	
+	CTRL.Event_Delay(0.5)
+	
+	CTRL.Actor_PlaySpeechWithoutPortrait(choices[rand].actor, choices[rand].line)
+	
+	CTRL.WAIT()	
+	
+end
+
+-- Crossroads under attack
+EVENTS.OBJ_Crossroads_UnderAttack = function()
+	
+	local choices = {}
+	choices[1] = {actor = ACTOR.CXP1.Bailey, line = 1371260} -- Hold your ground!  Do not fall back!
+	choices[2] = {actor = ACTOR.CXP1.Bailey, line = 1371270} -- Stand fast men!  Don't let them through!
+	
+	local rand = World_GetRand(1, table.getn(choices))
+	
+	CTRL.Event_Delay(0.5)
+	
+	CTRL.Actor_PlaySpeech(choices[rand].actor, choices[rand].line)
+	
+	CTRL.WAIT()	
+	
+end
+
+EVENTS.OBJ_Crossroads_BeingCaptured = function()
+
+	CTRL.Actor_PlaySpeech (ACTOR.CXP1.Bailey, 1371280) -- Get fire on those assholes!  Come on!  Let 'em have it!
+	CTRL.WAIT()
+end
+
+-- Courtyard under attack
+EVENTS.OBJ_Courtyard_UnderAttack = function()
+	
+	local choices = {}
+	choices[1] = {actor = ACTOR.CXP1.Bailey, line = 1371290} -- Enemy contact near the courtyard, defend it.
+	choices[2] = {actor = ACTOR.CXP1.Bailey, line = 1371310} -- Move in and repell the counter attack at the Courtyard
+	
+	local rand = World_GetRand(1, table.getn(choices))
+	
+	CTRL.Event_Delay(0.5)
+	
+	CTRL.Actor_PlaySpeech(choices[rand].actor, choices[rand].line)
+	
+	CTRL.WAIT()	
+	
+end
+
+EVENTS.OBJ_Courtyard_BeingCaptured = function()
+
+	CTRL.Actor_PlaySpeech (ACTOR.CXP1.Bailey, 1371300) -- 3rd Battalion, we're losing contact with the Courtyard
+	CTRL.WAIT()
+end
+
+EVENTS.OBJ_Cathedral_UnderAttack = function()
+	
+	local choices = {}
+	choices[1] = {actor = ACTOR.CXP1.Bailey, line = 1371320} -- The Cathedral is under attack, request support
+	choices[2] = {actor = ACTOR.CXP1.Bailey, line = 1371330} -- Contacts sighted near the Cathedral!
+	
+	local rand = World_GetRand(1, table.getn(choices))
+	
+	CTRL.Event_Delay(0.5)
+	
+	CTRL.Actor_PlaySpeech(choices[rand].actor, choices[rand].line)
+	
+	CTRL.WAIT()	
+	
+end 
+
+EVENTS.OBJ_Cathedral_BeingCaptured = function()
+
+	CTRL.Actor_PlaySpeech (ACTOR.CXP1.Bailey, 1371340) -- We're losing the Cathedral
+	CTRL.WAIT()
+end
+
+-- Generic losing territory message
+EVENTS.OBJ_LosingTerritory = function()
+	
+	local choices = {}
+	choices[1] = {actor = ACTOR.CXP1.Bailey, line = 1371350} -- 3rd Battalion's losing an objective, hold the line!
+	choices[2] = {actor = ACTOR.CXP1.Bailey, line = 1371360} -- Enemy attack, we're losing ground 3rd Battalion!
+	choices[3] = {actor = ACTOR.CXP1.Bailey, line = 1371370} -- Hold the line 3rd Battalion, recapture that point.
+	
+	local rand = World_GetRand(1, table.getn(choices))
+	
+	CTRL.Event_Delay(0.5)
+	
+	CTRL.Actor_PlaySpeech(choices[rand].actor, choices[rand].line)
+	
+	CTRL.WAIT()	
+	
+end 
+
+-- King Tiger
+EVENTS.OBJ_KingTiger = function()
+	
+	local choices = {}
+	choices[1] = {actor = ACTOR.CXP1.Chubb, line = 1371380} -- Tiger tank!  No fuck!  It's a King Tiger!  Get fire  on 'em!
+	choices[2] = {actor = ACTOR.CXP1.Chubb, line = 1371390} -- Holy shit!  We've got a King Tiger over here!
+	choices[3] = {actor = ACTOR.CXP1.Chubb, line = 1371400} -- King Tiger!  Hit 'em with everything you got troops!
+	
+	local rand = World_GetRand(1, table.getn(choices))
+	
+	CTRL.Event_Delay(0.5)
+	
+	CTRL.Actor_PlaySpeech(choices[rand].actor, choices[rand].line)
+	
+	CTRL.WAIT()	
+	
+end
+
+-- The Final Wave
+EVENTS.OBJ_FinalWave = function()
+	
+	local choices = {}
+	choices[1] = {actor = ACTOR.CXP1.GenericCommonwealth, line = 1371410} -- The balance of the Panzer division is on its way.  Cover off on their axis of approach and cut them down lads!
+	choices[2] = {actor = ACTOR.CXP1.GenericCommonwealth, line = 1371420} -- Here comes the main assault!  Wait until their in your kill zones!
+	
+	local rand = World_GetRand(1, table.getn(choices))
+	
+	CTRL.Event_Delay(0.5)
+	
+	CTRL.Actor_PlaySpeech(choices[rand].actor, choices[rand].line)
+	
+	CTRL.WAIT()
+	
+end 
+
+--------------------------------------------------------------------------------
+-- Final Wave near the HQ
+--------------------------------------------------------------------------------
+
+EVENTS.OBJ_HQUnderAttack = function()
+	
+	CTRL.Actor_PlaySpeech (ACTOR.CXP1.GenericCommonwealth, 1371430)	-- They're headed toward our HQ!
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech (ACTOR.CXP1.GenericCommonwealth, 1371440)	-- Get a QRF back on the HQ!  They're going for Blackmore!
+	CTRL.WAIT()
+end 
+
+
+--------------------------------------------------------------------------------
+-- Player Wins
+--------------------------------------------------------------------------------
+
+-- 
+EVENTS.OBJ_AllClear = function()
+	
+	CTRL.Actor_PlaySpeech (ACTOR.CXP1.Chubb, 1371450)	-- Sigs.  Message for Battalion.  (beat)  Situation resolved.  The city is fuckin' ours!
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech (ACTOR.CXP1.Chubb, 1371460)	-- That's how ya fuckin' do it troops!  Caen is ours boys!
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech (ACTOR.CXP1.Chubb, 1371470)	-- Pass the word.  All clear.  Get Ammo-Cas reports up the chain, have NCO's set up pickets and forced rest for their troops.  Move. 
+	CTRL.WAIT()
+	
+end 

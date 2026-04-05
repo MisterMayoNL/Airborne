@@ -1,0 +1,563 @@
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--
+-- NIS File for Hill 112 Defence Mission
+--
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+
+function NIS_Init()
+
+	-- load NIS's
+	NIS01 = "sp/CXP1/Hill_112/NIS/N05_01"
+	nis_load(NIS01)
+	
+	nis_setintransitiontime(0)
+	nis_setouttransitiontime(0)
+
+end
+
+Scar_AddInit(NIS_Init)
+
+
+
+
+
+EVENTS = {}
+
+
+--------------------------------------------------------------------------------
+-- Opening Cinematic (NIS01)
+--------------------------------------------------------------------------------
+
+EVENTS.NIS01 = function()
+
+	Game_Letterbox(true, 0)
+	
+	CTRL.Scar_PlayNIS(NIS01)
+	CTRL.WAIT()
+	
+	nis_stop()
+	
+	Game_Letterbox(false, 2)
+	
+end
+
+EVENTS.GlennDead = function()
+	UI_EnableEventSkip(false)
+	CTRL.Event_Delay(1)
+	CTRL.WAIT()
+	Game_Letterbox(true, 0)
+	UI_EnableEventSkip(true)
+	Camera_MoveToPosition(cameraGlenn, true, SLOW_CAMERA_PANNING)
+	CTRL.Event_Delay(2.5)
+	CTRL.WAIT()
+end
+
+
+--------------------------------------------------------------------------------
+-- Initial Attack
+--------------------------------------------------------------------------------
+
+EVENTS.FirstAttack_Chatter = function()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Dillingham, 1380200)		-- Captain Wallace sir, we've got some heavy troubles.  
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Dillingham, 1380201)		-- I can't get anything up the chain.
+	CTRL.WAIT()
+end
+
+
+EVENTS.FirstAttack_LieutenantResponse = function()
+	CTRL.Actor_PlaySpeechWithoutPortrait(ACTOR.CXP1.Wallis, 1380203)		-- Fuckin shite, get ahold of yourself lad.  
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeechWithoutPortrait(ACTOR.CXP1.Wallis, 1380204)		-- Every moment you waste worrying good men die.   
+	CTRL.WAIT()
+end
+
+
+EVENTS.FirstAttack_MentionArtillery = function()
+	
+	local choices = {}
+	choices[1] = {actor = ACTOR.CXP1.Wallis, line = 1380210}		-- Radio artillery and tell them to target the grid location ahead of our current position.
+	choices[2] = {actor = ACTOR.CXP1.Wallis, line = 1380211}		-- Have Arty blast this goddamn good'fer'nothing hill!
+	
+	local rand = World_GetRand(1, table.getn(choices))
+	
+	CTRL.Actor_PlaySpeech(choices[rand].actor, choices[rand].line)
+	CTRL.WAIT()
+end
+
+
+EVENTS.FirstAttack_MentionArtilleryAgain = function()
+	
+	local choices = {}
+	choices[1] = {actor = ACTOR.CXP1.Wallis, line = 1380220}		-- For Christ's sake call that artillery in NOW!
+	choices[2] = {actor = ACTOR.CXP1.Wallis, line = 1380221}		-- We need some bloody Arty support ASAP!
+	
+	local rand = World_GetRand(1, table.getn(choices))
+	
+	CTRL.Actor_PlaySpeech(choices[rand].actor, choices[rand].line)
+	CTRL.WAIT()
+
+end
+
+
+EVENTS.FirstAttack_PostBattleChatter = function()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Wallis, 1380230)		-- Stand Down, Stand Down. 
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Wallis, 1380231)		-- I knew we'd be easy bloody targets on this foresaken Hill.
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Wallis, 1380240)		-- CPL Dillingham, get 3rd Battalion HQ on the horn A-SAP, we need  all the support we can get before those Panzers throw themselves at us again.
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Dillingham, 1380232)		-- We got no bloody luck Sir, the radio to HQ's gone dead and forward observers are reporting Jerry Panzers in-bound.
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Wallis, 1380222)		-- Alright Coporal level yourself and listen closeley!
+	CTRL.WAIT()
+end
+
+
+
+--------------------------------------------------------------------------------
+-- Deployment Hints
+--------------------------------------------------------------------------------
+
+EVENTS.Deploy_Start = function()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Wallis, 1380233)		-- I want a defensive perimeter around this Hill.
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Wallis, 1380234)		-- Establish defenses around the Hill and the bridges
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Wallis, 1380235)		-- again... RSE, Defensive manuvers, secure perimeter around the Hill and the bridges... we have Panzers incoming!
+	CTRL.WAIT()
+end
+
+
+EVENTS.Deploy_TourmauEmpty = function()
+	local choices = {}
+	choices[1] = {actor = ACTOR.CXP1.Wallis, line = 1380880}		-- Those bridges are our lifelines men!
+	choices[2] = {actor = ACTOR.CXP1.Wallis, line = 1380890}		-- Gods good grace is bringing us some support, just hold those bridges!
+	choices[3] = {actor = ACTOR.CXP1.Wallis, line = 1380900}		-- The rest of Boudica's Boy's will be here in no time, make sure the bridges are secure!
+	
+	local rand = World_GetRand(1, table.getn(choices))
+	
+	CTRL.Actor_PlaySpeech(choices[rand].actor, choices[rand].line)
+	CTRL.WAIT()
+end
+
+
+EVENTS.Deploy_BaronEmpty = function()
+	local choices = {}
+	choices[1] = {actor = ACTOR.CXP1.Wallis, line = 1380880}		-- Those bridges are our lifelines men!
+	choices[2] = {actor = ACTOR.CXP1.Wallis, line = 1380890}		-- Gods good grace is bringing us some support, just hold those bridges!
+	choices[3] = {actor = ACTOR.CXP1.Wallis, line = 1380900}		-- The rest of Boudica's Boy's will be here in no time, make sure the bridges are secure!
+	
+	local rand = World_GetRand(1, table.getn(choices))
+	
+	CTRL.Actor_PlaySpeech(choices[rand].actor, choices[rand].line)
+	CTRL.WAIT()
+end
+
+
+EVENTS.Deploy_HillLow = function()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Dillingham, 1380250)		-- Men we have orders. Hold this hill until the Donkey Wallopers arrive.
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Dillingham, 1380251)		-- Sappers, I want A-T guns covering the hill.
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Dillingham, 1380252)		-- Williams, have your sections dig SLIT-TRENCHES and cover them with MGs.
+	CTRL.WAIT()
+end
+
+
+EVENTS.Deploy_SuggestMovingHQ = function()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Wallis, 1380253)		-- Keep that bloody hill supplied, we need HQ support to the top!
+	CTRL.WAIT()
+end
+
+
+EVENTS.Deploy_ArmourHQArrived = function()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Wallis, 1380254)		-- Armour HQ on map. Get service battalion to set that thing up double quick lads!
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Wallis, 1380255)		-- Move all HQ Trucks and the Command Posts away from the villages and to the Hill. We need to keep them in sight and away from Jerry!
+	CTRL.WAIT()
+end
+
+
+EVENTS.Deploy_FireflysArrivingShortly = function()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Dillingham, 1380830)		-- Captain Wallis! I've got HQ! Fucking hell!
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Dillingham, 1380840)		-- I've managed to raise Battalion sigs, message from Major Blackmore's coming in Sir!
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Blackmore, 1380850)		-- RSE this is Major Blackmore heavy armor support is in-bound! We got your back now boys!
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Blackmore, 1380860)		-- Maintain control of the Odon at all costs!
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Blackmore, 1380870)		-- We'll be there soon, tell the men to hold tight Captain Wallis!
+	CTRL.WAIT()
+end
+
+
+
+
+--------------------------------------------------------------------------------
+-- Village Attacks
+--------------------------------------------------------------------------------
+
+EVENTS.VillageAttacks_Baron = function()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Wallis, 1380730)		-- Shite, Jerry's advancing on Baron!
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Wallis, 1380740)		-- Secure the bloody bridge at all costs!
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Wallis, 1380750)		-- Don't let that bridge fall into enemy hands or we're fucked lads!
+	CTRL.WAIT()
+end
+
+
+EVENTS.VillageAttacks_Tourmau = function()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Wallis, 1380700)		-- Jesus Christ, the fucking Jerries are trying to cut us off at the Odon!
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Wallis, 1380710)		-- Get to Tourmauville and hold that bridge lads!
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Wallis, 1380720)		-- We're not getting any reinforcments in without it!
+	CTRL.WAIT()
+end
+
+
+
+--------------------------------------------------------------------------------
+-- Hill Victory Point Status
+--------------------------------------------------------------------------------
+
+EVENTS.Hill_Lost = function()
+	local choices = {}
+	choices[1] = {actor = ACTOR.CXP1.Wallis, line = 1380350}		-- RSE we've lost the fucking hill! Recapture it A-sap!
+	choices[2] = {actor = ACTOR.CXP1.Wallis, line = 1380351}		-- Oh mother of Christ, we've lost Hill 112, I say again, we've lost Hill 112. Recpature it our it's our heads lads!
+
+	
+	local rand = World_GetRand(1, table.getn(choices))
+	
+	CTRL.Actor_PlaySpeech(choices[rand].actor, choices[rand].line)
+	CTRL.WAIT()
+end
+
+
+EVENTS.Hill_RecaptureReminder = function()
+
+	local choices = {}
+	choices[1] = {actor = ACTOR.CXP1.Wallis, line = 1380360}		-- RSE all forces to the Hill now, we need to take her back!
+	choices[2] = {actor = ACTOR.CXP1.Wallis, line = 1380361}		-- Come on lads, capture that Victory point!
+	choices[3] = {actor = ACTOR.CXP1.Wallis, line = 1380362}		-- Alright listen up, pull your thumbs out and get to taking that fucking point back or the mission is lost!!
+	
+	local rand = World_GetRand(1, table.getn(choices))
+	
+	CTRL.Actor_PlaySpeech(choices[rand].actor, choices[rand].line)
+	CTRL.WAIT()
+	
+end
+
+
+EVENTS.Hill_Recaptured = function()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Wallis, 1380370)		-- Hill recaptured. Let's try to hold onto it this time.
+	CTRL.WAIT()
+end
+
+
+EVENTS.Hill_MissionFailed = function()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Wallis, 1380380)		-- That's it Jerry's got us cooked. 
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Wallis, 1380381)		-- There's no hope of holding out any longer! 
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Wallis, 1380382)		-- Once we gave the Hill back to the bloody HUNs. 
+	CTRL.WAIT()
+	
+end
+
+
+
+--------------------------------------------------------------------------------
+-- Firefly Bonus Tanks
+--------------------------------------------------------------------------------
+
+
+EVENTS.Firefly_ApproachingBaron = function()
+
+	local choices = {}
+	choices[1] = {actor = ACTOR.CXP1.Bailey, line = 1380980}		-- Don't worry lads we'll be there soon.
+	choices[2] = {actor = ACTOR.CXP1.Bailey, line = 1380950}		-- Boudica's boys here, 3rd Battalion Heavy armor support is inbound and approaching from Baron.
+	choices[3] = {actor = ACTOR.CXP1.Bailey, line = 1380970}		-- Royal Scots, you need to keep those bridges open!
+
+	
+	local rand = World_GetRand(1, table.getn(choices))
+	
+	CTRL.Actor_PlaySpeech(choices[rand].actor, choices[rand].line)
+	CTRL.WAIT()
+
+end
+
+
+EVENTS.Firefly_ApproachingTourmau = function()
+
+	local choices = {}
+	choices[1] = {actor = ACTOR.CXP1.Degnan, line = 1380920}		-- Hey you sorry lot! Did you miss us!
+	choices[2] = {actor = ACTOR.CXP1.Degnan, line = 1380930}		-- Here comes the heavies!!!
+	
+	local rand = World_GetRand(1, table.getn(choices))
+	
+	CTRL.Actor_PlaySpeech(choices[rand].actor, choices[rand].line)
+	CTRL.WAIT()
+	
+	if World_GetRand(1, 3) == 3 then
+		CTRL.Actor_PlaySpeech(ACTOR.CXP1.Wallis, 1380940)	-- I never thought your ugly mug could look so good Degnan! It's about bloody fucking time...
+		CTRL.WAIT()
+	end
+
+
+end
+
+
+EVENTS.Firefly_CantBringAnyIn = function()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Wallis, 1380800)		-- Both routes are closed! Sort it out double quick lads!
+	CTRL.WAIT()
+end
+
+
+EVENTS.Firefly_BridgeOut_Tourmau = function()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Wallis, 1380760)		-- The Tourmauville bridge has been lost!
+	CTRL.WAIT()
+end
+
+
+EVENTS.Firefly_BridgeOut_Baron = function()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Wallis, 1380770)		-- The Baron bridge is out of our control!
+	CTRL.WAIT()
+end
+
+
+EVENTS.Firefly_RouteNotSecure_Tourmau = function()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Wallis, 1380780)		-- Fucksakes, the road through Tourmauville is no longer secure!
+	CTRL.WAIT()
+end
+
+
+EVENTS.Firefly_RouteNotSecure_Baron = function()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Wallis, 1380790)		-- The road through Baron is no longer secure
+	CTRL.WAIT()
+end
+
+
+EVENTS.Firefly_RouteOpen_Tourmau = function()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Wallis, 1380810)		-- Bravo lads, the road through Tourmauville is open again!
+	CTRL.WAIT()
+end
+
+
+EVENTS.Firefly_RouteOpen_Baron = function()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Wallis, 1380820)		-- Thank God, the road through Baron is ours again!
+	CTRL.WAIT()
+end
+
+
+--------------------------------------------------------------------------------
+-- Tactical Event - Player's losing points
+--------------------------------------------------------------------------------
+
+EVENTS.Losing_Points = function()
+
+	local choices = {}
+	choices[1] = {actor = ACTOR.CXP1.Wallis, line = 1380310}		-- Enemy elements are approaching the hill!
+	choices[2] = {actor = ACTOR.CXP1.Wallis, line = 1380311}		-- The Germans are closing in, hold your line and for Christ-sakes keep our control points!
+	choices[3] = {actor = ACTOR.CXP1.Wallis, line = 1380312}		-- We've lost another Sector - push the fucking Jerries back off that damn hill!
+	choices[4] = {actor = ACTOR.CXP1.Wallis, line = 1380313}		-- Ready... Enemy contacts in-bound to the hill
+	choices[5] = {actor = ACTOR.CXP1.Wallis, line = 1380314}		-- Jerry's back! Get to his location before we lose more territory.
+	choices[6] = {actor = ACTOR.CXP1.Wallis, line = 1380315}		-- The enemy is trying to cut us off. 
+
+	
+	local rand = World_GetRand(1, table.getn(choices))
+	
+	CTRL.Actor_PlaySpeech(choices[rand].actor, choices[rand].line)
+	CTRL.WAIT()
+
+end
+
+
+--------------------------------------------------------------------------------
+-- Tactical Event - Enemy attacks left side of hill
+--------------------------------------------------------------------------------
+
+EVENTS.Left_Flank = function()
+
+	local choices = {}
+	choices[1] = {actor = ACTOR.CXP1.Wallis, line = 1380400}		-- Watch the LEFT FLANK!
+	choices[2] = {actor = ACTOR.CXP1.Wallis, line = 1380410}		-- Left Flank is under attack!
+	choices[3] = {actor = ACTOR.CXP1.Wallis, line = 1380420}		-- Our fucking left flank is being hit... They need support. 
+	choices[4] = {actor = ACTOR.CXP1.Wallis, line = 1380430}		-- Get some troops over to the left flank.
+
+	
+	local rand = World_GetRand(1, table.getn(choices))
+	
+	CTRL.Actor_PlaySpeech(choices[rand].actor, choices[rand].line)
+	CTRL.WAIT()
+
+end
+
+--------------------------------------------------------------------------------
+-- Tactical Event - Enemy attacks the front of the hill
+--------------------------------------------------------------------------------
+
+EVENTS.Middle = function()
+
+	local choices = {}
+	choices[1] = {actor = ACTOR.CXP1.Wallis, line = 1380480}		-- They're attacking our frontlines. Corporal Macmahon  stop picking your bum and get moving!
+	choices[2] = {actor = ACTOR.CXP1.Wallis, line = 1380490}		-- Targets to the front lads!
+	choices[3] = {actor = ACTOR.CXP1.Wallis, line = 1380500}		-- Our front is being hit... Hold the Hill 
+	choices[4] = {actor = ACTOR.CXP1.Wallis, line = 1380510}		-- Get some troops over to the Front.
+
+	
+	local rand = World_GetRand(1, table.getn(choices))
+	
+	CTRL.Actor_PlaySpeech(choices[rand].actor, choices[rand].line)
+	CTRL.WAIT()
+
+end
+
+
+--------------------------------------------------------------------------------
+-- Tactical Event - Enemy attacks the right side of the hill
+--------------------------------------------------------------------------------
+
+EVENTS.Right_Flank = function()
+
+	local choices = {}
+	choices[1] = {actor = ACTOR.CXP1.Wallis, line = 1380440}		-- Dillingham we have Contact. Right Flank. Range 200.
+	choices[2] = {actor = ACTOR.CXP1.Wallis, line = 1380450}		-- Our Right Flank is under attack!
+	choices[3] = {actor = ACTOR.CXP1.Wallis, line = 1380460}		-- Our Right flank is taking fire! They need support gents. 
+	choices[4] = {actor = ACTOR.CXP1.Wallis, line = 1380470}		-- Get some troops over to the right flank.
+
+	
+	local rand = World_GetRand(1, table.getn(choices))
+	
+	CTRL.Actor_PlaySpeech(choices[rand].actor, choices[rand].line)
+	CTRL.WAIT()
+
+end
+
+
+--------------------------------------------------------------------------------
+-- Tactical Event - Phase 3 wave retreats
+--------------------------------------------------------------------------------
+
+EVENTS.Wave_Retreats = function()
+
+	local choices = {}
+	choices[1] = {actor = ACTOR.CXP1.Wallis, line = 1380330}		-- Brace yourselves boy's looks like Jerry might be on the run.
+	choices[2] = {actor = ACTOR.CXP1.Wallis, line = 1380331}		-- Keep their tails covered in tracers lads!
+	choices[3] = {actor = ACTOR.CXP1.Wallis, line = 1380332}		-- Only a few enemy elements remain. We're almost there, keep on 'em! 
+	
+	local rand = World_GetRand(1, table.getn(choices))
+	
+	CTRL.Actor_PlaySpeech(choices[rand].actor, choices[rand].line)
+	CTRL.WAIT()
+
+end
+
+
+
+--------------------------------------------------------------------------------
+-- Tactical Event - Phase 3 waves attack
+--------------------------------------------------------------------------------
+
+EVENTS.Phase3_First_Wave = function()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Wallis, 1380256)		-- Contact! The first wave has arrived gents.
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Wallis, 1380257)		-- Listen up, watch your arcs and open fire. 
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Wallis, 1380258)		-- Let's show those HUN tarts what it means to be a Scotsman.
+	CTRL.WAIT()
+end
+
+
+--------------------------------------------------------------------------------
+-- Ambient Event - Phase 3 waves attack
+--------------------------------------------------------------------------------
+
+EVENTS.Ambient_Phase3_First_Wave = function()
+
+	local choices = {}
+	choices[1] = {actor = ACTOR.CXP1.GenericCommonwealth, line = 1380520}		-- Aye Jerry that one's for Scotland!
+	choices[2] = {actor = ACTOR.CXP1.GenericCommonwealth, line = 1380530}		-- Take 'em and tear 'em lads!
+	choices[3] = {actor = ACTOR.CXP1.GenericCommonwealth, line = 1380540}		-- Away an bile yer' hyde ya numpty Jerries!
+	choices[4] = {actor = ACTOR.CXP1.GenericCommonwealth, line = 1380550}		-- Damn Huns looking' awfy peely-wally if you ask me!
+	choices[5] = {actor = ACTOR.CXP1.GenericCommonwealth, line = 1380560}		-- Cuntybuggerybumshite!
+	choices[6] = {actor = ACTOR.CXP1.GenericCommonwealth, line = 1380570}		-- Dry your eyes Jerry this is our bloody hill!
+
+	
+	local rand = World_GetRand(1, table.getn(choices))
+	
+	CTRL.Actor_PlaySpeechWithoutPortrait(choices[rand].actor, choices[rand].line)
+	CTRL.WAIT()
+
+end
+
+EVENTS.Ambient_Phase3_Second_Wave = function()
+
+	local choices = {}
+	choices[1] = {actor = ACTOR.CXP1.Dillingham, line = 1380580}		-- Fucking German knobdobbers everywhere!
+	choices[2] = {actor = ACTOR.CXP1.Dillingham, line = 1380590}		-- If we don't get some support soon well all be dead!
+	choices[3] = {actor = ACTOR.CXP1.Dillingham, line = 1380600}		-- Cuntybuggerybumshite they'll killed Keegan!
+	choices[4] = {actor = ACTOR.CXP1.GenericCommonwealth, line = 1380610}		-- Jammy bastards. 
+	choices[5] = {actor = ACTOR.CXP1.GenericCommonwealth, line = 1380620}		-- Stop muckin' about and kill some Jerry!
+	choices[6] = {actor = ACTOR.CXP1.GenericCommonwealth, line = 1380630}		-- Medic I need a fucking medic!
+
+	
+	local rand = World_GetRand(1, table.getn(choices))
+	
+	CTRL.Actor_PlaySpeechWithoutPortrait(choices[rand].actor, choices[rand].line)
+	CTRL.WAIT()
+
+end
+
+EVENTS.Ambient_Phase3_Third_Wave = function()
+
+	local choices = {}
+	choices[1] = {actor = ACTOR.CXP1.Wallis, line = 1380640}		-- I know your jeeked men, just hold out!
+	choices[2] = {actor = ACTOR.CXP1.Wallis, line = 1380650}		-- Fucking Huns are coming back for more!
+	choices[3] = {actor = ACTOR.CXP1.Wallis, line = 1380660}		-- Hold the mother loving hill and kill those sorry fucks!
+	choices[4] = {actor = ACTOR.CXP1.GenericCommonwealth, line = 1380690}		-- Keep it coming Jerry I'll be busting out all your wallies!
+
+	
+	local rand = World_GetRand(1, table.getn(choices))
+	
+	CTRL.Actor_PlaySpeechWithoutPortrait(choices[rand].actor, choices[rand].line)
+	CTRL.WAIT()
+	
+	if rand <= 3 then
+		
+		local rand2 = World_GetRand(1, 2)
+		
+		if rand2 == 1 then
+		
+			CTRL.Actor_PlaySpeechWithoutPortrait(ACTOR.CXP1.GenericCommonwealth, 1380670)		-- Aye Captain Wallis, we'll hold out! 
+			CTRL.WAIT()
+			
+		elseif rand2 == 2 then
+		
+			CTRL.Actor_PlaySpeechWithoutPortrait(ACTOR.CXP1.GenericCommonwealth, 1380680)		-- Kill them totty tarts we will! 
+			CTRL.WAIT()
+		end
+	end
+end
+
+
+
+--------------------------------------------------------------------------------
+-- Mission Complete
+--------------------------------------------------------------------------------
+
+EVENTS.Mission_Complete = function()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Wallis, 1380340)		-- There we go lads, Jerry's retreat in full force now!
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Wallis, 1380341)		-- Excellent, I had my doubts, but we blummin did it! 
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(ACTOR.CXP1.Wallis, 1380342)		-- Bra-fucking-vo Royal Scots!
+	CTRL.WAIT()
+end
+
+

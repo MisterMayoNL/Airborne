@@ -1,0 +1,20 @@
+model =
+{
+	"..\\..\\Common\\CompleteMotionTree.abp",
+	"..\\..\\Common\\CommonMeshes.abp",
+
+	"Weapons\\M3_GreaseGun",
+        "Weapons\\Flamethrower",
+
+        -- Main Mesh
+        "Rifleman_Engineer\\SMGAmmo",
+        "Rifleman_Engineer\\rifleman",
+        "Rifleman_Engineer\\Engineer_Arms",
+        "Rifleman_Engineer\\Backpack_Engineer",
+}
+
+simvis_attributes =
+{
+	model_scale = 1.0,
+	SingleBoneSkinningDistance = 0, -- engineer's backpack stretches in single bone mode
+}

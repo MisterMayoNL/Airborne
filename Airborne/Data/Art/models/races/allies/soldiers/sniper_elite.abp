@@ -1,0 +1,15 @@
+model =
+{
+	"..\\..\\Common\\CompleteMotionTree.abp",
+	"..\\..\\Common\\CommonMeshes.abp",
+
+	"Weapons\\M1903 Springfield",
+	"Weapons\\M1A1_Thompson",
+
+	"Weapons\\Mk2 Pineapple Grenade",
+
+        "luke\\Ranger_legs",
+	"sniper_elite\\Taggart_body",
+	"sniper_elite\\Taggart",
+}
+

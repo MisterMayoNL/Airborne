@@ -1,0 +1,16 @@
+model =
+{
+	"..\\..\\Common\\CompleteMotionTree.abp",
+
+	-- Weapons
+	"..\\..\\allies\\Soldiers\\Weapons\\Mk2 Pineapple Grenade",
+	--"Weapons\\Stielgranate",
+	"..\\..\\amer\\Soldiers\\Weapons\\M82",
+	
+	-- Mesh
+        "Panzergrenadier\\random_pg",
+	"Panzergrenadier\\Panzergrenadier",
+        "Panzergrenadier\\Panzergrenadier_body",
+		"equipment\\equipment2",
+}
+

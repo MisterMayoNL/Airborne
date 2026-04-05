@@ -1,0 +1,17 @@
+model =
+{
+	"..\\..\\Common\\CompleteMotionTree.abp",
+	"..\\..\\Common\\CommonMeshes.abp",
+
+	-- Weapons
+	"Weapons\\Stielgranate",
+	--"Weapons\\Stielgranate_bundled", [BROKEN]
+	"Weapons\\Kar98",
+	"..\\..\\PanzerElite\\Soldiers\\Weapons\\FG42",
+	
+        --Mesh
+        "equipment\\equipment2", 
+        --"equipment\\gasmask", 
+        "Rodny\\Volksgrenadier_wh",           
+        "weaponcrew\\tankbuster",
+}

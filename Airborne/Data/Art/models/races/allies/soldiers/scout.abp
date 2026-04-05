@@ -1,0 +1,12 @@
+model =
+{
+	"..\\..\\Common\\CompleteMotionTree.abp",
+	"..\\..\\Common\\CommonMeshes.abp",
+	--"CommonItems.abp",
+	"..\\..\\..\\Environment\\Art_Ambient\\Objects\\NIS_Objects\\NIS_N05_03_Binocular",	
+
+	"Weapons\\M1911A1_Colt_45",
+	"Weapons\\New_Carbine",
+
+	"Ranger\\Ranger",
+}

@@ -1,0 +1,1996 @@
+-------------------------------------------------------------------------
+-------------------------------------------------------------------------
+--
+-- Script File for TUTORIAL - INFANTRY section
+--
+-------------------------------------------------------------------------
+-------------------------------------------------------------------------
+
+
+
+--------------------------------------------------------------------------------
+-- Initialisation and Setup
+--------------------------------------------------------------------------------
+function Infantry_Init()
+
+	Infantry_RegisterObjectives() -- see end of file
+	
+end
+
+
+
+--------------------------------------------------------------------------------
+-- Start Tutorial
+--------------------------------------------------------------------------------
+function Infantry_Start()
+
+	-- clean up from the menu
+	Rule_RemoveAll(0)
+	HintPoint_RemoveAll()
+	Game_SkipAllEvents(true)
+	UI_ClearEventCues()
+	
+	tutorial_infantry_available = false
+	tutorial_currentsection = "infantry"
+	TutorialMenu_UpdateAvailability()
+	
+	Camera_SetInputEnabled(false)
+	Game_FadeToBlack(FADE_OUT, TIMING_FADE_OUT)
+	
+	-- do the title card
+	Game_TextTitleFade(409910, TIMING_FADE_IN, 3, TIMING_FADE_OUT, "" )
+	
+	Rule_AddOneShot(Infantry_StartB, 3+TIMING_FADE_IN)
+	
+end
+function Infantry_StartB()
+
+	-- clean up player units
+	Player_GetAll(player1)
+	SGroup_DestroyAllSquads(sg_allsquads)
+	Player_GetAll(player5)
+	SGroup_DestroyAllSquads(sg_allsquads)
+	Player_GetAll(player6)
+	SGroup_DestroyAllSquads(sg_allsquads)
+	
+	-- switch to the Allied player
+	Game_SetLocalPlayer(player1)
+
+	Rule_AddOneShot(Infantry_StartC, 0.5)
+	
+end
+function Infantry_StartC()
+
+	-- reload taskbar for bindings that have been disabled
+	UI_LoadTaskbar("taskbar.lua")
+	Rule_AddOneShot(RedoBindings, 0.1)
+	
+	Game_SetMode(UI_Normal)
+	Game_FadeToBlack(FADE_IN, TIMING_FADE_IN)
+	Game_Letterbox(false, 0)
+	
+	-- camera clamping
+	Camera_ClampToMarker(mkr_infantry_paradrop1)
+	Camera_MoveToPosition(mkr_infantry_paradrop1)
+	Camera_ResetToDefault()
+	
+	-- bring up the perimeter
+	EGroup_ReSpawn(LAYER_perimeter_infantry)
+	EGroup_ReSpawn(LAYER_wall_infantry_1)
+	EGroup_ReSpawn(LAYER_wall_infantry_2)
+	EGroup_ReSpawn(LAYER_wall_infantry_3)
+	EGroup_ReSpawn(LAYER_wall_infantry_4)
+	
+	-- create all the relevant units
+	Util_CreateSquads(player2, sg_group1, SBP.AXIS.MORTAR, mkr_infantry_mortarspawn, nil, 1)
+ 	Util_CreateSquads(player2, sg_group2, SBP.AXIS.HEAVYMG_SP_NOSUP, mkr_infantry_hmgspawn, nil, 1)
+	Util_CreateSquads(player2, sg_group5, SBP.AXIS.VOLKSGRENADIER, mkr_infantry_firstattackspawn, nil, 1, 3)
+	Cmd_InstantSetupTeamWeapon(sg_group1, true)
+	Cmd_InstantSetupTeamWeapon(sg_group2, true)	
+	Modify_Vulnerability(sg_group1, 1.7)
+	Modify_Vulnerability(sg_group5, 2.3)
+	Modify_Vulnerability(sg_playerunits, 0.7)
+	SGroup_SetAutoTargetting(sg_group1, "hardpoint_01", false)
+	SGroup_SetInvulnerable(sg_group1, true)
+	SGroup_SetInvulnerable(sg_group2, true)
+	SGroup_SetTeamWeaponCapturable(sg_group1, false)
+	
+	-- ensure there are enough resources
+	Player_SetResource(player1, RT_Manpower, 1000)
+	Player_SetResource(player1, RT_Munition, 1000)
+	Player_SetResource(player1, RT_Fuel, 1000)
+	--Player_SetMaxPopulation(player1, CT_Personnel, 21)
+	
+	FOW_RevealMarker(mkr_infantry_revealparadrop, -1)
+	
+	-- enable cover previews from now on
+	UI_CoverPreviewShow()
+	PlayerProfile_SetVar("Tutorial_EnableCoverIndicators", "true")
+	
+	-- give the introductory talk
+	Util_StartIntel(EVENTS.InfantryIntro)
+	
+	Rule_AddInterval(Infantry_StartD, 0.5)
+	
+end
+function Infantry_StartD()
+
+	if Event_IsAnyRunning() == false then
+		
+		Rule_RemoveMe()
+		
+		-- give the introductory talk
+		Util_StartIntel(EVENTS.InfantryIntro2)
+		
+		SGroup_SnapFacePosition(sg_group2, Marker_GetPosition(mkr_infantry_hmgfacing))
+		infantry_hmg = SyncWeapon_GetFromSGroup(sg_group2)
+		
+		infantry_mortar = SyncWeapon_GetFromSGroup(sg_group1)
+		
+		-- start lesson 1 when ready
+		Rule_AddInterval(Infantry_Paratroopers_BeginLesson, 0.5)
+		
+	end
+	
+end
+
+
+
+
+--------------------------------------------------------------------------------
+-- Lesson: Bring in Paratroopers
+--------------------------------------------------------------------------------
+function Infantry_Paratroopers_BeginLesson()
+	
+	if Event_IsAnyRunning() == false then
+		
+		Rule_RemoveMe()
+		
+		-- give the objective
+		Objective_Start(OBJ_INFANTRY_PARATROOPERS, false)
+		
+		-- give the introductory talk
+		Util_StartIntel(EVENTS.InfantryParatroopersIntro)
+		Player_SetAbilityAvailability(player1, ABILITY.COMMANDER_TREE.ALLIES.RECRUIT_PARADROP, ITEM_UNLOCKED)
+		--Misc_RestrictCommandsToMarker(mkr_infantry_revealparadrop) --~ Range should be 18/15
+		Misc_RestrictCommandsToMarker(mkr_infantry_paradrop1)
+		
+		Rule_AddOneShot(Infantry_Paratroopers_BeginLessonB, 0.1)
+		Rule_AddInterval(Infantry_Paratroopers_Done, 0.5)
+		
+	end
+	
+end
+function Infantry_Paratroopers_BeginLessonB()
+	flashid_infantry_paradrop = UI_FlashAbilityButton(ABILITY.COMMANDER_TREE.ALLIES.RECRUIT_PARADROP, true, BT_UI_Strong_AbilityBtn )
+	HintPoint_AddToAbilityButton(ABILITY.COMMANDER_TREE.ALLIES.RECRUIT_PARADROP, 409270, true)
+end
+
+
+function Infantry_Paratroopers_Done()
+	
+	Player_GetAll(player1)
+	SGroup_Filter(sg_allsquads, SBP.ALLIES.PARATROOPER, FILTER_KEEP)
+	
+	if SGroup_Count(sg_allsquads) >= 1 then
+		
+		Rule_RemoveMe()
+		Game_SkipEvent()
+		
+		-- complete the objective
+		Objective_Complete(OBJ_INFANTRY_PARATROOPERS, false)
+		UI_StopFlashing(flashid_infantry_paradrop)
+		HintPoint_RemoveAll()
+		FOW_UnRevealMarker(mkr_infantry_revealparadrop)
+		
+		SGroup_AddGroup(sg_playerunits, sg_allsquads)
+		
+		Camera_SetInputEnabled(true)
+		Camera_ClampToMarker(camera_infantry_a)
+		Misc_RemoveCommandRestriction()
+		
+		Util_StartIntel(EVENTS.InfantryParatroopersComingIn)
+		Util_StartIntel(EVENTS.InfantryParatroopersDone)
+		Player_SetAbilityAvailability(player1, ABILITY.COMMANDER_TREE.ALLIES.RECRUIT_PARADROP, ITEM_DEFAULT)
+		Rule_AddInterval(Infantry_LightCover_BeginLesson, 0.5)
+		
+	end
+	
+end
+
+
+
+
+--------------------------------------------------------------------------------
+-- Lesson: Move To Light Cover
+--------------------------------------------------------------------------------
+function Infantry_LightCover_BeginLesson()
+	
+	if Event_IsAnyRunning() == false then
+		
+		Rule_RemoveMe()
+		
+		-- give the objective
+		Objective_Start(OBJ_INFANTRY_LIGHTCOVER, false)
+		
+		Player_GetAll(player1)
+		SGroup_Filter(sg_allsquads, SBP.ALLIES.PARATROOPER, FILTER_KEEP)
+		SGroup_AddGroup(sg_playerunits, sg_allsquads)
+		
+		Rule_Add(Infantry_CheckSquad)
+		
+		if Misc_IsSGroupSelected(sg_playerunits, ANY) then
+			
+			-- give the introductory talk
+			Util_StartIntel(EVENTS.InfantryLightCoverIntro)
+			
+			Camera_MoveToPosition(camera_infantry_light, true, SLOW_CAMERA_PANNING)
+			Camera_SafetyDefault()
+			
+			OBJ_INFANTRY_LIGHTCOVER.PingID = Objective_AddUIElements(OBJ_INFANTRY_LIGHTCOVER, mkr_infantry_lightcover, false, 409251, true)
+			
+			SelectionCheck_Start()
+			
+			Rule_AddInterval(Infantry_LightCover_IsMoving, 0.5)
+			
+		else
+			
+			-- ask to select paratroopers
+			Util_StartIntel(EVENTS.ParatroopersSelect)
+			
+			OBJ_INFANTRY_LIGHTCOVER.PingID = Objective_AddUIElements(OBJ_INFANTRY_LIGHTCOVER, sg_playerunits, false, 409266, true)
+			
+			Rule_AddInterval(Infantry_LightCover_AirborneSelected, 0.5)
+			
+		end
+		
+	end
+	
+end
+
+
+function Infantry_LightCover_AirborneSelected()
+	
+	if Misc_IsSGroupSelected(sg_playerunits, ANY) then
+		
+		Rule_RemoveMe()
+		Game_SkipEvent()
+		
+		-- give the introductory talk
+		Util_StartIntel(EVENTS.InfantryLightCoverIntro)
+		
+		Camera_MoveToPosition(camera_infantry_light, true, SLOW_CAMERA_PANNING)
+		Camera_SafetyDefault()
+		
+		Objective_RemoveUIElements(OBJ_INFANTRY_LIGHTCOVER, OBJ_INFANTRY_LIGHTCOVER.PingID)
+		OBJ_INFANTRY_LIGHTCOVER.PingID = Objective_AddUIElements(OBJ_INFANTRY_LIGHTCOVER, mkr_infantry_lightcover, false, 409251, true)
+		
+		SelectionCheck_Start()
+		
+		Rule_AddInterval(Infantry_LightCover_IsMoving, 0.5)
+		
+	end
+	
+end
+
+
+function Infantry_LightCover_IsMoving()
+
+	if SGroup_IsMoving(sg_playerunits, ANY) then
+		
+		Rule_RemoveMe()
+		Game_SkipEvent()
+		
+		Util_StartIntel(EVENTS.InfantryLightCoverMoving)
+		
+		Rule_AddInterval(Infantry_LightCover_Done, 0.5)
+		
+	elseif Misc_IsSGroupSelected(sg_playerunits, ANY) == false then
+		
+		Rule_RemoveMe()
+		Game_SkipEvent()
+		
+		-- ask to re-select paratroopers
+		Util_StartIntel(EVENTS.ParatroopersReSelect)
+		
+		Objective_RemoveUIElements(OBJ_INFANTRY_LIGHTCOVER, OBJ_INFANTRY_LIGHTCOVER.PingID)
+		OBJ_INFANTRY_LIGHTCOVER.PingID = Objective_AddUIElements(OBJ_INFANTRY_LIGHTCOVER, sg_playerunits, false, 409266, true)
+		
+		Rule_AddInterval(Infantry_LightCover_AirborneSelected, 0.5)
+		
+	end
+
+end
+
+
+function Infantry_LightCover_Done()
+	
+	if Prox_ArePlayerMembersNearMarker(player1, mkr_infantry_lightcover, ANY) then
+		
+		Rule_RemoveMe()
+		Game_SkipEvent()
+		
+		-- complete the objective
+		Objective_Complete(OBJ_INFANTRY_LIGHTCOVER, false)
+		HintPoint_RemoveAll()
+		
+		Util_StartIntel(EVENTS.InfantryLightCoverDone)
+		Rule_AddInterval(Infantry_HeavyCover_BeginLesson, 0.5)
+		
+	end
+	
+end
+
+
+
+
+--------------------------------------------------------------------------------
+-- Lesson: Move To Heavy Cover
+--------------------------------------------------------------------------------
+function Infantry_HeavyCover_BeginLesson()
+	
+	if Event_IsAnyRunning() == false then
+		
+		Rule_RemoveMe()
+		
+		-- give the objective
+		Objective_Start(OBJ_INFANTRY_HEAVYCOVER, false)
+		
+		if Misc_IsSGroupSelected(sg_playerunits, ANY) then
+			
+			-- give the introductory talk
+			Util_StartIntel(EVENTS.InfantryHeavyCoverIntro)
+			
+			Camera_MoveToPosition(camera_infantry_heavy, true, SLOW_CAMERA_PANNING)
+			Camera_SafetyDefault()
+			
+			OBJ_INFANTRY_HEAVYCOVER.PingID = Objective_AddUIElements(OBJ_INFANTRY_HEAVYCOVER, mkr_infantry_heavycover, false, 409250, true)
+			
+			Rule_AddInterval(Infantry_HeavyCover_IsMoving, 0.5)
+			
+		else
+			
+			-- ask to select paratroopers
+			Util_StartIntel(EVENTS.ParatroopersSelect)
+			
+			OBJ_INFANTRY_HEAVYCOVER.PingID = Objective_AddUIElements(OBJ_INFANTRY_HEAVYCOVER, sg_playerunits, false, 409266, true)
+			
+			Rule_AddInterval(Infantry_HeavyCover_AirborneSelected, 0.5)
+			
+		end
+		
+	end
+	
+end
+
+
+function Infantry_HeavyCover_AirborneSelected()
+	
+	if Misc_IsSGroupSelected(sg_playerunits, ANY) then
+		
+		Rule_RemoveMe()
+		Game_SkipEvent()
+		
+		-- give the introductory talk
+		Util_StartIntel(EVENTS.InfantryHeavyCoverIntro)
+		
+		Camera_MoveToPosition(camera_infantry_heavy, true, SLOW_CAMERA_PANNING)
+		Camera_SafetyDefault()
+		
+		Objective_RemoveUIElements(OBJ_INFANTRY_HEAVYCOVER, OBJ_INFANTRY_HEAVYCOVER.PingID)
+		OBJ_INFANTRY_HEAVYCOVER.PingID = Objective_AddUIElements(OBJ_INFANTRY_HEAVYCOVER, mkr_infantry_heavycover, false, 409250, true)
+		
+		Rule_AddInterval(Infantry_HeavyCover_IsMoving, 0.5)
+		
+	end
+	
+end
+
+
+function Infantry_HeavyCover_IsMoving()
+
+	if SGroup_IsMoving(sg_playerunits, ANY) then
+		
+		Rule_RemoveMe()
+		Game_SkipEvent()
+		
+		Util_StartIntel(EVENTS.InfantryHeavyCoverMoving)
+		
+		Rule_AddInterval(Infantry_HeavyCover_Done, 0.5)
+		
+	elseif Misc_IsSGroupSelected(sg_playerunits, ANY) == false then
+		
+		Rule_RemoveMe()
+		Game_SkipEvent()
+		
+		-- ask to re-select paratroopers
+		Util_StartIntel(EVENTS.ParatroopersReSelect)
+		
+		Objective_RemoveUIElements(OBJ_INFANTRY_HEAVYCOVER, OBJ_INFANTRY_HEAVYCOVER.PingID)
+		OBJ_INFANTRY_HEAVYCOVER.PingID = Objective_AddUIElements(OBJ_INFANTRY_HEAVYCOVER, sg_playerunits, false, 409266, true)
+		
+		Rule_AddInterval(Infantry_HeavyCover_AirborneSelected, 0.5)
+		
+	end
+
+end
+
+
+function Infantry_HeavyCover_Done()
+	
+	if Prox_ArePlayerMembersNearMarker(player1, mkr_infantry_heavycover, ANY) then
+		
+		Rule_RemoveMe()
+		Game_SkipEvent()
+		
+		-- complete the objective
+		Objective_Complete(OBJ_INFANTRY_HEAVYCOVER, false)
+		HintPoint_RemoveAll()
+		
+		Util_StartIntel(EVENTS.InfantryHeavyCoverDone)
+		Rule_AddInterval(Infantry_Graveyard_BeginLesson, 0.5)
+		
+	end
+	
+end
+
+
+
+
+--------------------------------------------------------------------------------
+-- Lesson: Move Through Graveyard
+--------------------------------------------------------------------------------
+function Infantry_Graveyard_BeginLesson()
+	
+	if Event_IsAnyRunning() == false then
+		
+		Rule_RemoveMe()
+		
+		-- give the introductory talk
+		Util_StartIntel(EVENTS.InfantryGraveyardIntro)
+		
+		Player_SetCommandAvailability(player1, SCMD_Move, ITEM_LOCKED)
+		
+		Rule_AddInterval(Infantry_Graveyard_GiveObjective, 0.5)
+		
+	end
+	
+end
+
+
+function Infantry_Graveyard_GiveObjective()
+	
+	if Event_IsAnyRunning() == false then
+		
+		Rule_RemoveMe()
+		
+		-- give the objective
+		Objective_Start(OBJ_INFANTRY_GRAVEYARD, false)
+		
+		if Misc_IsSGroupSelected(sg_playerunits, ANY) then
+			
+			-- give the introductory talk
+			Util_StartIntel(EVENTS.InfantryGraveyardGiveObjective)
+			Camera_ClampToMarker(camera_infantry_b)
+			EGroup_DeSpawn(LAYER_wall_infantry_1)
+			
+			flashid_infantry_attackmove = UI_FlashCommandButton(SCMD_AttackMove, false, BT_UI_Strong_CommandBtn )
+			hpid_infantry_attackmove = HintPoint_AddToCommandButton(SCMD_AttackMove, 409273, false)
+			
+			OBJ_INFANTRY_GRAVEYARD.PingID = Objective_AddUIElements(OBJ_INFANTRY_GRAVEYARD, mkr_infantry_chapel, false, 409265, true)
+			
+			Rule_Add(Infantry_Graveyard_IsAttackMoving)
+			
+		else
+			
+			-- ask to select paratroopers
+			Util_StartIntel(EVENTS.ParatroopersSelect)
+			
+			OBJ_INFANTRY_GRAVEYARD.PingID = Objective_AddUIElements(OBJ_INFANTRY_GRAVEYARD, sg_playerunits, false, 409266, true)
+			
+			Rule_AddInterval(Infantry_Graveyard_AirborneSelected, 0.5)
+			
+		end
+		
+	end
+	
+end
+
+
+function Infantry_Graveyard_AirborneSelected()
+	
+	if Misc_IsSGroupSelected(sg_playerunits, ANY) then
+		
+		Rule_RemoveMe()
+		Game_SkipEvent()
+		
+		-- give the introductory talk
+		Util_StartIntel(EVENTS.InfantryGraveyardGiveObjective)
+		Camera_ClampToMarker(camera_infantry_b)
+		EGroup_DeSpawn(LAYER_wall_infantry_1)
+		
+		flashid_infantry_attackmove = UI_FlashCommandButton(SCMD_AttackMove, false, BT_UI_Strong_CommandBtn )
+		hpid_infantry_attackmove = HintPoint_AddToCommandButton(SCMD_AttackMove, 409273, false)
+		
+		Objective_RemoveUIElements(OBJ_INFANTRY_GRAVEYARD, OBJ_INFANTRY_GRAVEYARD.PingID)
+		OBJ_INFANTRY_GRAVEYARD.PingID = Objective_AddUIElements(OBJ_INFANTRY_GRAVEYARD, mkr_infantry_chapel, false, 409265, true)
+		
+		Rule_Add(Infantry_Graveyard_IsAttackMoving)
+		
+	end
+	
+end
+
+
+function Infantry_Graveyard_IsAttackMoving()
+
+	if SGroup_IsAttackMoving(sg_playerunits, ANY) then
+		
+		if SGroup_HasDestination(sg_playerunits, mkr_infantry_chapel, ANY) then
+			
+			Rule_RemoveMe()
+			Game_SkipEvent()
+			
+			HintPoint_RemoveAll()
+			UI_StopFlashing(flashid_infantry_attackmove)
+			
+			Player_SetCommandAvailability(player1, SCMD_Move, ITEM_DEFAULT)
+			
+			Camera_MoveToPosition(mkr_infantry_firstattacktrigger, true, SLOW_CAMERA_PANNING)
+			Camera_SafetyDefault()
+			
+			Util_StartIntel(EVENTS.InfantryGraveyardAttackMoving)
+			
+			Rule_Add(Infantry_Graveyard_TriggerSkirmish)
+			
+		else
+			
+			Rule_RemoveMe()
+			Game_SkipEvent()
+			
+			HintPoint_RemoveAll()
+			UI_StopFlashing(flashid_infantry_attackmove)
+			
+			Cmd_Stop(sg_playerunits)
+			
+			Objective_RemoveUIElements(OBJ_INFANTRY_GRAVEYARD, OBJ_INFANTRY_GRAVEYARD.PingID)
+			Util_StartIntel(EVENTS.InfantryGraveyardWrongLocation)
+			
+			Rule_AddInterval(Infantry_Graveyard_GiveObjective, 0.5)
+			
+		end
+		
+		
+	elseif Misc_IsSGroupSelected(sg_playerunits, ANY) == false then
+		
+		Rule_RemoveMe()
+		Game_SkipEvent()
+		
+		-- ask to re-select paratroopers
+		Util_StartIntel(EVENTS.ParatroopersReSelect)
+		
+		Objective_RemoveUIElements(OBJ_INFANTRY_GRAVEYARD, OBJ_INFANTRY_GRAVEYARD.PingID)
+		OBJ_INFANTRY_GRAVEYARD.PingID = Objective_AddUIElements(OBJ_INFANTRY_GRAVEYARD, sg_playerunits, false, 409266, true)
+		
+		Rule_AddInterval(Infantry_Graveyard_AirborneSelected, 0.5)
+		
+	end
+	
+end
+
+
+function Infantry_Graveyard_TriggerSkirmish()
+
+	if Prox_AreSquadMembersNearMarker(sg_playerunits, mkr_infantry_firstattacktrigger, ANY) then
+		
+		Rule_RemoveMe()
+		
+		Cmd_AttackMove(sg_group5, mkr_infantry_firstattackdest)
+		
+		Util_StartIntel(EVENTS.InfantryGraveyardFirstAttack)
+		
+		Rule_Add(Infantry_Graveyard_SkirmishDone)
+		
+	end
+	
+end
+
+
+function Infantry_Graveyard_SkirmishDone()
+
+	if SGroup_Count(sg_group5) == 0 then
+		
+		Rule_RemoveMe()
+		Game_SkipEvent()
+		
+		Util_StartIntel(EVENTS.InfantryGraveyardFirstAttackKilled)
+		
+		Rule_AddInterval(Infantry_KillMortar_BeginLesson, 0.5)
+		
+	end
+	
+end
+
+
+
+
+--------------------------------------------------------------------------------
+-- Lesson: Kill Mortar Crew
+--------------------------------------------------------------------------------
+function Infantry_KillMortar_BeginLesson()
+	
+	if Event_IsAnyRunning() == false then
+		
+		Rule_RemoveMe()
+		Game_SkipEvent()
+		
+		SGroup_SetAutoTargetting(sg_group1, "hardpoint_01", true)
+		Cmd_Ability(player2, ABILITY.SP.MORTARSTRIKE, Marker_GetPosition(mkr_infantry_mortarstrike1))
+		Cmd_Ability(sg_group1, ABILITY.AXIS.MORTAR_BARRAGE, Marker_GetPosition(mkr_infantry_mortarstrike5))
+		
+		-- give the introductory talk
+		Util_StartIntel(EVENTS.InfantryGraveyardUnderAttack)
+		
+		Player_GetAll(player1)
+		SGroup_Filter(sg_allsquads, SBP.ALLIES.PARATROOPER, FILTER_KEEP)
+		SGroup_AddGroup(sg_playerunits, sg_allsquads)
+		
+		Rule_AddOneShot(Infantry_KillMortar_Show, 7.5)
+		
+		Rule_AddOneShot(Infantry_KillMortar_Strike1, 2)
+		Rule_AddOneShot(Infantry_KillMortar_Strike2, 5)
+		
+	end
+	
+end
+function Infantry_KillMortar_Strike1()
+	Cmd_Ability(player2, ABILITY.SP.MORTARSTRIKE, Marker_GetPosition(mkr_infantry_mortarstrike2))
+end
+function Infantry_KillMortar_Strike2()
+	Cmd_Ability(player2, ABILITY.SP.MORTARSTRIKE, Marker_GetPosition(mkr_infantry_mortarstrike3))
+end
+
+
+function Infantry_KillMortar_Show()					-- fly camera over
+
+	Objective_UpdateText(OBJ_INFANTRY_GRAVEYARD, 409202, 409203, false)
+	
+	Modify_Vulnerability(sg_group1, 1.8)
+	
+	if Misc_IsSGroupSelected(sg_playerunits, ANY) then
+		
+		-- give the introductory talk
+		Util_StartIntel(EVENTS.InfantryAttackMortarsIntro)
+		
+		SGroup_SetInvulnerable(sg_group1, false)
+		
+		FOW_RevealMarker(mkr_infantry_revealmortar, -1)
+		Camera_MoveToPosition(mkr_infantry_revealmortar, true, SLOW_CAMERA_PANNING)
+		Camera_SafetyDefault()
+		
+		Objective_RemoveUIElements(OBJ_INFANTRY_GRAVEYARD, OBJ_INFANTRY_GRAVEYARD.PingID)
+		OBJ_INFANTRY_GRAVEYARD.PingID = Objective_AddUIElements(OBJ_INFANTRY_GRAVEYARD, sg_group1, false, 409254, true)
+		
+		Rule_AddInterval(Infantry_KillMortar_Attacking, 0.5)
+		
+	else
+		
+		-- ask to select paratroopers
+		Util_StartIntel(EVENTS.ParatroopersSelect)
+		
+		Objective_RemoveUIElements(OBJ_INFANTRY_GRAVEYARD, OBJ_INFANTRY_GRAVEYARD.PingID)
+		OBJ_INFANTRY_GRAVEYARD.PingID = Objective_AddUIElements(OBJ_INFANTRY_GRAVEYARD, sg_playerunits, false, 409266, true)
+		
+		Rule_AddInterval(Infantry_KillMortar_AirborneSelected, 0.5)
+		
+	end
+	
+end
+
+
+function Infantry_KillMortar_AirborneSelected()
+	
+	if Misc_IsSGroupSelected(sg_playerunits, ANY) then
+		
+		Rule_RemoveMe()
+		Game_SkipEvent()
+		
+		-- give the introductory talk
+		Util_StartIntel(EVENTS.InfantryAttackMortarsIntro)
+		
+		SGroup_SetInvulnerable(sg_group1, false)
+		
+		FOW_RevealMarker(mkr_infantry_revealmortar, -1)
+		Camera_MoveToPosition(mkr_infantry_revealmortar, true, SLOW_CAMERA_PANNING)
+		Camera_SafetyDefault()
+		
+		Objective_RemoveUIElements(OBJ_INFANTRY_GRAVEYARD, OBJ_INFANTRY_GRAVEYARD.PingID)
+		OBJ_INFANTRY_GRAVEYARD.PingID = Objective_AddUIElements(OBJ_INFANTRY_GRAVEYARD, sg_group1, false, 409254, true)
+		
+		Rule_AddInterval(Infantry_KillMortar_Attacking, 0.5)
+		
+	end
+	
+end
+
+
+function Infantry_KillMortar_Attacking()
+
+	if SGroup_IsUnderAttackByPlayer(sg_group1, player1, 1) then
+		
+		Rule_RemoveMe()
+		Game_SkipEvent()
+		
+		Util_StartIntel(EVENTS.InfantryAttackMortarsAttacking)
+		
+		Rule_Add(Infantry_KillMortar_Done)
+		
+	elseif Misc_IsSGroupSelected(sg_playerunits, ANY) == false then
+		
+		Rule_RemoveMe()
+		Game_SkipEvent()
+		
+		-- ask to re-select paratroopers
+		Util_StartIntel(EVENTS.ParatroopersReSelect)
+		
+		Objective_RemoveUIElements(OBJ_INFANTRY_GRAVEYARD, OBJ_INFANTRY_GRAVEYARD.PingID)
+		OBJ_INFANTRY_GRAVEYARD.PingID = Objective_AddUIElements(OBJ_INFANTRY_GRAVEYARD, sg_playerunits, false, 409266, true)
+		
+		Rule_AddInterval(Infantry_KillMortar_AirborneSelected, 0.5)
+		
+	end
+	
+end
+
+
+function Infantry_KillMortar_Done()
+	
+	if SGroup_Count(sg_group1) == 0 then
+		
+		Rule_RemoveMe()
+		Game_SkipEvent()
+		
+		if SGroup_GetVeterancyRank(sg_playerunits) < 1 then
+			SGroup_IncreaseVeterancyRank(sg_playerunits, 1)
+		end
+		
+		local eid = SyncWeapon_GetEntity(infantry_mortar)
+		if eid ~= nil then
+			Entity_Kill(eid)
+		end
+		
+		-- complete the objective
+		Objective_Complete(OBJ_INFANTRY_GRAVEYARD, false)
+		
+		FOW_UnRevealMarker(mkr_infantry_revealmortar)
+		
+		Util_StartIntel(EVENTS.InfantryAttackMortarsDone)
+		
+		Rule_AddInterval(Infantry_Veterancy_Mention, 0.5)
+		
+	end
+	
+end
+
+
+function Infantry_Veterancy_Mention()
+	
+	if Event_IsAnyRunning() == false then
+		
+		Rule_RemoveMe()
+		
+		Util_StartIntel(EVENTS.InfantryAttackMortarsVeterancy)
+		
+		Rule_AddInterval(Infantry_KillHMG_BeginLesson, 0.5)
+		
+	end
+	
+end
+
+
+
+--------------------------------------------------------------------------------
+-- Lesson: Attack / Flank HMG Site
+--------------------------------------------------------------------------------
+function Infantry_KillHMG_BeginLesson()
+	
+	if Event_IsAnyRunning() == false then
+		
+		Rule_RemoveMe()
+		
+		-- change perimeters
+		FOW_RevealMarker(mkr_infantry_revealhmg, -1)
+		Camera_ClampToMarker(camera_infantry_c)
+		Camera_MoveToPosition(mkr_infantry_revealhmg, true, SLOW_CAMERA_PANNING)
+		Camera_SafetyDefault()
+		EGroup_DeSpawn(LAYER_wall_infantry_2)
+		
+		-- give the introductory talk
+		Util_StartIntel(EVENTS.InfantryAttackHMGSpotted)
+		
+		Cmd_Move(sg_playerunits, mkr_infantry_prehmgdest)
+		
+		Rule_AddInterval(Infantry_KillHMG_GiveObjective, 0.5)
+		
+	end
+	
+end
+
+
+function Infantry_KillHMG_GiveObjective()
+
+	if Event_IsAnyRunning() == false then
+		
+		Rule_RemoveMe()
+		
+		-- give the objective
+		Objective_Start(OBJ_INFANTRY_ATTACKHMG, false)
+		
+		
+		if Misc_IsSGroupSelected(sg_playerunits, ANY) then
+			
+			-- give the introductory talk
+			Util_StartIntel(EVENTS.InfantryAttackHMGIntro)
+			
+			OBJ_INFANTRY_ATTACKHMG.PingID = Objective_AddUIElements(OBJ_INFANTRY_ATTACKHMG, sg_group2, false, 409255, true)
+			
+			Rule_AddInterval(Infantry_KillHMG_Attacking, 0.5)
+			
+		else
+			
+			-- ask to select paratroopers
+			Util_StartIntel(EVENTS.ParatroopersSelect)
+			
+			OBJ_INFANTRY_ATTACKHMG.PingID = Objective_AddUIElements(OBJ_INFANTRY_ATTACKHMG, sg_playerunits, false, 409266, true)
+			
+			Rule_AddInterval(Infantry_KillHMG_AirborneSelected, 0.5)
+			
+		end
+		
+	end
+	
+end
+
+
+function Infantry_KillHMG_AirborneSelected()
+	
+	if Misc_IsSGroupSelected(sg_playerunits, ANY) then
+		
+		Rule_RemoveMe()
+		Game_SkipEvent()
+		
+		-- give the introductory talk
+		Util_StartIntel(EVENTS.InfantryAttackHMGIntro)
+		
+		Objective_RemoveUIElements(OBJ_INFANTRY_ATTACKHMG, OBJ_INFANTRY_ATTACKHMG.PingID)
+		OBJ_INFANTRY_ATTACKHMG.PingID = Objective_AddUIElements(OBJ_INFANTRY_ATTACKHMG, sg_group2, false, 409255, true)
+		
+		Rule_AddInterval(Infantry_KillHMG_Attacking, 0.5)
+		
+	end
+	
+end
+
+
+function Infantry_KillHMG_Attacking()
+
+	if SGroup_IsUnderAttack(sg_playerunits, ANY, 1) then
+		
+		Rule_RemoveMe()
+		Game_SkipEvent()
+		
+		Util_StartIntel(EVENTS.InfantryAttackHMGAttacking)
+		
+		Rule_AddInterval(Infantry_KillHMG_Flank, 0.5)
+		
+	elseif Misc_IsSGroupSelected(sg_playerunits, ANY) == false then
+		
+		Rule_RemoveMe()
+		Game_SkipEvent()
+		
+		-- ask to re-select paratroopers
+		Util_StartIntel(EVENTS.ParatroopersReSelect)
+		
+		Objective_RemoveUIElements(OBJ_INFANTRY_ATTACKHMG, OBJ_INFANTRY_ATTACKHMG.PingID)
+		OBJ_INFANTRY_ATTACKHMG.PingID = Objective_AddUIElements(OBJ_INFANTRY_ATTACKHMG, sg_playerunits, false, 409266, true)
+		
+		Rule_AddInterval(Infantry_KillHMG_AirborneSelected, 0.5)
+		
+	end
+	
+end
+
+
+function Infantry_KillHMG_Flank()							-- under attack: change objective to flank
+
+	if Event_IsAnyRunning() == false then
+		
+		Rule_RemoveMe()
+		
+		Objective_UpdateText(OBJ_INFANTRY_ATTACKHMG, 409230, 409231, false)
+		
+		if Misc_IsSGroupSelected(sg_playerunits, ANY) then
+			
+			-- give the introductory talk
+			Util_StartIntel(EVENTS.InfantryAttackHMGFlank)
+			
+			Objective_RemoveUIElements(OBJ_INFANTRY_ATTACKHMG, OBJ_INFANTRY_ATTACKHMG.PingID)
+			OBJ_INFANTRY_ATTACKHMG.PingID = Objective_AddUIElements(OBJ_INFANTRY_ATTACKHMG, mkr_infantry_flankhmg, false, 409256, true)
+			
+			Rule_AddInterval(Infantry_KillHMG_ThrowGrenade, 0.5)
+			
+		else
+			
+			-- ask to select paratroopers
+			Util_StartIntel(EVENTS.ParatroopersSelect)
+			
+			Objective_RemoveUIElements(OBJ_INFANTRY_ATTACKHMG, OBJ_INFANTRY_ATTACKHMG.PingID)
+			OBJ_INFANTRY_ATTACKHMG.PingID = Objective_AddUIElements(OBJ_INFANTRY_ATTACKHMG, sg_playerunits, false, 409266, true)
+			
+			Rule_AddInterval(Infantry_KillHMG_FlankAirborneSelected, 0.5)			
+			
+		end
+		
+	end
+	
+end
+
+
+function Infantry_KillHMG_FlankAirborneSelected()
+	
+	if Misc_IsSGroupSelected(sg_playerunits, ANY) then
+		
+		Rule_RemoveMe()
+		Game_SkipEvent()
+		
+		-- give the introductory talk
+		Util_StartIntel(EVENTS.InfantryAttackHMGFlank)
+		
+		Objective_RemoveUIElements(OBJ_INFANTRY_ATTACKHMG, OBJ_INFANTRY_ATTACKHMG.PingID)
+		OBJ_INFANTRY_ATTACKHMG.PingID = Objective_AddUIElements(OBJ_INFANTRY_ATTACKHMG, mkr_infantry_flankhmg, false, 409256, true)
+		
+		Rule_AddInterval(Infantry_KillHMG_ThrowGrenade, 0.5)
+		
+	end
+	
+end
+
+
+function Infantry_KillHMG_ThrowGrenade()
+	
+	if Prox_ArePlayerMembersNearMarker(player1, mkr_infantry_flankhmg, ANY) then
+		
+		Rule_RemoveMe()
+		Game_SkipEvent()
+		
+		Player_SetAbilityAvailability(player1, ABILITY.ALLIES.GRENADE, ITEM_UNLOCKED)
+		
+		Objective_UpdateText(OBJ_INFANTRY_ATTACKHMG, 409232, 409233, false)
+		
+		Rule_AddSGroupEvent(Infantry_KillHMG_CheckAbility, sg_playerunits, GE_AbilityExecuted)
+		Rule_AddInterval(Infantry_KillHMG_Done, 0.5)
+		
+		if Misc_IsSGroupSelected(sg_playerunits, ANY) then
+			
+			-- give the introductory talk
+			Util_StartIntel(EVENTS.InfantryAttackHMGThrowGrenade)
+			
+			Objective_RemoveUIElements(OBJ_INFANTRY_ATTACKHMG, OBJ_INFANTRY_ATTACKHMG.PingID)
+			OBJ_INFANTRY_ATTACKHMG.PingID = Objective_AddUIElements(OBJ_INFANTRY_ATTACKHMG, sg_group2, false, 409257, true)
+			
+			if flashid_infantry_grenade == nil then
+				flashid_infantry_grenade = UI_FlashAbilityButton(ABILITY.ALLIES.GRENADE, false, BT_UI_Strong_CommandBtn )
+				hpid_infantry_grenade = HintPoint_AddToAbilityButton(ABILITY.ALLIES.GRENADE, 409271, false)
+			end
+			
+		else 
+			
+			-- ask to select paratroopers
+			Util_StartIntel(EVENTS.ParatroopersSelect)
+			
+			Objective_RemoveUIElements(OBJ_INFANTRY_ATTACKHMG, OBJ_INFANTRY_ATTACKHMG.PingID)
+			OBJ_INFANTRY_ATTACKHMG.PingID = Objective_AddUIElements(OBJ_INFANTRY_ATTACKHMG, sg_playerunits, false, 409266, true)
+			
+			Rule_AddInterval(Infantry_KillHMG_ThrowGrenadeAirborneSelected, 0.5)
+			
+		end
+		
+	elseif Misc_IsSGroupSelected(sg_playerunits, ANY) == false then
+		
+		Rule_RemoveMe()
+		Game_SkipEvent()
+		
+		-- ask to select paratroopers
+		Util_StartIntel(EVENTS.ParatroopersSelect)
+		
+		Objective_RemoveUIElements(OBJ_INFANTRY_ATTACKHMG, OBJ_INFANTRY_ATTACKHMG.PingID)
+		OBJ_INFANTRY_ATTACKHMG.PingID = Objective_AddUIElements(OBJ_INFANTRY_ATTACKHMG, sg_playerunits, false, 409266, true)
+		
+		Rule_AddInterval(Infantry_KillHMG_FlankAirborneSelected, 0.5)
+		
+	end
+	
+end
+
+
+function Infantry_KillHMG_ThrowGrenadeAirborneSelected()
+	
+	if Misc_IsSGroupSelected(sg_playerunits, ANY) then
+		
+		Rule_RemoveMe()
+		Game_SkipEvent()
+		
+		-- give the introductory talk
+		Util_StartIntel(EVENTS.InfantryAttackHMGThrowGrenade)
+		
+		Objective_RemoveUIElements(OBJ_INFANTRY_ATTACKHMG, OBJ_INFANTRY_ATTACKHMG.PingID)
+		OBJ_INFANTRY_ATTACKHMG.PingID = Objective_AddUIElements(OBJ_INFANTRY_ATTACKHMG, sg_group2, false, 409257, true)
+		
+		if flashid_infantry_grenade == nil then
+			flashid_infantry_grenade = UI_FlashAbilityButton(ABILITY.ALLIES.GRENADE, false, BT_UI_Strong_CommandBtn )
+			hpid_infantry_grenade = HintPoint_AddToAbilityButton(ABILITY.ALLIES.GRENADE, 409271, false)
+		end
+		
+	end
+	
+end
+
+
+function Infantry_KillHMG_CheckAbility(squad, abilityID, target)
+
+	if abilityID == ABILITY.ALLIES.GRENADE then
+		
+		if (scartype(target) == ST_SQUAD and SGroup_ContainsSquad(sg_group2, Squad_GetGameID(target))) or 
+		   (scartype(target) == ST_ENTITY and SGroup_ContainsEntity(sg_group2, target)) or 
+		   (scartype(target) == ST_SCARPOS and World_DistancePointToPoint(target, SGroup_GetPosition_EVEN_IF_EMPTY(sg_group2)) < 4) then
+			
+			Game_SkipEvent()
+			
+			SGroup_SetInvulnerable(sg_group2, false)
+			if SyncWeapon_Exists(infantry_hmg) then
+				Entity_SetInvulnerable(SyncWeapon_GetEntity(infantry_hmg), 1, -1)
+			end
+			Modify_Vulnerability(sg_group2, 1.7)
+			EGroup_DeSpawn(LAYER_wall_infantry_3)
+			
+			if flashid_infantry_grenade ~= nil then
+				UI_StopFlashing(flashid_infantry_grenade)
+				HintPoint_Remove(hpid_infantry_grenade)
+				flashid_infantry_grenade = nil
+				hpid_infantry_grenade = nil
+			end
+			
+		else
+			
+			-- it's way off
+			
+			
+		end
+		
+	end
+	
+end
+
+
+function Infantry_KillHMG_Done()								-- flanked: change objective to throw grenade
+	
+	if SGroup_Count(sg_group2) == 0 then
+		
+		Rule_RemoveMe()
+		if Event_IsAnyRunning() then Game_SkipEvent() end
+		if Rule_Exists(Infantry_KillHMG_ThrowGrenadeAirborneSelected) then Rule_Remove(Infantry_KillHMG_ThrowGrenadeAirborneSelected) end
+		
+		Rule_RemoveSGroupEvent(Infantry_KillHMG_CheckAbility, sg_playerunits)
+		
+		-- complete the objective
+		Objective_Complete(OBJ_INFANTRY_ATTACKHMG, false)
+		
+		Util_StartIntel(EVENTS.InfantryAttackHMGDone)
+		Rule_AddInterval(Infantry_PickUp_BeginLesson, 0.5)
+		
+	elseif Misc_IsSGroupSelected(sg_playerunits, ANY) == false and Rule_Exists(Infantry_KillHMG_ThrowGrenadeAirborneSelected) == false then
+		
+		Game_SkipEvent()
+		
+		-- ask to re-select paratroopers
+		Util_StartIntel(EVENTS.ParatroopersReSelect)
+		
+		Objective_RemoveUIElements(OBJ_INFANTRY_ATTACKHMG, OBJ_INFANTRY_ATTACKHMG.PingID)
+		OBJ_INFANTRY_ATTACKHMG.PingID = Objective_AddUIElements(OBJ_INFANTRY_ATTACKHMG, sg_playerunits, false, 409266, true)
+		
+		Rule_AddInterval(Infantry_KillHMG_ThrowGrenadeAirborneSelected, 0.5)
+		
+	end
+	
+end
+
+
+
+
+--------------------------------------------------------------------------------
+-- Lesson: Pick Up HMG
+--------------------------------------------------------------------------------
+function Infantry_PickUp_BeginLesson()
+	
+	if Event_IsAnyRunning() == false then
+		
+		Rule_RemoveMe()
+		
+		-- give the objective
+		Objective_Start(OBJ_INFANTRY_PICKUP, false)
+		
+		if Misc_IsSGroupSelected(sg_playerunits, ANY) then
+			
+			-- give the introductory talk
+			Util_StartIntel(EVENTS.InfantryPickUpHMGIntro)
+			
+			local pos = SyncWeapon_GetPosition(infantry_hmg)
+			Objective_AddUIElements(OBJ_INFANTRY_PICKUP, pos, false, 409258, true)
+			
+			Rule_AddInterval(Infantry_PickUp_Done, 0.5)
+			
+		else
+			
+			-- ask to select paratroopers
+			Util_StartIntel(EVENTS.ParatroopersSelect)
+			
+			Objective_AddUIElements(OBJ_INFANTRY_PICKUP, sg_playerunits, false, 409266, true)
+			Rule_AddInterval(Infantry_PickUp_AirborneSelected, 0.5)
+			
+		end
+		
+	end
+	
+end
+
+
+function Infantry_PickUp_AirborneSelected()
+	
+	if Misc_IsSGroupSelected(sg_playerunits, ANY) then
+		
+		Rule_RemoveMe()
+		Game_SkipEvent()
+		
+		-- give the introductory talk
+		Util_StartIntel(EVENTS.InfantryPickUpHMGIntro)
+		
+		local pos = SyncWeapon_GetPosition(infantry_hmg)
+		Objective_RemoveUIElements(OBJ_INFANTRY_PICKUP, OBJ_INFANTRY_PICKUP.PingID)
+		Objective_AddUIElements(OBJ_INFANTRY_PICKUP, pos, false, 409258, true)
+		
+		Rule_AddInterval(Infantry_PickUp_Done, 0.5)
+		
+	end
+	
+end
+
+
+function Infantry_PickUp_Done()
+	
+	if SyncWeapon_IsOwnedByPlayer(infantry_hmg, player1) then
+		
+		Rule_RemoveMe()
+		Game_SkipEvent()
+		
+		-- complete the objective
+		Objective_Complete(OBJ_INFANTRY_PICKUP, false)
+		HintPoint_RemoveAll()
+		FOW_UnRevealMarker(mkr_infantry_revealhmg)
+		
+		Player_GetAll(player1)
+		SGroup_AddGroup(sg_playerunits, sg_allsquads)
+		SGroup_Duplicate(sg_allsquads, sg_group1)
+		SGroup_Duplicate(sg_allsquads, sg_group2)
+		SGroup_Filter(sg_group1, SBP.ALLIES.PARATROOPER, FILTER_KEEP)
+		SGroup_Filter(sg_group2, SBP.ALLIES.PARATROOPER, FILTER_REMOVE)
+		
+		Rule_AddInterval(Infantry_PickUp_DoneB, 0.5)
+		
+	elseif Misc_IsSGroupSelected(sg_playerunits, ANY) == false then
+		
+		Rule_RemoveMe()
+		Game_SkipEvent()
+		
+		-- ask to re-select paratroopers
+		Util_StartIntel(EVENTS.ParatroopersReSelect)
+		
+		Objective_RemoveUIElements(OBJ_INFANTRY_PICKUP, OBJ_INFANTRY_PICKUP.PingID)
+		OBJ_INFANTRY_PICKUP.PingID = Objective_AddUIElements(OBJ_INFANTRY_PICKUP, sg_playerunits, false, 409266, true)
+		
+		Rule_AddInterval(Infantry_PickUp_AirborneSelected, 0.5)
+		
+	end
+	
+end
+function Infantry_PickUp_DoneB()							-- wait until takeover is more complete (guys need to move up, etc)
+
+	if Prox_AreSquadMembersNearMarker(sg_group2, mkr_infantry_hmgspawn, ALL) then
+		
+		Rule_RemoveMe()
+		
+		Util_StartIntel(EVENTS.InfantryPickUpHMGDone)
+		
+		EGroup_ReSpawn(eg_infantry_hmgpen) -- create the "pen"
+		
+		HintPoint_Add(sg_group1, true, 409263)
+		HintPoint_Add(sg_group2, true, 409264)		
+		
+		Rule_AddInterval(Infantry_SetFacing_BeginLesson, 0.5)
+		
+	end
+	
+end
+
+
+
+
+
+--------------------------------------------------------------------------------
+-- Lesson: Set Facing of HMG
+--------------------------------------------------------------------------------
+function Infantry_SetFacing_BeginLesson()
+	
+	if Event_IsAnyRunning() == false then
+		
+		Rule_RemoveMe()
+		HintPoint_RemoveAll()
+		
+		-- give the objective
+		Objective_Start(OBJ_INFANTRY_SETFACING, false)
+		
+		if Misc_IsSGroupSelected(sg_group2, ANY) then
+			
+			-- give the introductory talk
+			Util_StartIntel(EVENTS.InfantryRotateHMGIntro)
+			
+			EGroup_ReSpawn(eg_infantry_facingdirection)
+			
+			Rule_AddInterval(Infantry_SetFacing_Done, 0.5)
+			
+		else
+			
+			-- ask to select HMG
+			Util_StartIntel(EVENTS.HMGsSelect)
+			
+			OBJ_INFANTRY_SETFACING.PingID = Objective_AddUIElements(OBJ_INFANTRY_SETFACING, sg_group2, false, 409267, true)
+			
+			Rule_AddInterval(Infantry_SetFacing_AirborneSelected, 0.5)
+			
+		end
+		
+	end
+	
+end
+
+
+function Infantry_SetFacing_AirborneSelected()
+	
+	if Misc_IsSGroupSelected(sg_group2, ANY) then
+		
+		Rule_RemoveMe()
+		Game_SkipEvent()
+		
+		-- give the introductory talk
+		Util_StartIntel(EVENTS.InfantryRotateHMGIntro)
+		
+		Objective_RemoveUIElements(OBJ_INFANTRY_SETFACING, OBJ_INFANTRY_SETFACING.PingID)
+		EGroup_ReSpawn(eg_infantry_facingdirection)
+		
+		Rule_AddInterval(Infantry_SetFacing_Done, 0.5)
+		
+	end
+	
+end
+
+
+function Infantry_SetFacing_Done()
+	
+	-- dir1 is the facing direction of the HMG
+	local dir1 = World_Pos(0,0,0)
+	if SyncWeapon_Exists(infantry_hmg) then
+		dir1 = Entity_GetHeading(SyncWeapon_GetEntity(infantry_hmg))
+	end
+	
+	-- dir2 is the direction from the HMG to the bad guy's approach direction
+	local hmgpos = SyncWeapon_GetPosition(infantry_hmg)
+	local enemypos = Marker_GetPosition(mkr_infantry_hmgrotatefacing)
+	local dist = World_DistancePointToPoint(hmgpos, enemypos)
+	local dir2 = World_Pos((enemypos.x - hmgpos.x)/dist, (enemypos.y - hmgpos.y)/dist, (enemypos.z - hmgpos.z)/dist)
+	
+	-- distance between the points should be less than 0.5 (approx. 30 degrees either side)
+	if World_DistancePointToPoint(dir1, dir2) < 0.5 then
+		
+		Rule_RemoveMe()
+		Game_SkipEvent()
+		
+		-- complete the objective
+		Objective_Complete(OBJ_INFANTRY_SETFACING, false)
+		EGroup_DeSpawn(eg_infantry_facingdirection)
+		EGroup_DeSpawn(eg_infantry_hmgpen)
+		
+		Util_StartIntel(EVENTS.InfantryRotateHMGRotated)
+		
+		Rule_AddInterval(Infantry_SetFacing_StartAttack, 0.5)
+		
+	elseif Misc_IsSGroupSelected(sg_group2, ANY) == false then
+		
+		Rule_RemoveMe()
+		Game_SkipEvent()
+		
+		-- ask to re-select HMG
+		Util_StartIntel(EVENTS.HMGsReSelect)
+		
+		EGroup_DeSpawn(eg_infantry_facingdirection)
+		OBJ_INFANTRY_SETFACING.PingID = Objective_AddUIElements(OBJ_INFANTRY_SETFACING, sg_group2, false, 409267, true)
+		
+		Rule_AddInterval(Infantry_SetFacing_AirborneSelected, 0.5)
+		
+	end
+	
+end
+
+
+function Infantry_SetFacing_StartAttack()
+
+	if Event_IsAnyRunning() == false then
+		
+		Rule_RemoveMe()
+		
+		Util_StartIntel(EVENTS.InfantryRotateHMGIncoming)
+		
+		FOW_RevealMarker(mkr_infantry_revealcounterattack, -1)
+		Camera_ClampToMarker(camera_infantry_d)
+		Camera_MoveToPosition(mkr_infantry_revealcounterattack, true, SLOW_CAMERA_PANNING)
+		Camera_SafetyDefault()
+		
+		SGroup_SetInvulnerable(sg_playerunits, true)
+		
+		Util_CreateSquads(player2, sg_group3, SBP.AXIS.GRENADIER, mkr_infantry_counterattackspawn, nil, 2)
+		Modify_Vulnerability(sg_group3, 1.4)
+		Cmd_AttackMove(sg_group3, sg_playerunits)
+		
+		Rule_AddInterval(Infantry_SetFacing_WaitUntilKilled, 0.5)
+		
+	end
+
+end
+
+
+function Infantry_SetFacing_WaitUntilKilled()
+	
+	if SGroup_Count(sg_group3) == 0 then
+		
+		Rule_RemoveMe()
+		
+		SGroup_SetInvulnerable(sg_playerunits, false)
+		
+		Util_StartIntel(EVENTS.InfantryRotateHMGDone)
+		
+		Rule_AddInterval(Infantry_MoreParas_Intro, 0.5)
+		
+	end
+	
+end
+
+
+--------------------------------------------------------------------------------
+-- Lesson: Capture Point
+--------------------------------------------------------------------------------
+function Infantry_MoreParas_Intro()
+	
+	if Event_IsAnyRunning() == false then
+		
+		Rule_RemoveMe()
+		
+		Util_StartIntel(EVENTS.InfantryMoreParasIntro)
+		
+		Camera_MoveToPosition(mkr_infantry_paradrop2, true, SLOW_CAMERA_PANNING)
+		Camera_SafetyDefault()
+		
+		SGroup_Clear(sg_group1)
+		Util_Paradrop(player1, sg_group1, SBP.ALLIES.PARATROOPER, mkr_infantry_paradrop2, 1)
+		Rule_AddInterval(Infantry_Capture_BeginLesson, 1)
+		
+	end
+	
+end
+
+
+
+--------------------------------------------------------------------------------
+-- Lesson: Capture Point
+--------------------------------------------------------------------------------
+function Infantry_Capture_BeginLesson()
+	
+	if Event_IsAnyRunning() == false then
+		
+		Rule_RemoveMe()
+		
+		-- give the objective
+		Objective_Start(OBJ_INFANTRY_CAPTURE, false)
+		
+		SGroup_AddGroup(sg_playerunits, sg_group1)
+		Player_SetCommandAvailability(player1, SCMD_Capture, ITEM_DEFAULT)
+		
+		-- if we've tripped the "make invulnerable when down to four" rule, reset it
+		if Rule_Exists(Infantry_CheckSquad) == false then
+			SGroup_SetInvulnerable(sg_playerunits, false)
+			Rule_Add(Infantry_CheckSquad)
+		end
+		
+		if Misc_IsSGroupSelected(sg_group1, ANY) then
+			
+			-- give the introductory talk
+			Util_StartIntel(EVENTS.InfantryCaptureIntro)
+			
+			OBJ_INFANTRY_CAPTURE.PingID = Objective_AddUIElements(OBJ_INFANTRY_CAPTURE, eg_vp_infantry, false, 409262, true, 2)
+			
+			Rule_AddInterval(Infantry_Capture_Done, 1)
+			
+		else
+			
+			-- ask to select paratroopers
+			Util_StartIntel(EVENTS.InfantryCaptureSelectNew)
+			
+			OBJ_INFANTRY_CAPTURE.PingID = Objective_AddUIElements(OBJ_INFANTRY_CAPTURE, sg_group1, false, 409266, true)
+			
+			Rule_AddInterval(Infantry_Capture_AirborneSelected, 0.5)
+			
+		end
+		
+	end
+	
+end
+
+
+function Infantry_Capture_AirborneSelected()
+	
+	if Misc_IsSGroupSelected(sg_group1, ANY) then
+		
+		Rule_RemoveMe()
+		Game_SkipEvent()
+		
+		-- give the introductory talk
+		Util_StartIntel(EVENTS.InfantryCaptureIntro)
+		
+		Objective_RemoveUIElements(OBJ_INFANTRY_CAPTURE, OBJ_INFANTRY_CAPTURE.PingID)
+		OBJ_INFANTRY_CAPTURE.PingID = Objective_AddUIElements(OBJ_INFANTRY_CAPTURE, eg_vp_infantry, false, 409262, true, 2)
+		
+		Rule_AddInterval(Infantry_Capture_Done, 1)
+		
+	end
+	
+end
+
+
+function Infantry_Capture_Done()
+	
+	if Player_OwnsEGroup(player1, eg_vp_infantry) then
+		
+		Rule_RemoveMe()
+		Game_SkipEvent()
+		
+		-- complete the objective
+		Objective_Complete(OBJ_INFANTRY_CAPTURE, false)
+		HintPoint_RemoveAll()
+		
+		Util_StartIntel(EVENTS.InfantryCaptureDone)
+		Rule_AddInterval(Infantry_Upgrade_BeginLesson, 0.5)
+		
+	elseif Misc_IsSGroupSelected(sg_group1, ANY) == false then
+		
+		Rule_RemoveMe()
+		Game_SkipEvent()
+		
+		-- ask to re-select paratroopers
+		Util_StartIntel(EVENTS.ParatroopersReSelect)
+		
+		Objective_RemoveUIElements(OBJ_INFANTRY_CAPTURE, OBJ_INFANTRY_CAPTURE.PingID)
+		OBJ_INFANTRY_CAPTURE.PingID = Objective_AddUIElements(OBJ_INFANTRY_CAPTURE, sg_group1, false, 409266, true)
+		
+		Rule_AddInterval(Infantry_Capture_AirborneSelected, 0.5)
+		
+	end
+	
+end
+
+
+
+
+--------------------------------------------------------------------------------
+-- Lesson: Upgrade
+--------------------------------------------------------------------------------
+function Infantry_Upgrade_BeginLesson()
+	
+	if Event_IsAnyRunning() == false then
+		
+		Rule_RemoveMe()
+		Player_SetUpgradeAvailability(player1, UPG.ALLIES.PARATROOPER_AT, ITEM_DEFAULT)
+		
+		-- make sure the player has enough resources
+		Tutorial_SafetySetResources(cost.recoilless)	
+		
+		-- give the objective
+		Objective_Start(OBJ_INFANTRY_UPGRADE, false)
+		
+		if Misc_IsSGroupSelected(sg_group1, ANY) then
+			
+			-- give the introductory talk
+			Util_StartIntel(EVENTS.InfantryUpgradeIntro)
+			
+			flashid_infantry_upgrade = UI_FlashProductionButton(PITEM_SquadUpgrade, UPG.ALLIES.PARATROOPER_AT, true, BT_UI_Strong_UpgradeBtn )
+			HintPoint_AddToProductionButton(PITEM_SquadUpgrade, UPG.ALLIES.PARATROOPER_AT, 409272, true)
+			Rule_AddInterval(Infantry_Upgrade_IsUpgrading, 0.5)
+			
+		else
+			
+			-- ask to select paratroopers
+			Util_StartIntel(EVENTS.ParatroopersSelect)
+			
+			OBJ_INFANTRY_UPGRADE.PingID = Objective_AddUIElements(OBJ_INFANTRY_UPGRADE, sg_group1, false, 409266, true)
+			
+			Rule_AddInterval(Infantry_Upgrade_AirborneSelected, 0.5)
+			
+		end
+		
+	end
+	
+end
+
+
+function Infantry_Upgrade_AirborneSelected()
+	
+	if Misc_IsSGroupSelected(sg_group1, ANY) then
+		
+		Rule_RemoveMe()
+		Game_SkipEvent()
+		
+		-- give the introductory talk
+		Util_StartIntel(EVENTS.InfantryUpgradeIntro)
+		
+		Objective_RemoveUIElements(OBJ_INFANTRY_UPGRADE, OBJ_INFANTRY_UPGRADE.PingID)
+		
+		flashid_infantry_upgrade = UI_FlashProductionButton(PITEM_SquadUpgrade, UPG.ALLIES.PARATROOPER_AT, true, BT_UI_Strong_UpgradeBtn )
+		HintPoint_AddToProductionButton(PITEM_SquadUpgrade, UPG.ALLIES.PARATROOPER_AT, 409272, true)
+		
+		Rule_AddInterval(Infantry_Upgrade_IsUpgrading, 0.5)
+		
+	end
+	
+end
+
+
+function Infantry_Upgrade_IsUpgrading()
+	
+	if SGroup_IsUpgrading(sg_group1, UPG.ALLIES.PARATROOPER_AT, ANY) then
+		
+		Rule_RemoveMe()
+		Game_SkipEvent()
+		
+		UI_StopFlashing(flashid_infantry_upgrade)
+		
+		Util_StartIntel(EVENTS.InfantryUpgradeUpgrading)
+		
+		Rule_AddInterval(Infantry_Upgrade_Done, 0.5)
+		
+	elseif	Misc_IsSGroupSelected(sg_group1, ANY) == false then
+		
+		Rule_RemoveMe()
+		Game_SkipEvent()
+		
+		-- ask to re-select paratroopers
+		Util_StartIntel(EVENTS.ParatroopersReSelect)
+		
+		OBJ_INFANTRY_UPGRADE.PingID = Objective_AddUIElements(OBJ_INFANTRY_UPGRADE, sg_group1, false, 409266, true)
+		
+		Rule_AddInterval(Infantry_Upgrade_AirborneSelected, 0.5)
+		
+	end
+	
+end
+
+
+function Infantry_Upgrade_Done()
+	
+	if SGroup_HasUpgrade(sg_group1, UPG.ALLIES.PARATROOPER_AT, ANY) then
+		
+		Rule_RemoveMe()
+		
+		-- complete the objective
+		Objective_Complete(OBJ_INFANTRY_UPGRADE, false)
+		HintPoint_RemoveAll()
+		
+		Util_StartIntel(EVENTS.InfantryUpgradeDone)
+		Rule_AddInterval(Infantry_AttackBarn_BeginLesson, 0.5)
+		
+	end
+	
+end
+
+
+
+
+--------------------------------------------------------------------------------
+-- Lesson: Attack Barn
+--------------------------------------------------------------------------------
+function Infantry_AttackBarn_BeginLesson()
+	
+	if Event_IsAnyRunning() == false then
+		
+		Rule_RemoveMe()
+		Game_SkipEvent()
+		
+		-- create the enemy
+		Util_CreateSquads(player2, sg_group4, SBP.AXIS.HEAVYMG_SP_NOSUP, eg_infantry_barn, nil, 1)
+		
+		-- change perimeters
+		FOW_RevealMarker(mkr_infantry_revealbarn, -1)
+		Camera_MoveToPosition(mkr_infantry_revealbarn, true, SLOW_CAMERA_PANNING)
+		Camera_SafetyDefault()
+		EGroup_DeSpawn(LAYER_wall_infantry_4)
+		
+		Player_SetAbilityAvailability(player1, ABILITY.ALLIES.SATCHEL_CHARGE, ITEM_UNLOCKED)
+		
+		-- give the introductory talk
+		Util_StartIntel(EVENTS.InfantryAttackBarnIntro)
+		
+		Objective_Start(OBJ_INFANTRY_ATTACKBARN, false)
+		Rule_AddInterval(Infantry_AttackBarn_Done, 0.5)
+		
+	end
+	
+end
+
+
+function Infantry_AttackBarn_Done()
+	
+	if Player_OwnsEGroup(player2, eg_infantry_barn) == false then
+		
+		Rule_RemoveMe()
+		
+		-- complete the objective
+		Objective_Complete(OBJ_INFANTRY_ATTACKBARN, false)
+		HintPoint_RemoveAll()
+		
+		Util_StartIntel(EVENTS.InfantryAttackBarnDone)
+		Rule_AddInterval(Infantry_TutorialComplete, 0.5)
+		
+	end
+	
+end
+
+
+function Infantry_CheckSquad()
+	if SGroup_TotalMembersCount(sg_playerunits) <= 4 then
+		Rule_RemoveMe()
+		SGroup_SetInvulnerable(sg_playerunits, true)
+	end
+end
+
+
+--------------------------------------------------------------------------------
+-- Closing
+--------------------------------------------------------------------------------
+function Infantry_TutorialComplete()
+	
+	if Event_IsAnyRunning() == false then
+		
+		Rule_RemoveMe()
+		
+		PlayerProfile_SetVar("InfantryTutorial_Completed", "true")
+		Rule_AddOneShot(Infantry_EndTutorial, 5)
+		
+	end
+	
+end
+
+
+
+
+--------------------------------------------------------------------------------
+-- End the tutorial and return to the courtyard
+--------------------------------------------------------------------------------
+function Infantry_EndTutorial()
+
+	Rule_RemoveAll(0)
+	Game_SkipAllEvents(true)
+	
+	Infantry_CleanUp()
+	Courtyard_Start()
+
+end
+
+function Infantry_CleanUp()
+
+	HintPoint_RemoveAll()
+	SelectionCheck_Stop()
+	
+	-- stop everything
+	Player_GetAll(player1)
+	Cmd_Stop(eg_allentities)
+	Cmd_Stop(sg_allsquads)
+
+	FOW_UnRevealMarker(mkr_infantry_revealparadrop)
+	FOW_UnRevealMarker(mkr_infantry_revealmortar)
+	FOW_UnRevealMarker(mkr_infantry_revealhmg)
+	FOW_UnRevealMarker(mkr_infantry_revealcounterattack)
+	FOW_UnRevealMarker(mkr_infantry_revealbarn)
+	
+	Player_SetAbilityAvailability(player1, ABILITY.COMMANDER_TREE.ALLIES.RECRUIT_PARADROP, ITEM_LOCKED)
+	Player_SetUpgradeAvailability(player1, UPG.ALLIES.PARATROOPER_AT, ITEM_LOCKED)
+	Player_SetAbilityAvailability(player1, ABILITY.ALLIES.GRENADE, ITEM_LOCKED)
+	Player_SetAbilityAvailability(player1, ABILITY.ALLIES.SATCHEL_CHARGE, ITEM_LOCKED)
+	Player_SetCommandAvailability(player1, SCMD_Capture, ITEM_LOCKED)
+	
+	Misc_RemoveCommandRestriction()
+	
+	-- revert all territories
+	EGroup_SetStrategicPointNeutral(eg_vp_infantry)
+	
+	-- remove all the units spawned for this tutorial
+	SGroup_DestroyAllSquads(sg_playerunits)
+	SGroup_DestroyAllSquads(sg_engineer)
+	SGroup_DestroyAllSquads(sg_friends)
+	SGroup_DestroyAllSquads(sg_convoy)
+	SGroup_DestroyAllSquads(sg_group1)
+	SGroup_DestroyAllSquads(sg_group2)
+	SGroup_DestroyAllSquads(sg_group3)
+	SGroup_DestroyAllSquads(sg_group4)
+	SGroup_DestroyAllSquads(sg_group5)
+	SGroup_DestroyAllSquads(sg_group6)
+	SGroup_DestroyAllSquads(sg_group7)
+	SGroup_DestroyAllSquads(sg_group8)
+	SGroup_DestroyAllSquads(sg_group9)
+	SGroup_DestroyAllSquads(sg_allsquads)
+
+	
+	-- remove all the objectives used in this tutorial
+ 	Objective_Show(OBJ_INFANTRY_PARATROOPERS, false)
+ 	Objective_Show(OBJ_INFANTRY_LIGHTCOVER, false)
+ 	Objective_Show(OBJ_INFANTRY_HEAVYCOVER, false)
+ 	Objective_Show(OBJ_INFANTRY_GRAVEYARD, false)
+ 	Objective_Show(OBJ_INFANTRY_KILLMORTAR, false)
+ 	Objective_Show(OBJ_INFANTRY_ATTACKHMG, false)
+ 	Objective_Show(OBJ_INFANTRY_PICKUP, false)
+ 	Objective_Show(OBJ_INFANTRY_SETFACING, false)
+ 	Objective_Show(OBJ_INFANTRY_CAPTURE, false)
+ 	Objective_Show(OBJ_INFANTRY_UPGRADE, false)
+ 	Objective_Show(OBJ_INFANTRY_ATTACKBARN, false)
+
+	-- remove any titlecards
+	if screen_redshield ~= nil then
+		Misc_ScreenFadeChange(screen_redshield, 0.0, 0.0, 0.1)
+	end
+	if screen_veteran ~= nil then
+		Misc_ScreenFadeChange(screen_veteran, 0.0, 0.0, 0.1)
+	end
+	if screen_weaponupgrade ~= nil then
+		Misc_ScreenFadeChange(screen_weaponupgrade, 0.0, 0.0, 0.1)
+	end
+	
+	-- remove any perimeters
+	EGroup_DeSpawn(LAYER_perimeter_infantry)
+	EGroup_DeSpawn(eg_infantry_facingdirection)
+	EGroup_DeSpawn(eg_infantry_hmgpen)	
+	
+end
+
+
+
+
+
+--------------------------------------------------------------------------------
+-- Objectives
+--------------------------------------------------------------------------------
+function Infantry_RegisterObjectives()
+
+
+	OBJ_INFANTRY_PARATROOPERS = {
+		SetupUI = function()
+			Objective_AddUIElements(OBJ_INFANTRY_PARATROOPERS, mkr_infantry_paradrop1, false, false, true)
+		end,
+		OnStart = function() 
+			Objective_SetAlwaysShowDetails(OBJ_INFANTRY_PARATROOPERS, true, true)
+		end,
+		OnComplete = function()
+			Objective_SetAlwaysShowDetails(OBJ_INFANTRY_PARATROOPERS, false, false)
+		end,
+		OnFail = function() end,
+		OnSitRep = function() end,
+		Title = 409218,
+		Description = 409219,
+		Type = OT_Primary,
+		Icon = IT_P_Defend,
+	}
+	Objective_Register(OBJ_INFANTRY_PARATROOPERS)
+
+
+	OBJ_INFANTRY_LIGHTCOVER = {
+		SetupUI = function() end,
+		OnStart = function() 
+			Objective_SetAlwaysShowDetails(OBJ_INFANTRY_LIGHTCOVER, true, true, true)
+		end,
+		OnComplete = function()
+			Objective_SetAlwaysShowDetails(OBJ_INFANTRY_LIGHTCOVER, false, false, false)
+		end,
+		OnFail = function() end,
+		OnSitRep = function() end,
+		Title = 409216,
+		Description = 409217,
+		Type = OT_Primary,
+		Icon = IT_P_Move,
+	}
+	Objective_Register(OBJ_INFANTRY_LIGHTCOVER)
+
+
+	OBJ_INFANTRY_HEAVYCOVER = {
+		SetupUI = function() end,
+		OnStart = function() 
+			Objective_SetAlwaysShowDetails(OBJ_INFANTRY_HEAVYCOVER, true, true, true)
+		end,
+		OnComplete = function()
+			Objective_SetAlwaysShowDetails(OBJ_INFANTRY_HEAVYCOVER, false, false, false)
+		end,
+		OnFail = function() end,
+		OnSitRep = function() end,
+		Title = 409214,
+		Description = 409215,
+		Type = OT_Primary,
+		Icon = IT_P_Move,
+	}
+	Objective_Register(OBJ_INFANTRY_HEAVYCOVER)
+
+
+	OBJ_INFANTRY_GRAVEYARD = {
+		SetupUI = function() end,
+		OnStart = function() 
+			Objective_SetAlwaysShowDetails(OBJ_INFANTRY_GRAVEYARD, true, true, true)
+		end,
+		OnComplete = function()
+			Objective_SetAlwaysShowDetails(OBJ_INFANTRY_GRAVEYARD, false, false, false)
+		end,
+		OnFail = function() end,
+		OnSitRep = function() end,
+		Title = 409200,
+		Description = 409201,
+		Type = OT_Primary,
+		Icon = IT_P_Move,
+	}
+	Objective_Register(OBJ_INFANTRY_GRAVEYARD)
+	
+	
+	OBJ_INFANTRY_KILLMORTAR = {
+		SetupUI = function() end,
+		OnStart = function()
+			Objective_SetAlwaysShowDetails(OBJ_INFANTRY_KILLMORTAR, true, true, true)
+		end,
+		OnComplete = function()
+			Objective_SetAlwaysShowDetails(OBJ_INFANTRY_KILLMORTAR, false, false, false)
+		end,
+		OnFail = function() end,
+		OnSitRep = function() end,
+		Title = 409202,
+		Description = 409203,
+		Type = OT_Primary,
+		Icon = IT_P_Attack,
+	}
+	Objective_Register(OBJ_INFANTRY_KILLMORTAR)
+	
+	
+	OBJ_INFANTRY_ATTACKHMG = {
+		SetupUI = function() end,
+		OnStart = function()
+			Objective_SetAlwaysShowDetails(OBJ_INFANTRY_ATTACKHMG, true, true, true)
+		end,
+		OnComplete = function()
+			Objective_SetAlwaysShowDetails(OBJ_INFANTRY_ATTACKHMG, false, false, false)
+		end,
+		OnFail = function() end,
+		OnSitRep = function() end,
+		Title = 409204,
+		Description = 409205,
+		Type = OT_Primary,
+		Icon = IT_P_Attack,
+	}
+	Objective_Register(OBJ_INFANTRY_ATTACKHMG)
+	
+	
+	OBJ_INFANTRY_PICKUP = {
+		SetupUI = function()
+			-- added when the objective is started
+		end,
+		OnStart = function() 
+			Objective_SetAlwaysShowDetails(OBJ_INFANTRY_PICKUP, true, true, true)
+		end,
+		OnComplete = function()
+			Objective_SetAlwaysShowDetails(OBJ_INFANTRY_PICKUP, false, false, false)
+		end,
+		OnFail = function() end,
+		OnSitRep = function() end,
+		Title = 409208,
+		Description = 409209,
+		Type = OT_Primary,
+		Icon = IT_P_Capture,
+	}
+	Objective_Register(OBJ_INFANTRY_PICKUP)
+	
+
+	OBJ_INFANTRY_SETFACING = {
+		SetupUI = function()
+		end,
+		OnStart = function() 
+			Objective_SetAlwaysShowDetails(OBJ_INFANTRY_SETFACING, true, true)
+		end,
+		OnComplete = function()
+			Objective_SetAlwaysShowDetails(OBJ_INFANTRY_SETFACING, false, false)
+		end,
+		OnFail = function() end,
+		OnSitRep = function() end,
+		Title = 409210,
+		Description = 409211,
+		Type = OT_Primary,
+		Icon = IT_P_Defend,
+	}
+	Objective_Register(OBJ_INFANTRY_SETFACING)
+
+	
+	OBJ_INFANTRY_CAPTURE = {
+		SetupUI = function() end,
+		OnStart = function() 
+			Objective_SetAlwaysShowDetails(OBJ_INFANTRY_CAPTURE, true, true, true)
+		end,
+		OnComplete = function()
+			Objective_SetAlwaysShowDetails(OBJ_INFANTRY_CAPTURE, false, false, false)
+		end,
+		OnFail = function() end,
+		OnSitRep = function() end,
+		Title = 409206,
+		Description = 409207,
+		Type = OT_Primary,
+		Icon = IT_P_Capture,
+	}
+	Objective_Register(OBJ_INFANTRY_CAPTURE)
+
+	
+	OBJ_INFANTRY_UPGRADE = {
+		SetupUI = function()
+		end,
+		OnStart = function() 
+			Objective_SetAlwaysShowDetails(OBJ_INFANTRY_UPGRADE, true, false)
+		end,
+		OnComplete = function()
+			Objective_SetAlwaysShowDetails(OBJ_INFANTRY_UPGRADE, false, false)
+		end,
+		OnFail = function() end,
+		OnSitRep = function() end,
+		Title = 409220,
+		Description = 409221,
+		Type = OT_Primary,
+		Icon = IT_P_Upgrade,
+	}
+	Objective_Register(OBJ_INFANTRY_UPGRADE)
+
+	
+	OBJ_INFANTRY_ATTACKBARN = {
+		SetupUI = function()
+			Objective_AddUIElements(OBJ_INFANTRY_ATTACKBARN, eg_infantry_barn, false, 409261, true)
+		end,
+		OnStart = function() 
+			Objective_SetAlwaysShowDetails(OBJ_INFANTRY_ATTACKBARN, true, true, true)
+		end,
+		OnComplete = function()
+			Objective_SetAlwaysShowDetails(OBJ_INFANTRY_ATTACKBARN, false, false, false)
+		end,
+		OnFail = function() end,
+		OnSitRep = function() end,
+		Title = 409212,
+		Description = 409213,
+		Type = OT_Primary,
+		Icon = IT_P_Attack,
+	}
+	Objective_Register(OBJ_INFANTRY_ATTACKBARN)
+	
+	
+end
+
+

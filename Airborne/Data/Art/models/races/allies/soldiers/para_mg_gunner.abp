@@ -1,0 +1,10 @@
+model =
+{
+	-- Weapons
+	"Weapons\\30Cal_M1917_Browning_sync",
+
+	-- Mesh
+	"Paratrooper_Base.abp",
+	"Paratrooper\\RandomAcs",
+	"Base\\Rifleman",
+}

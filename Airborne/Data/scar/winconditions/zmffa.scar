@@ -1,0 +1,16 @@
+import("ScarUtil.scar")
+import("AirborneUtil.scar")
+
+function OnInit()
+	for i=1, World_GetPlayerCount() do
+		if Player_IsHuman(World_GetPlayerAt(i)) then
+			Setup_SetPlayerTeam(World_GetPlayerAt(i),1)
+		else
+			Setup_SetPlayerTeam(World_GetPlayerAt(i),i+1)
+		end
+	end
+	Rule_AddInterval(Crush_Check, 1)
+	TimeRule_AddInterval(Refresh_AI,600,1)
+end
+
+Scar_AddInit(OnInit)

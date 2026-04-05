@@ -1,0 +1,42 @@
+Made by:
+- MisterMayoNL (Joey)
+
+Playtesters/Feedback:
+- Skryptec
+- DutchHood
+- Full
+
+Special thanks for cool ideas:
+- Skryptec
+- DutchHood
+- Commrade-DOGE (Miles)
+
+Special thanks to these awesome people for letting me add them (of course with their input into their unit):
+- Ronin (Sam)
+- Poker Wolf/Curtis (Rafal)
+- SergeantToad (Pim)
+- DutchHood (Niels)
+- Acrylicxd (Rodny)
+- Skryptec (Luke)
+- RARTAЯD (Mick)
+- Athena's Student (Ian)
+- TheScorpion4020 (Glenn)
+- Full
+- Martoe B (Mart)
+
+
+A HUGE thanks to oblivioncth for making BSCWorks and helping me with any questions I had
+
+
+A big thank you to all mods/creators listed below for any used assets:
+
+NHCToV        - Maus Tank, V2 Rocket, M55 Maxson, in-game UI elements
+BotB          - Rifleman texture (Greg)
+The Great War - Gasmask model (Glenn)
+ModernCombat  - Modern weapons assets (Future Retards)
+Blitzkrieg    - Sherman texture (Luke's Sherman), in-game UI elements
+Europe At War - M1 Carbine model
+Mad Tzar      - Historical Skins Pack
+kandza99      - Free For All (FFA) gamemode
+eliw00d       - M10 misfire fix
+Eastern Front - King of the Hill (KOTH) gamemode

@@ -1,0 +1,266 @@
+-------------------------------------------------------------------------
+-- Exit Town
+-------------------------------------------------------------------------
+-- A fake objective that orders the player to head back to Point 2-1-3, but
+-- when he tries to head there, his tank is ambushed by an AT Gun and disabled.
+-------------------------------------------------------------------------
+function Initialize_OBJ_ExitTown()
+
+	OBJ_ExitTown = {
+		
+		SetupUI = function() 
+			-- mark a point or position
+			OBJ_ExitTown.mapElementID = Objective_AddUIElements(OBJ_ExitTown, mkr_ConvoyExit, true)
+			Objective_SetAlwaysShowDetails(OBJ_ExitTown, false, true, false)
+		end,
+		
+		OnStart = function()
+			
+			-- announce the goal
+			-- Util_AutoIntel(t_obj_title.EventStart)
+			
+			-- win/lose check
+			
+			
+			-- start related action
+			
+		end,
+		
+		OnComplete = function()
+			
+			-- tell the player they did good
+			
+		end,
+		
+		IsComplete = function()
+			return false
+		end,
+		
+		OnFail = function()
+			
+			-- tell the player they lost
+			
+		end,
+		
+		Title = 6019300,
+		Description = 6019310,
+		Type = OT_Primary,
+		
+--~ 		SitRep = {}, -- only needed once the SitRep is created and there are lines of dialogue.
+	}
+	
+	-- Register Objective
+--~ 	Objective_Register(OBJ_ExitTown)
+	
+	-- Initialize Data
+	ExitTown_Init()
+	
+end
+
+Scar_AddInit(Initialize_OBJ_ExitTown)
+
+-------------------------------------------------------------------------
+-- Exit Town - Functions 
+-------------------------------------------------------------------------
+
+-- 'Init()' is used to initialize the Obj data
+-- anything that needs to be there for the Obj to work
+-- does not need to be called at 'OnInit()'
+function ExitTown_Init()
+
+	-- data needed?
+	t_ET = {
+		
+		tmr			= "TIMER EXIT TOWN",
+		tmrAmount	= 35,
+	}
+	
+	t_ET.t_Speech = {
+		
+		objStart = {
+			{ ACTOR.VILLERS_BOCAGE.Voss, 	6010692 },
+			{ ACTOR.VILLERS_BOCAGE.Shultz, 	6010700 },
+			-- insert kill count line here
+		},
+		
+		killCount = {},
+		
+		ambObjStart = {
+			{ ACTOR.VILLERS_BOCAGE.Voss, 	6010970 },
+			{ ACTOR.VILLERS_BOCAGE.Voss, 	6010980 },
+		}
+	}
+	
+	-- the placement of the kills in the table matches the speech line that is delivered.
+	-- 1 to 15
+	for i=1, 15 do 
+		t_ET.t_Speech.killCount[i] = { ACTOR.VILLERS_BOCAGE.Litzke, 6010710 }
+	end
+	
+	t_ET.t_Speech.killCount[16]  = { ACTOR.VILLERS_BOCAGE.Litzke, 6010720 }
+	t_ET.t_Speech.killCount[17]  = { ACTOR.VILLERS_BOCAGE.Litzke, 6010730 }
+	t_ET.t_Speech.killCount[18]  = { ACTOR.VILLERS_BOCAGE.Litzke, 6010740 }
+	t_ET.t_Speech.killCount[19]  = { ACTOR.VILLERS_BOCAGE.Litzke, 6010750 }
+	t_ET.t_Speech.killCount[20]  = { ACTOR.VILLERS_BOCAGE.Litzke, 6010760 }
+	t_ET.t_Speech.killCount[21]  = { ACTOR.VILLERS_BOCAGE.Litzke, 6010770 }
+	t_ET.t_Speech.killCount[22]  = { ACTOR.VILLERS_BOCAGE.Litzke, 6010780 }
+	t_ET.t_Speech.killCount[23]  = { ACTOR.VILLERS_BOCAGE.Litzke, 6010790 }
+	t_ET.t_Speech.killCount[24]  = { ACTOR.VILLERS_BOCAGE.Litzke, 6010800 }
+	t_ET.t_Speech.killCount[25]  = { ACTOR.VILLERS_BOCAGE.Litzke, 6010810 }
+	t_ET.t_Speech.killCount[26]  = { ACTOR.VILLERS_BOCAGE.Litzke, 6010820 }
+	t_ET.t_Speech.killCount[27]  = { ACTOR.VILLERS_BOCAGE.Litzke, 6010830 }
+	t_ET.t_Speech.killCount[28]  = { ACTOR.VILLERS_BOCAGE.Litzke, 6010840 }
+	t_ET.t_Speech.killCount[29]  = { ACTOR.VILLERS_BOCAGE.Litzke, 6010850 }
+	t_ET.t_Speech.killCount[30]  = { ACTOR.VILLERS_BOCAGE.Litzke, 6010860 }
+	t_ET.t_Speech.killCount[31]  = { ACTOR.VILLERS_BOCAGE.Litzke, 6010870 }
+	t_ET.t_Speech.killCount[32]  = { ACTOR.VILLERS_BOCAGE.Litzke, 6010880 }
+	t_ET.t_Speech.killCount[33]  = { ACTOR.VILLERS_BOCAGE.Litzke, 6010890 }
+	t_ET.t_Speech.killCount[34]  = { ACTOR.VILLERS_BOCAGE.Litzke, 6010900 }
+	t_ET.t_Speech.killCount[35]  = { ACTOR.VILLERS_BOCAGE.Litzke, 6010910 }
+	t_ET.t_Speech.killCount[36]  = { ACTOR.VILLERS_BOCAGE.Litzke, 6010920 }
+	t_ET.t_Speech.killCount[37]  = { ACTOR.VILLERS_BOCAGE.Litzke, 6010930 }
+	t_ET.t_Speech.killCount[38]  = { ACTOR.VILLERS_BOCAGE.Litzke, 6010940 }
+	t_ET.t_Speech.killCount[39]  = { ACTOR.VILLERS_BOCAGE.Litzke, 6010950 }
+
+end
+
+-- preset any units or events needed before the kickoff, but you do not
+-- want them to occur at the outset of the map.
+-- Example: Often units are needed to exist before the objective start (because they start the objective)
+-- then spawn those units here when they need to be spawned
+function ExitTown_Preset()
+
+	-- spawn squads
+	
+	-- start enemy behavior
+	
+	-- do other cool things
+
+end
+
+-- example of how to finish an Obj
+function ExitTown_Rule_WinCheck()
+	
+	if SGroup_IsEmpty(sg_Tiger) == true then
+		return
+	end
+	
+	if Event_IsAnyRunning() == false then
+		SGroup_SetInvulnerable(sg_Tiger, true)
+		
+		Util_StartNIS(NIS_CLOSING_NO_BLACK, nil, {player1, player2})
+		
+		-- removing the RPGMechanics Rule to prevent audio from playing after the last NIS.
+		Rule_Remove(VB_RPGMechanics_ThreatAssess)
+		Rule_AddOneShot(ET_DelayTigerModifications, 1.1)
+		Rule_Add(ExitTown_DelayObjectiveCompletion)
+		TankHeal_Stop()
+		Rule_RemoveMe()
+	end
+	
+end
+
+function ET_DelayTigerModifications()
+
+	Cmd_Stop( sg_Tiger )
+	Cmd_Ability(sg_Tiger, ABILITY.SP.VILLERS_BOCAGE.COMMANDER_DOWN, nil, nil, true)
+	Cmd_Ability(player1, ABILITY.SP.SINGLE_MORTAR_SMOKEENTRANCE, SGroup_GetPosition(sg_Tiger))
+
+end
+
+function ExitTown_DelayObjectiveCompletion()
+
+	if Event_IsAnyRunning() == false then
+--~ 		Objective_Complete(OBJ_ExitTown, false)
+		g_CompleteMission = true
+	end
+
+end
+
+function ExitTown_Debug()
+
+	-- add in the necessary information that can automatically start this objective 
+	-- with the press of a hotkey
+	Objective_Start(OBJ_ExitTown)
+
+end
+
+
+-- start the related action
+-- Rule added in VillersBocage_A.scar
+function ExitTown_Kickoff()
+
+	if SGroup_IsEmpty( sg_Tiger ) == false then
+		
+		if SGroup_IsDoingAbility( sg_Tiger, ABILITY.SP.VILLERS_BOCAGE.TIGER_REPAIR , ANY ) == true then
+			SGroup_StopAbility( sg_Tiger, ABILITY.SP.VILLERS_BOCAGE.TIGER_REPAIR, true)
+		elseif SGroup_IsDoingAbility( sg_Tiger, ABILITY.SP.VILLERS_BOCAGE.FLANK_SPEED , ANY ) == true then
+			SGroup_StopAbility( sg_Tiger, ABILITY.SP.VILLERS_BOCAGE.FLANK_SPEED, true)
+		else
+			Cmd_Ability(sg_Tiger, ABILITY.SP.VILLERS_BOCAGE.COMMANDER_DOWN, nil, nil, true, false)
+			
+			if SGroup_IsEmpty(sg_Tiger) == false then
+				Cmd_Move(sg_Tiger, mkr_ConvoyExit)
+				Modify_UnitSpeed( sg_Tiger, 0.2)
+				Camera_FollowSGroup(sg_Tiger)
+			end
+	
+			voss_start = {6010690, 6010691, 6010692}
+			local nislet = {
+				{camPos = false, waitType = NISLET_TIME, waitValue = 1},
+				{camPos = false, waitType = NISLET_VO, waitValue = {ACTOR.VILLERS_BOCAGE.Voss, voss_start[World_GetRand(1, table.getn(voss_start))]}},
+				{camPos = false, waitType = NISLET_VO, waitValue = {ACTOR.VILLERS_BOCAGE.Shultz, 6010700}},
+				{camPos = false, waitType = NISLET_VO, waitValue = t_ET.t_Speech.killCount[g_KillCount]},
+				{camPos = false, waitType = NISLET_VO, waitValue = {ACTOR.VILLERS_BOCAGE.Shultz, 6010990}},
+				{camPos = false, waitType = NISLET_VO, waitValue = {ACTOR.VILLERS_BOCAGE.Shultz, 6011000}},
+				{camPos = false, waitType = NISLET_TIME, waitValue = 1},
+			}
+			
+			Util_AutoNISlet(NISLET_GAME2LETTER, nislet)
+			Rule_AddInterval(ExitTown_Rule_WinCheck, 1)
+			Rule_RemoveMe()
+		end
+		
+	end
+	
+end
+
+-- start the related action
+-- Rule added in VillersBocage_A.scar
+function ExitTown_KickoffSpecial()
+
+	if SGroup_IsEmpty( sg_Tiger ) == false then
+		
+		if SGroup_IsDoingAbility( sg_Tiger, ABILITY.SP.VILLERS_BOCAGE.TIGER_REPAIR , ANY ) == true then
+			SGroup_StopAbility( sg_Tiger, ABILITY.SP.VILLERS_BOCAGE.TIGER_REPAIR, true)
+		elseif SGroup_IsDoingAbility( sg_Tiger, ABILITY.SP.VILLERS_BOCAGE.FLANK_SPEED , ANY ) == true then
+			SGroup_StopAbility( sg_Tiger, ABILITY.SP.VILLERS_BOCAGE.FLANK_SPEED, true)
+		else
+			Cmd_Ability(sg_Tiger, ABILITY.SP.VILLERS_BOCAGE.COMMANDER_DOWN, nil, nil, true, false)
+			
+			if SGroup_IsEmpty(sg_Tiger) == false then
+				Cmd_Move(sg_Tiger, mkr_ConvoyExit)
+				Modify_UnitSpeed( sg_Tiger, 0.2)
+				Camera_FollowSGroup(sg_Tiger)
+			end
+
+			voss_start = {6010690, 6010691, 6010692}
+			local nislet = {
+				{camPos = false, waitType = NISLET_TIME, waitValue = 1},
+				{camPos = false, waitType = NISLET_VO, waitValue = {ACTOR.VILLERS_BOCAGE.Voss, voss_start[World_GetRand(1, table.getn(voss_start))]}},
+				{camPos = false, waitType = NISLET_VO, waitValue = {ACTOR.VILLERS_BOCAGE.Shultz, 6010700}},
+				{camPos = false, waitType = NISLET_VO, waitValue = {ACTOR.VILLERS_BOCAGE.Litzke, 6010960}},
+				{camPos = false, waitType = NISLET_VO, waitValue = {ACTOR.VILLERS_BOCAGE.Schroif, 6010970}},
+				{camPos = false, waitType = NISLET_VO, waitValue = {ACTOR.VILLERS_BOCAGE.Berndt, 6010980}},
+				{camPos = false, waitType = NISLET_VO, waitValue = {ACTOR.VILLERS_BOCAGE.Shultz, 6011000}},
+				{camPos = false, waitType = NISLET_TIME, waitValue = 1},
+			}
+			
+			Util_AutoNISlet(NISLET_GAME2LETTER, nislet)
+			Rule_AddInterval(ExitTown_Rule_WinCheck, 1)
+			Rule_RemoveMe()
+		end
+		
+	end
+	
+end

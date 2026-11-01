@@ -1,6 +1,17 @@
-Should rebalance SE SMGs
 CW Sniper armor pen (0.75 accuracy with 1.5x multiplier to vehicles)
+add oneshot AI upgrade (lockout infantry section, 2 possible errors)
 
+31-10-2026
+*Members of Delta Squad no longer have their appearance randomized (both in-game & cutscenes)
+*Delta Squad's 2nd-in-command is now properly named Hazard
+
+24-05-2026
+*Increased the Sniper Elite MP40 burst duration (from 2.5 to 3 seconds)
+*Increased the Sniper Elite MP44 burst duration (from 2 to 2.5 seconds)
+
+08-05-2026
+*Fixed infinite production time when selecing the Canadian Artillery doctrine while an Infantry Section was in production
+(AI ignores this and will still always produce Infantry Sections, will be fixed later)
 
 30-01-2026
 *Fixed the King Tiger & Marder 3's main gun crit detachment

@@ -914,6 +914,7 @@ UPG = {
 	},	
 		
 	JOEY = {
+		IS_AI						= BP_GetUpgradeBlueprint("upgrade/ai_lockout.lua"),
 		ALLIES_POPCAP				= BP_GetUpgradeBlueprint("upgrade/allies/allies_max_pop_boost.lua"),
 		ALLIES_POPCAP2				= BP_GetUpgradeBlueprint("upgrade/allies/allies_max_pop_boost2.lua"),
 		ALLIES_POPCAP3				= BP_GetUpgradeBlueprint("upgrade/allies/allies_max_pop_boost3.lua"),

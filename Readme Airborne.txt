@@ -22,7 +22,8 @@ INSTALLATION
 =====================================================================
 
 )1. Place all items within the 'root' folder in your CoH1 folder (Steam\steamapps\common\Company of Heroes Relaunch)
-)2. Open Modules.zip and extract the files into your CoH1 folder (Steam\steamapps\common\Company of Heroes Relaunch)
+)2. Open Modules.zip and extract the 5 module files into your CoH1 folder (Steam\steamapps\common\Company of Heroes Relaunch)
+	- Use 'Native German Voices Version' of Airborne.module in case you have the Native German Voices addon installed
 )3. Run Airborne.BAT (or first run AirborneRefreshRate.BAT if you have a refresh rate higher than 60)
 
 You're done!

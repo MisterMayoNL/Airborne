@@ -21,8 +21,9 @@ Should work with friends if they also download this mod.
 INSTALLATION
 =====================================================================
 
-)1. Place all other items in this zip in your root CoH1 folder (Steam\steamapps\common\Company of Heroes Relaunch)
-)2. Run the Airborne.BAT (or first run AirborneRefreshRate.BAT if you have a refresh rate higher than 60)
+)1. Place all items within the 'root' folder in your CoH1 folder (Steam\steamapps\common\Company of Heroes Relaunch)
+)2. Open Modules.zip and extract the files into your CoH1 folder (Steam\steamapps\common\Company of Heroes Relaunch)
+)3. Run Airborne.BAT (or first run AirborneRefreshRate.BAT if you have a refresh rate higher than 60)
 
 You're done!
 REMEMBER TO SCROLL IN THE VICTORY CONDITION SETTING IN SKIRMISH!!!

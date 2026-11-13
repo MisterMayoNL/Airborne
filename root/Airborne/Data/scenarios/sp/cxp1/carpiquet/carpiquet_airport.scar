@@ -734,10 +734,11 @@ end
 function Carpiquet_Airport_MissionStart()
 
 	Rule_RemoveMe()
-	
+	UI_BindingSetEnabled( "company_commander", false )
+
 	-- out of cinematic
 	AutoCinematic(false, 2)
-	
+
 	Util_StartNIS(EVENTS.NIS01)
 	Rule_Add(Carpiquet_Airport_First_Spawn, 0)
 	Rule_Add(Carpiquet_Airport_MissionStartB)
@@ -772,7 +773,6 @@ function Carpiquet_Airport_First_Spawn()
 		end
 		
 		Rule_RemoveMe()
-		
 		Rule_AddOneShot(Glenn_Spawn, 2)
 		
 	end

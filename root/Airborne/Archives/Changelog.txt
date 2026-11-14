@@ -1,6 +1,10 @@
 CW Sniper armor pen (0.75 accuracy with 1.5x multiplier to vehicles)
 add oneshot AI upgrade (lockout infantry section, 2 possible errors)
 
+14-11-2026
+*Disabled the Commander Tree in Carpiquet (it wasn't used anyways)
+*Changed description of the Drop Weapon ability in Multiplayer (now accurately states the weapon will be destroyed)
+
 31-10-2026
 *Members of Delta Squad no longer have their appearance randomized (both in-game & cutscenes)
 *Delta Squad's 2nd-in-command is now properly named Hazard
